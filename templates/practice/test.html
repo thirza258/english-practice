@@ -1,0 +1,115 @@
+{% extends "practice/base.html" %}
+{% load static %}
+
+{% block title %}English Practice Diagnostic | Test{% endblock %}
+{% block meta_description %}Take the English Practice Diagnostic: 10 questions, immediate feedback, and a topic summary at the end.{% endblock %}
+{% block og_title %}English Practice Diagnostic | Test{% endblock %}
+{% block og_description %}Take the English Practice Diagnostic: 10 questions, immediate feedback, and a topic summary at the end.{% endblock %}
+{% block robots %}noindex,nofollow{% endblock %}
+{% block body_class %}test-body{% endblock %}
+
+{% block content %}
+<div class="page-shell test-page">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <header class="topbar test-topbar">
+    <div>
+      <p class="eyebrow">English Practice</p>
+      <h1>Grammar diagnostic</h1>
+      <p class="topbar-note">Answer carefully. The topic only appears after you submit each response.</p>
+    </div>
+    <div class="topbar-actions">
+      <a href="{% url 'practice:landing' %}" class="secondary-button">Back to Landing</a>
+      <div class="topbar-pill">10 questions</div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section id="testScreen" class="screen screen-active">
+      <div class="test-grid">
+        <article class="card test-card">
+          <div class="test-header">
+            <div>
+              <p id="questionCounter" class="eyebrow">Question 1 of 10</p>
+              <h2 id="scoreCounter">Score 0 / 10</h2>
+            </div>
+            <div id="progressLabel" class="progress-label">0%</div>
+          </div>
+
+          <div class="progress-track" aria-hidden="true">
+            <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+          </div>
+
+          <div id="questionPanel" class="question-panel" aria-live="polite"></div>
+          <div id="feedbackPanel" class="feedback-panel hidden" aria-live="polite"></div>
+
+          <div class="action-row">
+            <button id="submitAnswerButton" class="primary-button" type="button" data-action="submit-answer" disabled>
+              Submit Answer
+            </button>
+            <button id="nextQuestionButton" class="secondary-button hidden" type="button" data-action="next-question">
+              Next Question
+            </button>
+          </div>
+        </article>
+
+        <aside class="card side-card">
+          <p class="eyebrow">How it works</p>
+          <ul class="side-list">
+            <li>Read the sentence and choose the best completion.</li>
+            <li>The grammar topic appears only after you submit.</li>
+            <li>Review the rule, explanation, and sentence rewrite after each answer.</li>
+            <li>At the end, compare accuracy across the topics you saw.</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="resultsScreen" class="screen hidden">
+      <div class="card results-card">
+        <div class="results-header">
+          <div>
+            <p class="eyebrow">Results</p>
+            <h2>Your diagnostic summary</h2>
+          </div>
+          <button id="retryTestButton" class="primary-button" type="button" data-action="retry-test">
+            Retry Test
+          </button>
+        </div>
+
+        <div id="resultsSummary" class="results-summary"></div>
+        <div id="topicSummary" class="topic-summary"></div>
+        <div id="questionReview" class="question-review"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="loadingOverlay" class="loading-overlay hidden" aria-live="polite" aria-busy="true">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <p id="loadingMessage">Preparing your diagnostic...</p>
+    </div>
+  </div>
+
+  <div id="errorBanner" class="error-banner hidden" role="alert"></div>
+</div>
+
+{% if initial_state %}
+  {{ initial_state|json_script:"initial-state-data" }}
+{% endif %}
+{% if initial_results %}
+  {{ initial_results|json_script:"initial-results-data" }}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.APP_CONFIG = {
+    startUrl: "{% url 'practice:test-start' %}",
+    apiRoot: "/api/tests/",
+    totalQuestions: 10
+  };
+</script>
+<script defer src="{% static 'practice/app.js' %}"></script>
+{% endblock %}

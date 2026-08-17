@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5170:5170"
+    volumes:
+      - ./data:/app/data
+    environment:
+      DJANGO_SECRET_KEY: "dev-only-secret-key"
+      DJANGO_DEBUG: "0"
+      DJANGO_ALLOWED_HOSTS: "*"
+      OPENROUTER_MODEL: "openai/gpt-4o-mini"
