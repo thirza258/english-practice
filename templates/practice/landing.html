@@ -1,10 +1,10 @@
 {% extends "practice/base.html" %}
 {% load static %}
 
-{% block title %}English Practice Diagnostic | Hidden-Topic Grammar Test{% endblock %}
-{% block meta_description %}Practice English grammar with a 10-question hidden-topic diagnostic, instant feedback, and topic-by-topic results.{% endblock %}
-{% block og_title %}English Practice Diagnostic{% endblock %}
-{% block og_description %}Start a hidden-topic grammar diagnostic with 10 questions, instant feedback, and a final topic breakdown.{% endblock %}
+{% block title %}English Grammar & Paragraph Practice Diagnostic{% endblock %}
+{% block meta_description %}Practice English grammar and paragraph building with sentence diagnostics and multi-blank paragraph cloze exercises divided by English level.{% endblock %}
+{% block og_title %}English Grammar & Paragraph Practice Diagnostic{% endblock %}
+{% block og_description %}Start a hidden-topic grammar or paragraph diagnostic with instant feedback and topic-by-topic results.{% endblock %}
 {% block body_class %}landing-body{% endblock %}
 {% block head_extra %}
 <script type="application/ld+json">
@@ -12,7 +12,7 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "English Practice Diagnostic",
-    "description": "A hidden-topic English grammar diagnostic with 10 questions, instant feedback, and topic-based results.",
+    "description": "An interactive English grammar diagnostic featuring both sentence and multi-blank paragraph builder modes divided by English proficiency level.",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Web",
     "url": "{{ canonical_url }}"
@@ -28,102 +28,198 @@
   <header class="topbar landing-topbar">
     <div class="topbar-copy">
       <p class="eyebrow">English Practice</p>
-      <h1>Hidden-topic grammar practice that feels like a real diagnostic.</h1>
+      <h1>Grammar diagnostic & multi-blank paragraph builder.</h1>
       <p class="topbar-note">
-        Answer 10 multiple-choice questions, get instant feedback after each response, and review your topic
-        performance at the end.
+        Master English grammar in context. Choose between sentence diagnostics and full paragraph cloze exercises to understand sentence flow, transitions, and cohesive paragraph construction.
       </p>
     </div>
-    <a href="{% url 'practice:test' %}" class="primary-button topbar-cta">Start Test</a>
+    <div class="topbar-actions">
+      <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button topbar-cta">Start Paragraph Mode</a>
+      <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button">Sentence Mode</a>
+    </div>
   </header>
 
   <main class="landing-layout">
-    <section class="hero card">
-      <div class="hero-copy">
-        <p class="eyebrow">Practice mode</p>
-        <h2>Learn the rule after you answer, not before.</h2>
-        <p class="lede">
-          The diagnostic keeps the grammar topic hidden until after each submission. That makes every question
-          closer to the way an actual assessment works while still giving you fast feedback and explanations.
-        </p>
-        <div class="hero-actions">
-          <a href="{% url 'practice:test' %}" class="primary-button">Start Test</a>
-          <p class="microcopy">Five options per question. Topic, rule, and explanation appear only after submission.</p>
-        </div>
+    <!-- Practice Mode Showcase -->
+    <section class="card practice-modes-section" aria-label="Practice Modes">
+      <div class="section-heading">
+        <p class="eyebrow">Two Practice Modes</p>
+        <h2>Choose how you want to train your English.</h2>
       </div>
-      <div class="hero-stats">
-        <div class="stat-card">
-          <span class="stat-label">Questions</span>
-          <strong>10</strong>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Feedback</span>
-          <strong>Immediate</strong>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Review</span>
-          <strong>Topic-based</strong>
-        </div>
+
+      <div class="mode-grid">
+        <article class="mode-card is-featured">
+          <div class="mode-badge-row">
+            <span class="mode-badge new-badge">Paragraph Builder</span>
+            <span class="mode-meta">Multi-Blank Cloze</span>
+          </div>
+          <h3>Paragraph Cloze Practice</h3>
+          <p class="mode-desc">
+            Read complete, coherent paragraphs with multiple numbered blanks. Choose the best option for each blank to master transitions, discourse connectors, clause cohesion, and paragraph flow.
+          </p>
+          <ul class="mode-bullets">
+            <li>Multiple interactive blanks per passage</li>
+            <li>Real-time preview as you fill each blank</li>
+            <li>Full paragraph cohesion analysis & rule breakdown</li>
+          </ul>
+          <div class="mode-cta-row">
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button">Start Paragraph Test</a>
+          </div>
+        </article>
+
+        <article class="mode-card">
+          <div class="mode-badge-row">
+            <span class="mode-badge">Sentence Mode</span>
+            <span class="mode-meta">10 Questions</span>
+          </div>
+          <h3>Sentence Diagnostic</h3>
+          <p class="mode-desc">
+            Fast diagnostic test with 10 multiple-choice questions. The grammar topic remains hidden until you submit your answer, giving you instant educational feedback.
+          </p>
+          <ul class="mode-bullets">
+            <li>One targeted blank per question</li>
+            <li>Immediate feedback & rule explanations</li>
+            <li>Topic-by-topic accuracy summary</li>
+          </ul>
+          <div class="mode-cta-row">
+            <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button">Start Sentence Test</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- English Level Selection Cards -->
+    <section class="card level-section" aria-label="Select English Level">
+      <div class="section-heading">
+        <p class="eyebrow">Choose your level</p>
+        <h2>Divided by English proficiency.</h2>
+        <p class="level-intro">Select a difficulty tier tailored to your learning goals, available for both paragraph and sentence modes.</p>
+      </div>
+
+      <div class="level-grid">
+        <article class="level-card" data-level="beginner">
+          <div class="level-badge beginner-badge">A1 – A2</div>
+          <h3>Beginner Level</h3>
+          <p class="level-desc">Foundational grammar, simple tenses, subject pronouns, basic conjunctions (and, but, because, so), and elementary sentence structures.</p>
+          <ul class="level-features">
+            <li>Simple sentences & daily routines</li>
+            <li>Subject-verb agreement basics</li>
+            <li>Elementary pronoun & preposition use</li>
+          </ul>
+          <div class="level-actions-stack">
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=beginner" class="primary-button level-btn">Paragraph Practice</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=beginner" class="secondary-button level-btn">Sentence Practice</a>
+          </div>
+        </article>
+
+        <article class="level-card" data-level="intermediate">
+          <div class="level-badge intermediate-badge">B1 – B2</div>
+          <h3>Intermediate Level</h3>
+          <p class="level-desc">Discourse connectors (however, therefore, nonetheless), relative/adverb clauses, gerunds, participles, conditionals, and prepositional idioms.</p>
+          <ul class="level-features">
+            <li>Expository paragraph structure</li>
+            <li>Adjective, adverb & noun clauses</li>
+            <li>Participle & gerund modifiers</li>
+          </ul>
+          <div class="level-actions-stack">
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=intermediate" class="primary-button level-btn">Paragraph Practice</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=intermediate" class="secondary-button level-btn">Sentence Practice</a>
+          </div>
+        </article>
+
+        <article class="level-card" data-level="advanced">
+          <div class="level-badge advanced-badge">C1 – C2</div>
+          <h3>Advanced Level</h3>
+          <p class="level-desc">Academic syntax, mandative subjunctive mood, inverted word order, causative structures, elliptical clauses, and nuanced rhetorical transitions.</p>
+          <ul class="level-features">
+            <li>Subjunctive mood & inversion</li>
+            <li>Concessive & counterfactual clauses</li>
+            <li>Correlative syntactic parallelism</li>
+          </ul>
+          <div class="level-actions-stack">
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=advanced" class="primary-button level-btn">Paragraph Practice</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=advanced" class="secondary-button level-btn">Sentence Practice</a>
+          </div>
+        </article>
+
+        <article class="level-card ielts-card" data-level="ielts_8_9">
+          <div class="level-badge ielts-badge">IELTS Band 8.0 – 9.0</div>
+          <h3>IELTS 8–9 (Lexical Mastery)</h3>
+          <p class="level-desc">Rare, low-frequency academic vocabulary (cogent, obfuscate, salutary, perspicacious, lacuna, exacerbate), nuanced collocations, and dense scholarly syntax.</p>
+          <ul class="level-features">
+            <li>Rare & low-frequency lexical resource</li>
+            <li>Academic collocations & nuances</li>
+            <li>Advanced inversion & subjunctive syntax</li>
+          </ul>
+          <div class="level-actions-stack">
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=ielts_8_9" class="primary-button level-btn">Paragraph Practice</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=ielts_8_9" class="secondary-button level-btn">Sentence Practice</a>
+          </div>
+        </article>
+
+        <article class="level-card is-featured" data-level="all">
+          <div class="level-badge all-badge">A1 – C2 & IELTS</div>
+          <h3>All Levels (Mixed)</h3>
+          <p class="level-desc">A comprehensive diagnostic test covering a balanced variety across beginner, intermediate, advanced, and rare IELTS 8-9 vocabulary.</p>
+          <ul class="level-features">
+            <li>Full diagnostic assessment</li>
+            <li>Broad topic coverage</li>
+            <li>Pinpoints exact grammar weaknesses</li>
+          </ul>
+          <div class="level-actions-stack">
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button level-btn">Paragraph Practice</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button level-btn">Sentence Practice</a>
+          </div>
+        </article>
       </div>
     </section>
 
     <section class="feature-grid" aria-label="Diagnostic benefits">
       <article class="card feature-card">
+        <p class="eyebrow">Paragraph Building</p>
+        <h3>Understand Cohesion & Flow</h3>
+        <p>Filling multiple blanks within a complete paragraph teaches you how sentences connect, how pronouns refer across sentences, and how transitions link ideas.</p>
+      </article>
+      <article class="card feature-card">
         <p class="eyebrow">Hidden topic</p>
-        <h3>Focus on the sentence, not the label.</h3>
-        <p>The grammar topic stays internal until after you submit your answer, so each prompt tests actual recall.</p>
+        <h3>Focus on Context, Not Labels</h3>
+        <p>The grammar topic stays internal until you submit your answer, ensuring you evaluate the sentence and paragraph meaning naturally.</p>
       </article>
       <article class="card feature-card">
         <p class="eyebrow">Instant feedback</p>
-        <h3>See the correct answer right away.</h3>
-        <p>Every response includes the correct choice, your selection, the rule, and a short explanation in context.</p>
-      </article>
-      <article class="card feature-card">
-        <p class="eyebrow">Topic review</p>
-        <h3>Find weak areas fast.</h3>
-        <p>The final summary groups your performance by grammar topic so you can see where to practice next.</p>
+        <h3>Detailed Rule Explanations</h3>
+        <p>Every response breaks down why the correct answer fits the discourse and why the distractors fail, reinforcing the grammar rule.</p>
       </article>
     </section>
 
     <section class="card steps-card">
       <div class="section-heading">
-        <p class="eyebrow">How it works</p>
-        <h2>Start the test, answer each item, and review the breakdown.</h2>
+        <p class="eyebrow">How Paragraph Practice Works</p>
+        <h2>Read the passage, fill each blank, and learn the rules.</h2>
       </div>
       <ol class="step-list">
         <li>
           <span class="step-number">1</span>
           <div>
-            <h3>Open the diagnostic</h3>
-            <p>Click Start Test to move into the quiz page and generate a fresh set of questions.</p>
+            <h3>Read the paragraph passage</h3>
+            <p>Review the full context of the paragraph and identify the numbered blank placeholders `[ 1 ]`, `[ 2 ]`, `[ 3 ]`.</p>
           </div>
         </li>
         <li>
           <span class="step-number">2</span>
           <div>
-            <h3>Answer one question at a time</h3>
-            <p>Choose the best completion, submit it, and read the explanation before moving forward.</p>
+            <h3>Select choices for each blank</h3>
+            <p>Click on each blank to choose from 5 multiple choices (A-E). Watch your chosen words fill the paragraph in real time.</p>
           </div>
         </li>
         <li>
           <span class="step-number">3</span>
           <div>
-            <h3>Review the results</h3>
-            <p>At the end, compare your score and topic performance, then retry with a new randomized test.</p>
+            <h3>Submit and review paragraph cohesion</h3>
+            <p>See color-coded feedback for every blank, learn the specific grammar rules, and read the paragraph cohesion analysis.</p>
           </div>
         </li>
       </ol>
-    </section>
-
-    <section class="card topics-card">
-      <div class="section-heading">
-        <p class="eyebrow">Covered topics</p>
-        <h2>Built for common grammar patterns learners actually need.</h2>
-      </div>
-      <p class="topics-copy">
-        The diagnostic can draw from subject-verb agreement, pronouns, clauses, participles, infinitives, gerunds,
-        comparisons, parallel structure, conditionals, and other core English usage patterns.
-      </p>
     </section>
   </main>
 </div>

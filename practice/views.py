@@ -14,6 +14,8 @@ from .services import (
     current_question_payload,
     initialise_session_state,
     load_state,
+    normalize_level,
+    normalize_mode,
     save_state,
     submit_answer,
 )
@@ -58,7 +60,25 @@ def landing(request: HttpRequest):
 
 def test_page(request: HttpRequest):
     state = load_state(request)
+    requested_level = request.GET.get("level")
+    requested_mode = request.GET.get("mode")
+
+    if requested_level:
+        requested_level = normalize_level(requested_level)
+    if requested_mode:
+        requested_mode = normalize_mode(requested_mode)
+
+    # If user explicitly navigated with a ?level or ?mode param that differs from state, reset state
+    if state:
+        state_level = state.get("level")
+        state_mode = state.get("test_type") or state.get("mode")
+        if (requested_level and state_level != requested_level) or (requested_mode and state_mode != requested_mode):
+            state = None
+
     initial_results = build_results(state) if state and state.get("completed") else None
+    active_mode = requested_mode or (state.get("test_type") if state else "sentence")
+    active_level = requested_level or (state.get("level") if state else "all")
+
     return render(
         request,
         "practice/test.html",
@@ -66,6 +86,8 @@ def test_page(request: HttpRequest):
             "canonical_url": request.build_absolute_uri(reverse("practice:test")),
             "initial_state": state,
             "initial_results": initial_results,
+            "requested_level": active_level,
+            "requested_mode": active_mode,
         },
     )
 
@@ -73,15 +95,29 @@ def test_page(request: HttpRequest):
 @csrf_exempt
 @require_POST
 def start_test(request: HttpRequest):
-    state = initialise_session_state()
+    level = "all"
+    mode = "sentence"
+    try:
+        data = _load_json(request)
+        level = data.get("level") or request.GET.get("level") or "all"
+        mode = data.get("mode") or data.get("test_type") or request.GET.get("mode") or "sentence"
+    except ValueError:
+        pass
+
+    state = initialise_session_state(level=level, mode=mode)
     save_state(request, state)
+    total_items = state.get("total_paragraphs") if state.get("test_type") == "paragraph" else state["total_questions"]
     return JsonResponse(
         {
             "ok": True,
             "test_id": state["id"],
+            "test_type": state.get("test_type", "sentence"),
+            "mode": state.get("test_type", "sentence"),
+            "level": state.get("level", "all"),
             "total_questions": state["total_questions"],
+            "total_items": total_items,
             "score": state["score"],
-            "progress": {"current": 1, "total": state["total_questions"]},
+            "progress": {"current": 1, "total": total_items},
             "question": current_question_payload(state),
         }
     )
@@ -89,16 +125,36 @@ def start_test(request: HttpRequest):
 
 @csrf_exempt
 @require_POST
-def retry_test(request: HttpRequest, _test_id: str):
-    new_state = initialise_session_state()
+def retry_test(request: HttpRequest, test_id: str):
+    level = None
+    mode = None
+    try:
+        data = _load_json(request)
+        level = data.get("level") or request.GET.get("level")
+        mode = data.get("mode") or data.get("test_type") or request.GET.get("mode")
+    except ValueError:
+        pass
+
+    existing_state = load_state(request)
+    if not level and existing_state:
+        level = existing_state.get("level", "all")
+    if not mode and existing_state:
+        mode = existing_state.get("test_type") or existing_state.get("mode") or "sentence"
+
+    new_state = initialise_session_state(level=level or "all", mode=mode or "sentence")
     save_state(request, new_state)
+    total_items = new_state.get("total_paragraphs") if new_state.get("test_type") == "paragraph" else new_state["total_questions"]
     return JsonResponse(
         {
             "ok": True,
             "test_id": new_state["id"],
+            "test_type": new_state.get("test_type", "sentence"),
+            "mode": new_state.get("test_type", "sentence"),
+            "level": new_state.get("level", "all"),
             "total_questions": new_state["total_questions"],
+            "total_items": total_items,
             "score": new_state["score"],
-            "progress": {"current": 1, "total": new_state["total_questions"]},
+            "progress": {"current": 1, "total": total_items},
             "question": current_question_payload(new_state),
         }
     )
@@ -113,8 +169,13 @@ def answer_test(request: HttpRequest, test_id: str):
 
     try:
         data = _load_json(request)
-        selected_answer = str(data.get("selected_answer", "")).strip().upper()
-        result = submit_answer(state, selected_answer)
+        test_type = state.get("test_type") or state.get("mode") or "sentence"
+        if test_type == "paragraph":
+            answers_payload = data.get("answers") or data.get("selected_answers") or {}
+            result = submit_answer(state, answers_payload)
+        else:
+            selected_answer = str(data.get("selected_answer", "")).strip().upper()
+            result = submit_answer(state, selected_answer)
     except ValueError as exc:
         return _error(str(exc))
 
@@ -122,6 +183,9 @@ def answer_test(request: HttpRequest, test_id: str):
     payload = {
         "ok": True,
         "test_id": state["id"],
+        "test_type": state.get("test_type", "sentence"),
+        "mode": state.get("test_type", "sentence"),
+        "level": state.get("level", "all"),
         **result,
     }
     if state["completed"]:

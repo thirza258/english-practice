@@ -2,9 +2,9 @@
 {% load static %}
 
 {% block title %}English Practice Diagnostic | Test{% endblock %}
-{% block meta_description %}Take the English Practice Diagnostic: 10 questions, immediate feedback, and a topic summary at the end.{% endblock %}
+{% block meta_description %}Take the English Practice Diagnostic: sentence and paragraph builder modes, immediate feedback, and a topic summary at the end.{% endblock %}
 {% block og_title %}English Practice Diagnostic | Test{% endblock %}
-{% block og_description %}Take the English Practice Diagnostic: 10 questions, immediate feedback, and a topic summary at the end.{% endblock %}
+{% block og_description %}Take the English Practice Diagnostic: sentence and paragraph builder modes, immediate feedback, and a topic summary at the end.{% endblock %}
 {% block robots %}noindex,nofollow{% endblock %}
 {% block body_class %}test-body{% endblock %}
 
@@ -16,12 +16,13 @@
   <header class="topbar test-topbar">
     <div>
       <p class="eyebrow">English Practice</p>
-      <h1>Grammar diagnostic</h1>
-      <p class="topbar-note">Answer carefully. The topic only appears after you submit each response.</p>
+      <h1 id="testPageTitle">Grammar Diagnostic</h1>
+      <p class="topbar-note" id="testPageSubtitle">Answer carefully. The topic and grammar rules appear only after submission.</p>
     </div>
     <div class="topbar-actions">
       <a href="{% url 'practice:landing' %}" class="secondary-button">Back to Landing</a>
-      <div class="topbar-pill">10 questions</div>
+      <div id="modePill" class="topbar-pill mode-pill">Mode: Paragraph</div>
+      <div id="levelPill" class="topbar-pill level-pill">Level: All</div>
     </div>
   </header>
 
@@ -49,18 +50,18 @@
               Submit Answer
             </button>
             <button id="nextQuestionButton" class="secondary-button hidden" type="button" data-action="next-question">
-              Next Question
+              Next
             </button>
           </div>
         </article>
 
-        <aside class="card side-card">
-          <p class="eyebrow">How it works</p>
-          <ul class="side-list">
-            <li>Read the sentence and choose the best completion.</li>
-            <li>The grammar topic appears only after you submit.</li>
-            <li>Review the rule, explanation, and sentence rewrite after each answer.</li>
-            <li>At the end, compare accuracy across the topics you saw.</li>
+        <aside class="card side-card" id="sideCard">
+          <p class="eyebrow" id="sideCardEyebrow">How Paragraph Practice Works</p>
+          <ul class="side-list" id="sideCardList">
+            <li>Read the full paragraph and identify each numbered blank.</li>
+            <li>Click on each blank or its tab to choose the best multiple-choice option.</li>
+            <li>The paragraph text updates live as you select choices.</li>
+            <li>Submit to reveal the correct options, rules, and cohesion explanation.</li>
           </ul>
         </aside>
       </div>
@@ -71,11 +72,34 @@
         <div class="results-header">
           <div>
             <p class="eyebrow">Results</p>
-            <h2>Your diagnostic summary</h2>
+            <h2>Your Diagnostic Summary</h2>
           </div>
-          <button id="retryTestButton" class="primary-button" type="button" data-action="retry-test">
-            Retry Test
-          </button>
+          <div class="results-actions">
+            <button id="retryTestButton" class="primary-button" type="button" data-action="retry-test">
+              Retry Test
+            </button>
+          </div>
+        </div>
+
+        <div class="retry-control-panel">
+          <div class="retry-control-group">
+            <span class="retry-control-label">Practice Mode:</span>
+            <div class="mode-btn-group">
+              <button type="button" class="tab-btn mode-tab-btn" data-action="retry-mode" data-mode="paragraph">Paragraph Builder</button>
+              <button type="button" class="tab-btn mode-tab-btn" data-action="retry-mode" data-mode="sentence">Sentence Mode</button>
+            </div>
+          </div>
+
+          <div class="retry-control-group">
+            <span class="retry-control-label">English Level:</span>
+            <div class="level-btn-group">
+              <button type="button" class="tab-btn level-tab-btn" data-action="retry-level" data-level="all">All Levels</button>
+              <button type="button" class="tab-btn level-tab-btn" data-action="retry-level" data-level="beginner">Beginner (A1-A2)</button>
+              <button type="button" class="tab-btn level-tab-btn" data-action="retry-level" data-level="intermediate">Intermediate (B1-B2)</button>
+              <button type="button" class="tab-btn level-tab-btn" data-action="retry-level" data-level="advanced">Advanced (C1-C2)</button>
+              <button type="button" class="tab-btn level-tab-btn" data-action="retry-level" data-level="ielts_8_9">IELTS Band 8–9</button>
+            </div>
+          </div>
         </div>
 
         <div id="resultsSummary" class="results-summary"></div>
@@ -108,7 +132,9 @@
   window.APP_CONFIG = {
     startUrl: "{% url 'practice:test-start' %}",
     apiRoot: "/api/tests/",
-    totalQuestions: 10
+    totalQuestions: 10,
+    requestedLevel: "{{ requested_level|default:'all' }}",
+    requestedMode: "{{ requested_mode|default:'sentence' }}"
   };
 </script>
 <script defer src="{% static 'practice/app.js' %}"></script>
