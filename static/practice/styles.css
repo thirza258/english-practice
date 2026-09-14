@@ -43,6 +43,20 @@
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-pill: 4px;
+
+  /* Semantic aliases for writing mode and components */
+  --serif: var(--font-serif);
+  --text: var(--ink-primary);
+  --muted: var(--ink-secondary);
+  --soft: var(--ink-muted);
+  --line: var(--line-card);
+  --accent: var(--academic-gold);
+  --accent-2: var(--academic-blue);
+  --success: var(--ink-correct);
+  --danger: var(--ink-wrong);
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --shadow: var(--card-shadow);
 }
 
 * {
@@ -1633,5 +1647,494 @@ button:disabled {
   .primary-button,
   .secondary-button {
     width: 100%;
+  }
+}
+
+
+
+/* ---------------------------------------------------------------------------
+   WRITING MODE — TASK COMPOSER
+   --------------------------------------------------------------------------- */
+
+.writing-task-card {
+  padding: 26px 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(240, 181, 75, 0.3);
+  background: linear-gradient(180deg, rgba(240, 181, 75, 0.09), rgba(255, 255, 255, 0.03));
+}
+
+.writing-task-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.writing-badge,
+.writing-mode-badge {
+  border-color: rgba(240, 181, 75, 0.45);
+  background: rgba(240, 181, 75, 0.16);
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.76rem;
+}
+
+.writing-title {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: 1.6rem;
+}
+
+.writing-prompt {
+  margin: 0 0 18px;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.writing-guidance {
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--bg-sheet);
+}
+
+.writing-guidance ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.writing-requirements {
+  margin: 16px 0 0;
+  color: var(--soft);
+  font-size: 0.94rem;
+}
+
+.writing-composer {
+  margin-top: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.essay-input {
+  width: 100%;
+  min-height: 320px;
+  padding: 18px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--bg-sheet-alt);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 1.03rem;
+  line-height: 1.8;
+  resize: vertical;
+}
+
+.essay-input:focus {
+  outline: none;
+  border-color: rgba(240, 181, 75, 0.55);
+  box-shadow: 0 0 0 3px rgba(240, 181, 75, 0.14);
+}
+
+.essay-input::placeholder {
+  color: var(--soft);
+  opacity: 0.7;
+}
+
+.essay-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stat-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-sheet);
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.stat-chip.is-reached {
+  border-color: rgba(81, 213, 155, 0.45);
+  background: rgba(81, 213, 155, 0.14);
+  color: var(--success);
+}
+
+.stat-chip.is-pending {
+  border-color: rgba(240, 181, 75, 0.4);
+  background: rgba(240, 181, 75, 0.12);
+  color: var(--accent);
+}
+
+.writing-progress {
+  margin: 2px 0 0;
+}
+
+.writing-note {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--soft);
+}
+
+/* ---------------------------------------------------------------------------
+   WRITING MODE — BAND REPORT
+   --------------------------------------------------------------------------- */
+
+.writing-report {
+  display: grid;
+  gap: 20px;
+}
+
+.band-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(71, 209, 168, 0.35);
+  background: linear-gradient(135deg, #edf7f1, #fdf6e7);
+}
+
+.band-hero-score {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.band-value {
+  font-family: var(--serif);
+  font-size: 3.6rem;
+  line-height: 1;
+  color: var(--accent-2);
+}
+
+.band-scale {
+  font-size: 1.05rem;
+  color: var(--soft);
+}
+
+.band-hero-copy h3 {
+  margin: 4px 0 10px;
+  font-family: var(--serif);
+  font-size: 1.35rem;
+}
+
+.report-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.report-meta-item {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-sheet);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.criteria-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.criterion-card {
+  padding: 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--bg-sheet);
+}
+
+.criterion-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.criterion-label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.criterion-band {
+  font-family: var(--serif);
+  font-size: 1.7rem;
+  color: var(--accent);
+}
+
+.criterion-comment {
+  margin: 0 0 8px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.criterion-measured {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--soft);
+}
+
+.report-notes {
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(240, 181, 75, 0.35);
+  background: #fdf6e7;
+}
+
+.report-notes p {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.report-notes p:last-child {
+  margin-bottom: 0;
+}
+
+.report-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.report-block {
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--bg-sheet);
+}
+
+.report-block.is-positive {
+  border-color: rgba(81, 213, 155, 0.35);
+}
+
+.report-block.is-negative {
+  border-color: rgba(240, 181, 75, 0.35);
+}
+
+.report-block.is-revealed {
+  border-color: rgba(71, 209, 168, 0.35);
+  background: rgba(71, 209, 168, 0.07);
+}
+
+.report-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.report-list strong {
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.report-empty {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--soft);
+}
+
+.report-subblock {
+  margin-top: 18px;
+}
+
+.report-subtitle {
+  margin: 0 0 8px;
+  font-size: 0.86rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--soft);
+}
+
+.corrections-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.correction-card {
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--bg-sheet);
+}
+
+.correction-original {
+  margin: 0 0 6px;
+  color: var(--danger);
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 107, 107, 0.5);
+  line-height: 1.6;
+}
+
+.correction-fixed {
+  margin: 0 0 6px;
+  color: var(--success);
+  line-height: 1.6;
+}
+
+.correction-why {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--soft);
+  line-height: 1.6;
+}
+
+.upgrade-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.upgrade-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--soft);
+  border-bottom: 1px solid var(--line);
+}
+
+.upgrade-table td {
+  padding: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  color: var(--muted);
+  vertical-align: top;
+}
+
+.upgrade-table td:first-child {
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.upgrade-count {
+  color: var(--soft);
+  font-size: 0.82rem;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.metric-chip {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--bg-sheet);
+}
+
+.metric-chip span {
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--soft);
+}
+
+.metric-chip strong {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  color: var(--text);
+}
+
+.word-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.word-chip {
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-sheet);
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.word-chip.is-warning {
+  border-color: rgba(240, 181, 75, 0.45);
+  background: rgba(240, 181, 75, 0.12);
+  color: var(--accent);
+}
+
+.word-chip.is-target {
+  border-color: rgba(71, 209, 168, 0.45);
+  background: rgba(71, 209, 168, 0.12);
+  color: var(--accent-2);
+}
+
+.submitted-essay {
+  margin-top: 10px;
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: rgba(7, 17, 31, 0.5);
+  font-family: var(--serif);
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.writing-review-card {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.mode-card.is-writing {
+  border-color: rgba(240, 181, 75, 0.4);
+  background: linear-gradient(180deg, rgba(240, 181, 75, 0.08), rgba(255, 255, 255, 0.03));
+}
+
+.level-btn.is-writing-btn {
+  border-color: rgba(240, 181, 75, 0.35);
+}
+
+@media (max-width: 640px) {
+  .band-hero {
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .band-value {
+    font-size: 2.8rem;
+  }
+
+  .essay-input {
+    min-height: 260px;
+    padding: 14px 16px;
+  }
+
+  .upgrade-table td:first-child {
+    white-space: normal;
   }
 }

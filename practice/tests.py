@@ -1,16 +1,32 @@
 from __future__ import annotations
 
 import json
+import os
+from unittest import mock
+
 from django.test import TestCase
 from django.urls import reverse
 
-from .ai import _validate_paragraph, _validate_question
-from .models import ParagraphBankQuestion, QuestionBankQuestion, TestSession
+from . import nlp
+from .ai import (
+    _validate_paragraph,
+    _validate_question,
+    _validate_writing_report,
+    _writing_prompt,
+)
+from .models import (
+    ParagraphBankQuestion,
+    QuestionBankQuestion,
+    TestSession,
+    WritingPromptBankQuestion,
+)
 from .question_bank import PARAGRAPH_BANK, QUESTION_BANK, ParagraphBlueprint, QuestionBlueprint
 from .services import (
+    SUPPORTED_MODES,
     build_results,
     create_paragraph_test_state,
     create_test_state,
+    create_writing_test_state,
     current_question_payload,
     normalize_level,
     normalize_mode,
@@ -18,6 +34,7 @@ from .services import (
     public_question_payload,
     submit_answer,
 )
+from .writing_bank import WRITING_PROMPT_BANK
 
 
 class PracticePageTests(TestCase):
@@ -475,3 +492,688 @@ class VocabularyRepositoryAndAPITests(TestCase):
         err_response = self.client.get(reverse("practice:vocabulary-lookup"))
         self.assertEqual(err_response.status_code, 400)
         self.assertFalse(err_response.json()["ok"])
+
+
+class WritingAnalyzerTests(TestCase):
+    """The local measurements the model is never asked to make."""
+
+    WEAK = (
+        "i think working from home is good. it is good because you save time. many people say it is "
+        "good for them. but some people say it is bad because they feel alone. i think the good things "
+        "are more than the bad things so companies should let people work from home"
+    )
+
+    STRONG = (
+        "The proportion of employees working remotely has risen sharply, and opinion remains divided "
+        "over whether this development is beneficial.\n\n"
+        "The clearest benefit is the time reclaimed from commuting. Employees who previously spent two "
+        "hours travelling can devote that period to rest, which tends to improve wellbeing. "
+        "Furthermore, organisations that reduce office space obtain substantial savings.\n\n"
+        "Nevertheless, the drawbacks should not be dismissed. Informal conversation, which frequently "
+        "generates new ideas, is difficult to reproduce remotely. Junior staff may be disadvantaged, "
+        "since they acquire professional judgement by observing colleagues.\n\n"
+        "On balance, however, these problems appear soluble. Were companies to combine remote work with "
+        "regular meetings, the collaborative losses would largely be offset."
+    )
+
+    def test_counts_words_sentences_and_paragraphs(self) -> None:
+        metrics = nlp.analyze_writing(self.STRONG, min_words=180)
+
+        self.assertGreater(metrics["word_count"], 100)
+        self.assertGreater(metrics["sentence_count"], 5)
+        self.assertEqual(metrics["paragraph_count"], 4)
+        self.assertEqual(metrics["min_words"], 180)
+
+    def test_strong_writing_outscores_weak_writing(self) -> None:
+        weak = nlp.analyze_writing(self.WEAK, min_words=180)
+        strong = nlp.analyze_writing(self.STRONG, min_words=180)
+
+        self.assertGreater(strong["beyond_core_ratio"], weak["beyond_core_ratio"])
+        self.assertGreater(strong["root_type_token_ratio"], weak["root_type_token_ratio"])
+        self.assertGreater(
+            strong["local_bands"]["lexical_resource"],
+            weak["local_bands"]["lexical_resource"],
+        )
+        self.assertGreater(
+            strong["local_bands"]["coherence_cohesion"],
+            weak["local_bands"]["coherence_cohesion"],
+        )
+
+    def test_detects_repetition_linkers_and_mechanics(self) -> None:
+        weak = nlp.analyze_writing(self.WEAK, min_words=180)
+        strong = nlp.analyze_writing(self.STRONG, min_words=180)
+
+        self.assertTrue(any(item["word"] == "good" for item in weak["overused_words"]))
+        self.assertTrue(any(item["basic"] == "good" for item in weak["basic_word_upgrades"]))
+        self.assertTrue(weak["mechanics_issues"])
+
+        self.assertIn("contrast", strong["linker_groups_used"])
+        self.assertIn("conclusion", strong["linker_groups_used"])
+        self.assertTrue(strong["has_conclusion_signal"])
+        self.assertTrue(strong["academic_words_used"])
+
+    def test_referencing_counts_as_cohesion(self) -> None:
+        """Higher-band writing links ideas by referencing, not only by connectives."""
+
+        referencing = (
+            "Remote work reduces commuting time. This saving is substantial for many employees. "
+            "Such arrangements also cut office costs, and those savings can fund training. "
+            "The former benefits the individual; the latter benefits the organisation."
+        )
+        plain = (
+            "Remote work reduces commuting time. It saves a lot for many employees. "
+            "It also cuts office costs, and money can fund training. "
+            "One helps the person and one helps the company."
+        )
+
+        with_refs = nlp.analyze_writing(referencing, min_words=100)
+        without_refs = nlp.analyze_writing(plain, min_words=100)
+
+        self.assertGreaterEqual(with_refs["referencing_count"], 4)
+        self.assertEqual(without_refs["referencing_count"], 0)
+        self.assertGreater(
+            with_refs["local_bands"]["coherence_cohesion"],
+            without_refs["local_bands"]["coherence_cohesion"],
+        )
+        self.assertIn("refs=", with_refs["digest"])
+
+    def test_digest_is_short_and_carries_the_key_numbers(self) -> None:
+        metrics = nlp.analyze_writing(self.STRONG, min_words=180)
+        digest = metrics["digest"]
+
+        self.assertLess(len(digest), 400)
+        self.assertIn(f"words={metrics['word_count']}", digest)
+        self.assertIn("linkers=", digest)
+        self.assertNotIn("\n", digest)
+
+    def test_short_and_empty_text_are_handled(self) -> None:
+        for text in ("", "   ", "Hello.", "Working from home is good because you save time."):
+            metrics = nlp.analyze_writing(text, min_words=250)
+            self.assertFalse(metrics["meets_min_words"])
+            for score in metrics["local_bands"].values():
+                self.assertLessEqual(score, 5.0)
+
+    def test_word_count_does_not_depend_on_nltk(self) -> None:
+        """The count drives the length penalty, so it must be identical everywhere.
+
+        It also has to match the live counter in the browser, which uses the same
+        pattern. NLTK is used for sentence segmentation only.
+        """
+
+        text = "Dr. Smith doesn't agree. He said it's a work-life issue, i.e. a real one."
+        metrics = nlp.analyze_writing(text, min_words=100)
+
+        self.assertEqual(metrics["word_count"], len(nlp.WORD_RE.findall(text)))
+
+        with mock.patch.dict(os.environ, {"WRITING_DISABLE_NLTK": "1"}, clear=False):
+            nlp._NLTK_SENT = None  # force the probe to run again
+            try:
+                without_nltk = nlp.analyze_writing(text, min_words=100)
+            finally:
+                nlp._NLTK_SENT = None
+
+        self.assertEqual(without_nltk["word_count"], metrics["word_count"])
+
+    def test_overall_band_uses_ielts_rounding(self) -> None:
+        self.assertEqual(
+            nlp.overall_band(
+                {
+                    "task_response": 6.0,
+                    "coherence_cohesion": 6.5,
+                    "lexical_resource": 6.5,
+                    "grammatical_range": 6.0,
+                }
+            ),
+            6.5,
+        )
+        self.assertEqual(
+            nlp.overall_band(
+                {
+                    "task_response": 7.0,
+                    "coherence_cohesion": 7.0,
+                    "lexical_resource": 6.5,
+                    "grammatical_range": 6.5,
+                }
+            ),
+            7.0,
+        )
+        self.assertEqual(nlp.round_half_band(12.4), 9.0)
+        self.assertEqual(nlp.round_half_band(-3), 0.0)
+
+    def test_length_penalty_caps_task_response(self) -> None:
+        metrics = nlp.analyze_writing(self.STRONG, min_words=400)
+        bands, notes = nlp.apply_length_penalty(dict(metrics["local_bands"]), metrics)
+
+        self.assertLessEqual(bands["task_response"], 5.0)
+        self.assertTrue(notes)
+        self.assertIn("400-word minimum", notes[0])
+
+
+@mock.patch.dict(os.environ, {"WRITING_AI_ENABLED": "0"}, clear=False)
+class WritingModeServiceTests(TestCase):
+    """Writing mode end to end with no model configured."""
+
+    ESSAY = (
+        "Employers increasingly allow staff to work remotely, and the consequences of this shift "
+        "remain contested. Although the arrangement creates genuine difficulties for collaboration, "
+        "I would argue that its benefits are considerable when it is designed carefully.\n\n"
+        "The principal advantage is the time reclaimed from commuting. Employees who once spent two "
+        "hours travelling can devote that period to rest or family, which tends to improve both "
+        "wellbeing and productivity. Furthermore, organisations that reduce office space obtain "
+        "substantial savings, and these can be redirected towards training.\n\n"
+        "Nevertheless, the drawbacks deserve attention. Informal conversation, which frequently "
+        "generates new ideas, is difficult to reproduce on a video call. Junior employees in "
+        "particular may be disadvantaged, since they acquire professional judgement by observing "
+        "experienced colleagues at close quarters. The boundary between working hours and private "
+        "life also becomes indistinct when both occupy the same room.\n\n"
+        "On balance, however, these difficulties appear soluble. Were companies to combine remote work "
+        "with regular meetings in person, the collaborative losses would largely be offset. I would "
+        "therefore argue that flexible arrangements ought to be retained, provided that they are "
+        "designed deliberately rather than adopted by default."
+    )
+
+    def test_normalize_mode_accepts_writing(self) -> None:
+        self.assertEqual(normalize_mode("writing"), "writing")
+        self.assertEqual(normalize_mode("WRITING"), "writing")
+        self.assertIn("writing", SUPPORTED_MODES)
+
+    def test_create_writing_state_for_every_level(self) -> None:
+        for level in ["beginner", "intermediate", "advanced", "ielts_8_9", "all"]:
+            state = create_writing_test_state(level=level)
+
+            self.assertEqual(state["test_type"], "writing")
+            self.assertEqual(state["mode"], "writing")
+            self.assertEqual(state["level"], level)
+            self.assertEqual(state["total_tasks"], 1)
+            self.assertEqual(state["total_questions"], 1)
+            self.assertEqual(len(state["questions"]), 1)
+
+            task = state["questions"][0]
+            if level != "all":
+                self.assertEqual(task["level"], level)
+            self.assertTrue(task["title"])
+            self.assertTrue(task["prompt"])
+            self.assertGreaterEqual(task["min_words"], 80)
+            self.assertTrue(task["guidance"])
+            self.assertTrue(task["model_outline"])
+
+    def test_public_payload_hides_target_vocabulary_and_outline(self) -> None:
+        state = create_writing_test_state(level="advanced")
+        payload = current_question_payload(state)
+
+        self.assertIsNotNone(payload)
+        self.assertIn("prompt", payload)
+        self.assertIn("guidance", payload)
+        self.assertNotIn("useful_vocabulary", payload)
+        self.assertNotIn("model_outline", payload)
+        self.assertNotIn("submission", payload)
+
+    def test_submission_produces_a_band_report(self) -> None:
+        state = create_writing_test_state(level="intermediate")
+        result = submit_answer(state, self.ESSAY)
+        feedback = result["feedback"]
+
+        self.assertTrue(result["completed"])
+        self.assertEqual(feedback["assessed_by"], "measured")
+        self.assertEqual(len(feedback["criteria"]), 4)
+        self.assertEqual(
+            [criterion["key"] for criterion in feedback["criteria"]],
+            list(nlp.CRITERIA),
+        )
+        for criterion in feedback["criteria"]:
+            self.assertGreaterEqual(criterion["band"], 0.0)
+            self.assertLessEqual(criterion["band"], 9.0)
+            self.assertTrue(criterion["comment"])
+
+        self.assertGreater(feedback["overall_band"], 0)
+        self.assertTrue(feedback["strengths"])
+        self.assertEqual(feedback["essay"], self.ESSAY)
+        self.assertTrue(feedback["metrics"]["word_count"] > 150)
+        self.assertTrue(feedback["revealed"]["model_outline"])
+        self.assertTrue(feedback["revealed"]["useful_vocabulary"])
+        # No model configured, so the local analysis must say so.
+        self.assertTrue(any("local analysis" in note for note in feedback["notes"]))
+
+    def test_weak_writing_scores_below_strong_writing(self) -> None:
+        weak_state = create_writing_test_state(level="intermediate")
+        strong_state = create_writing_test_state(level="intermediate")
+
+        weak_essay = (
+            "I think working from home is good. It is good because you save time and money. "
+            "Many people say it is good for them. But some people say it is bad because they feel "
+            "alone at home. I think the good things are more than the bad things. So companies "
+            "should let people work from home if they want to do it."
+        )
+
+        weak = submit_answer(weak_state, weak_essay)["feedback"]
+        strong = submit_answer(strong_state, self.ESSAY)["feedback"]
+
+        self.assertLess(weak["overall_band"], strong["overall_band"])
+        self.assertLess(
+            weak["bands"]["lexical_resource"],
+            strong["bands"]["lexical_resource"],
+        )
+        self.assertTrue(weak["improvements"])
+
+    def test_under_length_response_caps_task_response(self) -> None:
+        state = create_writing_test_state(level="advanced")
+        state["questions"][0]["min_words"] = 250
+
+        short_essay = " ".join(
+            [
+                "Automation will undoubtedly displace a considerable number of existing roles,",
+                "yet the appropriate response is contested. Retraining programmes are frequently",
+                "proposed, although their effectiveness remains uncertain in practice.",
+            ]
+        )
+        feedback = submit_answer(state, short_essay)["feedback"]
+
+        self.assertLessEqual(feedback["bands"]["task_response"], 5.0)
+        self.assertTrue(any("capped" in note for note in feedback["notes"]))
+
+    def test_invalid_submissions_are_rejected(self) -> None:
+        for payload, fragment in (
+            (123, "must be sent as text"),
+            ({"essay": "x"}, "must be sent as text"),
+            ("Too short to mark.", "at least"),
+            ("x" * 20001, "too long"),
+        ):
+            state = create_writing_test_state(level="beginner")
+            with self.assertRaises(ValueError) as ctx:
+                submit_answer(state, payload)
+            self.assertIn(fragment, str(ctx.exception))
+
+    def test_resubmitting_the_same_task_is_rejected(self) -> None:
+        state = create_writing_test_state(level="intermediate")
+        submit_answer(state, self.ESSAY)
+
+        with self.assertRaises(ValueError):
+            submit_answer(state, self.ESSAY)
+
+    def test_results_bypass_the_topic_summary(self) -> None:
+        state = create_writing_test_state(level="ielts_8_9")
+        submit_answer(state, self.ESSAY)
+        results = build_results(state)
+
+        self.assertEqual(results["test_type"], "writing")
+        self.assertEqual(results["topic_summary"], [])
+        self.assertEqual(len(results["criteria_summary"]), 4)
+        self.assertGreater(results["overall_band"], 0)
+        self.assertEqual(results["percentage"], round(results["overall_band"] / 9 * 100))
+        self.assertEqual(len(results["tasks"]), 1)
+        self.assertIn("metrics", results["tasks"][0])
+        json.dumps(results)
+
+    def test_session_state_round_trips_through_the_database(self) -> None:
+        state = create_writing_test_state(level="advanced")
+        submit_answer(state, self.ESSAY)
+        session = TestSession.create_from_state(state)
+
+        self.assertEqual(session.test_type, "writing")
+        restored = session.to_state()
+        self.assertEqual(restored["test_type"], "writing")
+        self.assertEqual(restored["questions"][0]["submission"]["essay"], self.ESSAY)
+        self.assertTrue(build_results(restored)["overall_band"] > 0)
+
+
+@mock.patch.dict(os.environ, {"WRITING_AI_ENABLED": "0"}, clear=False)
+class WritingApiTests(TestCase):
+    def test_writing_test_lifecycle_over_the_api(self) -> None:
+        start = self.client.post(
+            reverse("practice:test-start"),
+            data=json.dumps({"level": "intermediate", "mode": "writing"}),
+            content_type="application/json",
+        )
+        self.assertEqual(start.status_code, 200)
+        start_data = start.json()
+
+        self.assertEqual(start_data["mode"], "writing")
+        self.assertEqual(start_data["test_type"], "writing")
+        self.assertEqual(start_data["total_items"], 1)
+        task = start_data["question"]
+        self.assertIn("prompt", task)
+        self.assertNotIn("model_outline", task)
+
+        essay = WritingModeServiceTests.ESSAY
+        answer = self.client.post(
+            reverse("practice:test-answer", kwargs={"test_id": start_data["test_id"]}),
+            data=json.dumps({"essay": essay}),
+            content_type="application/json",
+        )
+        self.assertEqual(answer.status_code, 200)
+        data = answer.json()
+
+        self.assertTrue(data["ok"])
+        self.assertEqual(data["mode"], "writing")
+        # Regression: the sentence branch used to upper-case and discard the body.
+        self.assertEqual(data["feedback"]["essay"], essay)
+        self.assertIn("criteria", data["feedback"])
+        self.assertIn("results", data)
+        self.assertGreater(data["results"]["overall_band"], 0)
+
+    def test_short_submission_returns_a_readable_error(self) -> None:
+        start = self.client.post(
+            reverse("practice:test-start"),
+            data=json.dumps({"level": "beginner", "mode": "writing"}),
+            content_type="application/json",
+        ).json()
+
+        response = self.client.post(
+            reverse("practice:test-answer", kwargs={"test_id": start["test_id"]}),
+            data=json.dumps({"essay": "Too short."}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("at least", response.json()["error"])
+
+    def test_retry_can_switch_into_writing_mode(self) -> None:
+        start = self.client.post(
+            reverse("practice:test-start"),
+            data=json.dumps({"level": "all", "mode": "sentence"}),
+            content_type="application/json",
+        ).json()
+
+        retry = self.client.post(
+            reverse("practice:test-retry", kwargs={"test_id": start["test_id"]}),
+            data=json.dumps({"level": "advanced", "mode": "writing"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(retry.status_code, 200)
+        data = retry.json()
+        self.assertEqual(data["mode"], "writing")
+        self.assertEqual(data["level"], "advanced")
+        self.assertIn("prompt", data["question"])
+
+    def test_completed_writing_session_is_restored_on_the_page(self) -> None:
+        start = self.client.post(
+            reverse("practice:test-start"),
+            data=json.dumps({"level": "intermediate", "mode": "writing"}),
+            content_type="application/json",
+        ).json()
+        self.client.post(
+            reverse("practice:test-answer", kwargs={"test_id": start["test_id"]}),
+            data=json.dumps({"essay": WritingModeServiceTests.ESSAY}),
+            content_type="application/json",
+        )
+
+        page = self.client.get(reverse("practice:test") + "?mode=writing")
+
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, "initial-state-data")
+        self.assertContains(page, "initial-results-data")
+
+        results = self.client.get(
+            reverse("practice:test-results", kwargs={"test_id": start["test_id"]})
+        )
+        self.assertEqual(results.status_code, 200)
+        self.assertGreater(results.json()["overall_band"], 0)
+
+    def test_pages_expose_the_writing_mode(self) -> None:
+        landing = self.client.get(reverse("practice:landing"))
+        self.assertContains(landing, f'{reverse("practice:test")}?mode=writing&level=all')
+        self.assertContains(landing, f'{reverse("practice:test")}?mode=writing&level=ielts_8_9')
+
+        page = self.client.get(reverse("practice:test") + "?mode=writing&level=advanced")
+        self.assertContains(page, 'requestedMode: "writing"')
+        self.assertContains(page, 'data-mode="writing"')
+
+
+class WritingEvaluationPromptTests(TestCase):
+    """The request stays small and the reply is validated before use."""
+
+    METRICS_DIGEST = (
+        "words=212 sents=13 paras=4 | rttr=9.8 beyond_core=0.52 academic=7 long=0.24 | "
+        "avg_sent=16.3 sd=5.1 complex=0.62 compound=0.15 passive=3 | linkers=cause,contrast,conclusion"
+    )
+    LOCAL_BANDS = {
+        "task_response": 6.5,
+        "coherence_cohesion": 7.0,
+        "lexical_resource": 7.5,
+        "grammatical_range": 7.0,
+    }
+
+    def _prompt(self, essay: str) -> list[dict[str, str]]:
+        return _writing_prompt(
+            essay=essay,
+            digest=self.METRICS_DIGEST,
+            local_bands=self.LOCAL_BANDS,
+            task_title="Working From Home",
+            task_prompt="Discuss the advantages and disadvantages of remote work.",
+            level="advanced",
+        )
+
+    def test_prompt_sends_the_digest_instead_of_raw_statistics(self) -> None:
+        messages = self._prompt("A short response about remote work. " * 10)
+        user = messages[1]["content"]
+
+        self.assertEqual(messages[0]["role"], "system")
+        self.assertIn(self.METRICS_DIGEST, user)
+        self.assertIn("Working From Home", user)
+        self.assertIn("task_response=6.5", user)
+        # The whole request stays compact: no metric dump, no descriptor text.
+        self.assertLess(len(user), 4000)
+        self.assertNotIn("linkers_by_group", user)
+
+    def test_long_essays_are_truncated(self) -> None:
+        essay = " ".join(["consideration"] * 900)
+        user = self._prompt(essay)[1]["content"]
+
+        self.assertIn("[...truncated]", user)
+        self.assertLess(user.count("consideration"), 900)
+
+    def test_report_validation_normalises_the_short_key_shape(self) -> None:
+        report = _validate_writing_report(
+            {
+                "tr": [6.4, "  Addresses both sides   but the conclusion is thin.  "],
+                "cc": [7, "Clear paragraphing."],
+                "lr": {"band": "7.5", "comment": "Precise, varied lexis."},
+                "gra": [12, "Accurate."],
+                "str": ["Strong topic sentences", "", "Good range of linkers"],
+                "imp": ["Develop the second body paragraph"],
+                "fix": [
+                    {"o": "the datas show", "c": "the data show", "w": "data is plural"},
+                    {"o": "", "c": "dropped because it has no original"},
+                ],
+                "voc": [
+                    {"b": "good", "u": "beneficial, advantageous"},
+                    {"b": "", "u": "dropped"},
+                ],
+            }
+        )
+
+        self.assertEqual(report["bands"]["task_response"], 6.5)
+        self.assertEqual(report["bands"]["coherence_cohesion"], 7.0)
+        self.assertEqual(report["bands"]["lexical_resource"], 7.5)
+        self.assertEqual(report["bands"]["grammatical_range"], 9.0)
+        self.assertEqual(
+            report["comments"]["task_response"],
+            "Addresses both sides but the conclusion is thin.",
+        )
+        self.assertEqual(report["strengths"], ["Strong topic sentences", "Good range of linkers"])
+        self.assertEqual(len(report["corrections"]), 1)
+        self.assertEqual(report["corrections"][0]["original"], "the datas show")
+        self.assertEqual(len(report["vocabulary_upgrades"]), 1)
+
+    def test_missing_bands_are_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            _validate_writing_report({"tr": [6.0, "ok"], "cc": [6.0, "ok"], "lr": [6.0, "ok"]})
+
+
+class WritingPromptBankTests(TestCase):
+    def test_bank_seeds_every_level(self) -> None:
+        WritingPromptBankQuestion.objects.all().delete()
+        created = WritingPromptBankQuestion.seed_from_static_bank()
+
+        self.assertEqual(created, len(WRITING_PROMPT_BANK))
+        for level in ("beginner", "intermediate", "advanced", "ielts_8_9"):
+            self.assertGreaterEqual(
+                WritingPromptBankQuestion.objects.filter(level=level).count(),
+                5,
+                f"too few {level} writing prompts",
+            )
+
+    def test_seeding_is_idempotent(self) -> None:
+        WritingPromptBankQuestion.seed_from_static_bank()
+        before = WritingPromptBankQuestion.objects.count()
+        WritingPromptBankQuestion.seed_from_static_bank()
+
+        self.assertEqual(WritingPromptBankQuestion.objects.count(), before)
+
+    def test_blueprint_round_trip(self) -> None:
+        WritingPromptBankQuestion.seed_from_static_bank()
+        entry = WritingPromptBankQuestion.objects.filter(level="ielts_8_9").first()
+        blueprint = entry.to_blueprint()
+
+        self.assertEqual(blueprint.level, "ielts_8_9")
+        self.assertGreaterEqual(blueprint.min_words, 250)
+        self.assertTrue(blueprint.guidance)
+        self.assertTrue(blueprint.useful_vocabulary)
+        self.assertTrue(blueprint.model_outline)
+
+    def test_random_sample_respects_the_level(self) -> None:
+        WritingPromptBankQuestion.seed_from_static_bank()
+        sampled = WritingPromptBankQuestion.random_sample(3, level="beginner")
+
+        self.assertEqual(len(sampled), 3)
+        for item in sampled:
+            self.assertEqual(item.level, "beginner")
+
+
+@mock.patch.dict(
+    os.environ,
+    {"WRITING_AI_ENABLED": "1", "OPENROUTER_API_KEY": "test-key"},
+    clear=False,
+)
+class WritingExaminerMergeTests(TestCase):
+    """How an examiner reply is combined with the local measurements."""
+
+    EXAMINER_REPLY = {
+        "bands": {
+            "task_response": 8.0,
+            "coherence_cohesion": 7.5,
+            "lexical_resource": 8.0,
+            "grammatical_range": 7.5,
+        },
+        "comments": {
+            "task_response": "Both sides are addressed with a clear position.",
+            "coherence_cohesion": "Logical paragraphing throughout.",
+            "lexical_resource": "Precise and varied lexis.",
+            "grammatical_range": "A wide range of accurate structures.",
+        },
+        "strengths": ["Clear thesis", "Well-chosen examples"],
+        "improvements": ["Develop the counter-argument further"],
+        "corrections": [
+            {"original": "the datas show", "corrected": "the data show", "why": "data is plural"}
+        ],
+        "vocabulary_upgrades": [{"basic": "important", "stronger": "pivotal, decisive"}],
+        "usage": {"prompt_tokens": 480, "completion_tokens": 260, "total_tokens": 740},
+        "model": "openai/gpt-4o-mini",
+    }
+
+    def test_examiner_bands_are_used_and_measurements_are_kept(self) -> None:
+        state = create_writing_test_state(level="intermediate")
+        essay = WritingModeServiceTests.ESSAY
+
+        with mock.patch(
+            "practice.services.evaluate_writing",
+            return_value=dict(self.EXAMINER_REPLY),
+        ) as evaluator:
+            feedback = submit_answer(state, essay)["feedback"]
+
+        call = evaluator.call_args.kwargs
+        self.assertEqual(call["essay"], essay)
+        self.assertIn("words=", call["digest"])
+        self.assertEqual(set(call["local_bands"]), set(nlp.CRITERIA))
+        self.assertTrue(call["task_prompt"])
+
+        self.assertEqual(feedback["assessed_by"], "examiner")
+        self.assertEqual(feedback["bands"]["lexical_resource"], 8.0)
+        self.assertEqual(feedback["overall_band"], 8.0)
+        self.assertEqual(feedback["strengths"], ["Clear thesis", "Well-chosen examples"])
+        self.assertEqual(feedback["model"], "openai/gpt-4o-mini")
+        self.assertEqual(feedback["usage"]["total_tokens"], 740)
+
+        # The measured view survives alongside the examiner's. A strong response
+        # can legitimately leave nothing for the local analysis to flag.
+        self.assertTrue(feedback["measured_bands"])
+        self.assertIsInstance(feedback["measured_observations"], list)
+        for criterion in feedback["criteria"]:
+            self.assertIn("measured_band", criterion)
+        self.assertTrue(feedback["metrics"]["word_count"] > 150)
+
+        # Examiner suggestions rank ahead of measured ones, with no duplicates.
+        upgrades = feedback["vocabulary_upgrades"]
+        self.assertEqual(upgrades[0]["basic"], "important")
+        self.assertEqual(upgrades[0]["source"], "examiner")
+        self.assertEqual(len({item["basic"].lower() for item in upgrades}), len(upgrades))
+
+    def test_measured_observations_accompany_the_examiner_review(self) -> None:
+        state = create_writing_test_state(level="intermediate")
+        weak_essay = (
+            "I think working from home is good. It is good because you save time and money. "
+            "Many people say it is good for them. But some people say it is bad because they "
+            "feel alone at home. I think the good things are more than the bad things. So "
+            "companies should let people work from home if they really want to do it."
+        )
+
+        with mock.patch("practice.services.evaluate_writing", return_value=dict(self.EXAMINER_REPLY)):
+            feedback = submit_answer(state, weak_essay)["feedback"]
+
+        self.assertEqual(feedback["assessed_by"], "examiner")
+        self.assertTrue(feedback["measured_observations"])
+        self.assertTrue(any("good" in item for item in feedback["measured_observations"]))
+        self.assertTrue(any(item["source"] == "measured" for item in feedback["vocabulary_upgrades"]))
+
+    def test_length_penalty_overrides_a_generous_examiner(self) -> None:
+        state = create_writing_test_state(level="advanced")
+        state["questions"][0]["min_words"] = 250
+
+        # Long enough to reach the examiner, far short of the 250-word minimum.
+        short_essay = (
+            "Automation will displace a considerable number of existing roles, yet the appropriate "
+            "response remains contested. Retraining programmes are frequently proposed, although "
+            "their effectiveness is uncertain and their cost substantial. Some economists argue that "
+            "the productivity gains should instead be redistributed, since displaced workers rarely "
+            "return to equivalent employment. Governments should therefore proceed cautiously, "
+            "weighing the transitional damage against the long-term benefit."
+        )
+
+        with mock.patch("practice.services.evaluate_writing", return_value=dict(self.EXAMINER_REPLY)):
+            feedback = submit_answer(state, short_essay)["feedback"]
+
+        self.assertEqual(feedback["assessed_by"], "examiner")
+        self.assertLessEqual(feedback["bands"]["task_response"], 5.0)
+        self.assertTrue(any("capped" in note for note in feedback["notes"]))
+
+    def test_examiner_failure_falls_back_to_the_local_report(self) -> None:
+        state = create_writing_test_state(level="intermediate")
+
+        with mock.patch(
+            "practice.services.evaluate_writing",
+            side_effect=RuntimeError("connection reset"),
+        ):
+            feedback = submit_answer(state, WritingModeServiceTests.ESSAY)["feedback"]
+
+        self.assertEqual(feedback["assessed_by"], "measured")
+        self.assertIn("connection reset", feedback["ai_error"])
+        self.assertEqual(feedback["bands"], feedback["measured_bands"])
+        self.assertTrue(feedback["strengths"])
+        self.assertTrue(any("could not be reached" in note for note in feedback["notes"]))
+
+    def test_very_short_response_never_calls_the_model(self) -> None:
+        state = create_writing_test_state(level="beginner")
+        # Above the submission floor, below the threshold for an examiner review.
+        essay = (
+            "Working from home saves a lot of time for many people today. It is good "
+            "because you do not travel. But it can also be lonely sometimes."
+        )
+
+        with mock.patch("practice.services.evaluate_writing") as evaluator:
+            feedback = submit_answer(state, essay)["feedback"]
+
+        evaluator.assert_not_called()
+        self.assertEqual(feedback["assessed_by"], "measured")
+        self.assertTrue(any("scored locally only" in note for note in feedback["notes"]))
+

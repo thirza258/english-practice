@@ -448,3 +448,208 @@ def generate_paragraph_blueprints(count: int, level: str = "all") -> list[Paragr
         return [_validate_paragraph(p, default_level=default_level) for p in paragraphs]
 
     return _generate_with_retries(_attempt, "paragraph")
+
+
+# -----------------------------------------------------------------------------
+# IELTS WRITING EVALUATION
+# -----------------------------------------------------------------------------
+#
+# Token budget: every countable fact (length, repetition, clause ratios, linker
+# coverage, mechanics) is measured in ``practice.nlp`` and handed over as a
+# single digest line, so the model is paid only for judgement. The essay is
+# truncated, the reply uses short keys, and the output is capped.
+
+WRITING_MODEL = os.environ.get("OPENROUTER_WRITING_MODEL") or OPENROUTER_MODEL
+WRITING_MAX_ESSAY_WORDS = int(os.environ.get("WRITING_MAX_ESSAY_WORDS", "450"))
+WRITING_MAX_OUTPUT_TOKENS = int(os.environ.get("WRITING_MAX_OUTPUT_TOKENS", "700"))
+WRITING_AI_TIMEOUT = float(os.environ.get("WRITING_AI_TIMEOUT", "45"))
+
+WRITING_LEVEL_TARGET: dict[str, str] = {
+    "beginner": "A1-A2 learner: reward clear simple sentences; do not demand academic range.",
+    "intermediate": "B1-B2 learner: expect clear paragraphing and some complex sentences.",
+    "advanced": "C1-C2 learner: expect sustained argument and precise, varied lexis.",
+    "ielts_8_9": "Band 8-9 candidate: expect rare precise lexis and flexible, accurate syntax.",
+    "all": "Mixed level: apply the standard descriptors without adjustment.",
+}
+
+_WRITING_SYSTEM = (
+    "You are an IELTS writing examiner. Score the response against the four Writing Task 2 band "
+    "descriptors using whole or half bands from 1 to 9. Be strict and consistent.\n"
+    "The METRICS line has already been measured programmatically: trust it and never recount "
+    "words, sentences, or repetitions.\n"
+    "Weight two things heavily: lexical range (variety and precision of vocabulary, penalising "
+    "repeated basic words) and structure (paragraph organisation, topic sentences, and correct, "
+    "varied sentence construction).\n"
+    "Quote only text that actually appears in the response.\n"
+    "Return only JSON, no markdown, in exactly this shape:\n"
+    '{"tr":[band,"comment"],"cc":[band,"comment"],"lr":[band,"comment"],"gra":[band,"comment"],'
+    '"str":["strength"],"imp":["improvement"],'
+    '"fix":[{"o":"original phrase","c":"corrected","w":"why"}],'
+    '"voc":[{"b":"basic word used","u":"stronger replacement"}]}\n'
+    "Limits: each comment at most 25 words; str and imp at most 3 items each; "
+    "fix at most 5 items; voc at most 6 items; every string plain text."
+)
+
+
+def _writing_prompt(
+    *,
+    essay: str,
+    digest: str,
+    local_bands: dict[str, float],
+    task_title: str,
+    task_prompt: str,
+    level: str,
+) -> list[dict[str, str]]:
+    level_key = level.lower() if level.lower() in WRITING_LEVEL_TARGET else "all"
+
+    words = essay.split()
+    if len(words) > WRITING_MAX_ESSAY_WORDS:
+        essay = " ".join(words[:WRITING_MAX_ESSAY_WORDS]) + " [...truncated]"
+
+    prior = " ".join(f"{key}={value}" for key, value in sorted(local_bands.items()))
+
+    user = (
+        f"LEVEL: {WRITING_LEVEL_TARGET[level_key]}\n"
+        f"TASK: {task_title} - {task_prompt}\n"
+        f"METRICS: {digest}\n"
+        f"STATISTICAL PRIOR (from metrics only, may be wrong about content): {prior}\n"
+        "RESPONSE:\n"
+        f"{essay}"
+    )
+
+    return [
+        {"role": "system", "content": _WRITING_SYSTEM},
+        {"role": "user", "content": user},
+    ]
+
+
+_CRITERION_KEYS = (
+    ("tr", "task_response"),
+    ("cc", "coherence_cohesion"),
+    ("lr", "lexical_resource"),
+    ("gra", "grammatical_range"),
+)
+
+
+def _clean_text(value: Any, limit: int = 400) -> str:
+    return " ".join(str(value or "").split())[:limit]
+
+
+def _criterion_pair(raw: Any) -> tuple[float | None, str]:
+    """Accept ``[band, comment]`` and also ``{"band": .., "comment": ..}``."""
+
+    band: Any = None
+    comment: Any = ""
+
+    if isinstance(raw, (list, tuple)) and raw:
+        band = raw[0]
+        comment = raw[1] if len(raw) > 1 else ""
+    elif isinstance(raw, dict):
+        band = raw.get("band", raw.get("b"))
+        comment = raw.get("comment", raw.get("c", ""))
+    elif isinstance(raw, (int, float, str)):
+        band = raw
+
+    try:
+        band_value: float | None = float(band)
+    except (TypeError, ValueError):
+        band_value = None
+
+    return band_value, _clean_text(comment, 300)
+
+
+def _validate_writing_report(data: dict[str, Any]) -> dict[str, Any]:
+    from .nlp import round_half_band
+
+    bands: dict[str, float] = {}
+    comments: dict[str, str] = {}
+    for short_key, name in _CRITERION_KEYS:
+        band, comment = _criterion_pair(data.get(short_key))
+        if band is None:
+            raise ValueError(f"AI writing report is missing a band for {name}.")
+        bands[name] = round_half_band(band)
+        comments[name] = comment
+
+    def string_list(key: str, limit: int) -> list[str]:
+        raw = data.get(key) or []
+        if not isinstance(raw, list):
+            return []
+        return [_clean_text(item, 240) for item in raw if _clean_text(item, 240)][:limit]
+
+    corrections = []
+    for item in (data.get("fix") or [])[:5]:
+        if not isinstance(item, dict):
+            continue
+        original = _clean_text(item.get("o") or item.get("original"), 240)
+        corrected = _clean_text(item.get("c") or item.get("corrected"), 240)
+        if not original or not corrected:
+            continue
+        corrections.append(
+            {
+                "original": original,
+                "corrected": corrected,
+                "why": _clean_text(item.get("w") or item.get("why"), 240),
+            }
+        )
+
+    upgrades = []
+    for item in (data.get("voc") or [])[:6]:
+        if not isinstance(item, dict):
+            continue
+        basic = _clean_text(item.get("b") or item.get("basic"), 80)
+        stronger = _clean_text(item.get("u") or item.get("upgrade"), 160)
+        if basic and stronger:
+            upgrades.append({"basic": basic, "stronger": stronger})
+
+    return {
+        "bands": bands,
+        "comments": comments,
+        "strengths": string_list("str", 3),
+        "improvements": string_list("imp", 3),
+        "corrections": corrections,
+        "vocabulary_upgrades": upgrades,
+    }
+
+
+def evaluate_writing(
+    *,
+    essay: str,
+    digest: str,
+    local_bands: dict[str, float],
+    task_title: str,
+    task_prompt: str,
+    level: str = "all",
+) -> dict[str, Any]:
+    """Ask the model for band scores and targeted feedback only.
+
+    Raises on any failure so the caller can fall back to the local assessment.
+    """
+
+    client = _client()
+    response = client.chat.completions.create(
+        model=WRITING_MODEL,
+        messages=_writing_prompt(
+            essay=essay,
+            digest=digest,
+            local_bands=local_bands,
+            task_title=task_title,
+            task_prompt=task_prompt,
+            level=level,
+        ),
+        temperature=0.2,
+        max_tokens=WRITING_MAX_OUTPUT_TOKENS,
+        response_format={"type": "json_object"},
+        timeout=WRITING_AI_TIMEOUT,
+    )
+
+    report = _validate_writing_report(json.loads(response.choices[0].message.content or "{}"))
+
+    usage = getattr(response, "usage", None)
+    report["usage"] = {
+        "prompt_tokens": getattr(usage, "prompt_tokens", None),
+        "completion_tokens": getattr(usage, "completion_tokens", None),
+        "total_tokens": getattr(usage, "total_tokens", None),
+    }
+    report["model"] = WRITING_MODEL
+    return report
+

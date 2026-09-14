@@ -1,10 +1,10 @@
 {% extends "practice/base.html" %}
 {% load static %}
 
-{% block title %}English Grammar & Paragraph Practice{% endblock %}
-{% block meta_description %}Practice English grammar with fill-the-blank paragraphs and sentence tests, with instant feedback for every answer.{% endblock %}
-{% block og_title %}English Grammar & Paragraph Practice{% endblock %}
-{% block og_description %}Practice English grammar with fill-the-blank paragraphs and sentence tests, with instant feedback for every answer.{% endblock %}
+{% block title %}English Grammar, Paragraph & IELTS Writing Practice{% endblock %}
+{% block meta_description %}Practice English with sentence diagnostics, multi-blank paragraph cloze exercises, and IELTS writing tasks scored for vocabulary range, paragraph structure, cohesion, and grammatical accuracy.{% endblock %}
+{% block og_title %}English Grammar, Paragraph & IELTS Writing Practice{% endblock %}
+{% block og_description %}Start a hidden-topic grammar diagnostic, a paragraph cloze exercise, or an IELTS writing task with an estimated band score.{% endblock %}
 {% block body_class %}landing-body{% endblock %}
 {% block head_extra %}
 <script type="application/ld+json">
@@ -12,7 +12,7 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "English Practice Diagnostic",
-    "description": "An interactive English grammar diagnostic featuring both sentence and multi-blank paragraph builder modes divided by English proficiency level.",
+    "description": "An interactive English practice app with sentence diagnostics, multi-blank paragraph builder exercises, and IELTS writing tasks scored against the four band descriptors.",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Web",
     "url": "{{ canonical_url }}"
@@ -42,11 +42,12 @@
     <div class="masthead-main">
       <h1 class="book-title" data-i18n="mainTitle">Grammar and paragraph practice.</h1>
       <p class="book-subtitle" data-i18n="subtitle">
-        Short diagnostic tests and fill-the-blank paragraphs with instant feedback. Every answer comes with the rule explained — from beginner (A1) to IELTS band 9.
+        Short diagnostic tests, fill-the-blank paragraphs, and IELTS writing with instant feedback. Every answer comes with the rule explained — from beginner (A1) to IELTS band 9.
       </p>
 
       <div class="masthead-actions">
         <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button" data-i18n="startParagraphBtn">Start paragraph test</a>
+        <a href="{% url 'practice:test' %}?mode=writing&level=all" class="secondary-button" data-i18n="startWritingBtn">IELTS Writing</a>
         <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button" data-i18n="startSentenceBtn">Start sentence test</a>
       </div>
     </div>
@@ -55,7 +56,7 @@
   <main class="landing-layout">
     <section class="book-card practice-modes-section" aria-label="Practice Modes">
       <div class="section-heading">
-        <h2 data-i18n="section1Title">Two practice modes</h2>
+        <h2 data-i18n="section1Title">Three practice modes</h2>
       </div>
 
       <div class="mode-grid">
@@ -75,6 +76,27 @@
           </ul>
           <div class="mode-cta-row">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button" data-i18n="mode1Btn">Start paragraph test</a>
+          </div>
+        </article>
+
+        <article class="mode-card is-writing">
+          <div class="mode-badge-row">
+            <span class="mode-badge writing-mode-badge">IELTS Writing</span>
+            <span class="mode-meta">Scored Response</span>
+          </div>
+          <h3>Writing Practice &amp; Band Score</h3>
+          <p class="mode-desc">
+            Answer a real writing task, then receive an estimated IELTS band for Task Response, Coherence
+            &amp; Cohesion, Lexical Resource, and Grammatical Range. Your text is measured with NLTK and
+            spaCy before it is scored, so the feedback cites your actual numbers.
+          </p>
+          <ul class="mode-bullets">
+            <li>Vocabulary range, repetition, and academic word use measured</li>
+            <li>Paragraph structure, cohesive devices, and clause variety checked</li>
+            <li>Corrections and stronger word choices for your own sentences</li>
+          </ul>
+          <div class="mode-cta-row">
+            <a href="{% url 'practice:test' %}?mode=writing&level=all" class="primary-button">Start Writing Task</a>
           </div>
         </article>
 
@@ -102,7 +124,7 @@
     <section class="book-card level-section" aria-label="Select English Level">
       <div class="section-heading">
         <h2 data-i18n="section2Title">Choose your level</h2>
-        <p class="level-intro" data-i18n="section2Intro">Every level works in both modes. Choose “All levels” for a mixed diagnostic.</p>
+        <p class="level-intro" data-i18n="section2Intro">Every level works across all modes. Choose “All levels” for a mixed diagnostic.</p>
       </div>
 
       <div class="level-grid">
@@ -117,6 +139,7 @@
           </ul>
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=beginner" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=beginner" class="secondary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
             <a href="{% url 'practice:test' %}?mode=sentence&level=beginner" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
           </div>
         </article>
@@ -132,6 +155,7 @@
           </ul>
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=intermediate" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=intermediate" class="secondary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
             <a href="{% url 'practice:test' %}?mode=sentence&level=intermediate" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
           </div>
         </article>
@@ -147,6 +171,7 @@
           </ul>
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=advanced" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=advanced" class="secondary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
             <a href="{% url 'practice:test' %}?mode=sentence&level=advanced" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
           </div>
         </article>
@@ -162,6 +187,7 @@
           </ul>
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=ielts_8_9" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=ielts_8_9" class="secondary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
             <a href="{% url 'practice:test' %}?mode=sentence&level=ielts_8_9" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
           </div>
         </article>
@@ -177,6 +203,7 @@
           </ul>
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=all" class="secondary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
             <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
           </div>
         </article>
@@ -245,9 +272,10 @@
         mainTitle: "Grammar and paragraph practice.",
         subtitle: "Short diagnostic tests and fill-the-blank paragraphs with instant feedback. Every answer comes with the rule explained — from beginner (A1) to IELTS band 9.",
         startParagraphBtn: "Start paragraph test",
+        startWritingBtn: "IELTS Writing",
         startSentenceBtn: "Start sentence test",
 
-        section1Title: "Two practice modes",
+        section1Title: "Three practice modes",
         mode1Badge: "Paragraph mode",
         mode1Meta: "Fill the blanks",
         mode1Title: "Paragraph practice",
@@ -267,7 +295,7 @@
         mode2Btn: "Start sentence test",
 
         section2Title: "Choose your level",
-        section2Intro: "Every level works in both modes. Choose “All levels” for a mixed diagnostic.",
+        section2Intro: "Every level works across all modes. Choose “All levels” for a mixed diagnostic.",
 
         levelBeginnerTitle: "Beginner",
         levelBeginnerDesc: "Simple tenses, subject pronouns, basic conjunctions (and, but, because, so), and simple sentence structures.",
@@ -300,6 +328,7 @@
         levelAllBullet3: "Shows your weak points",
 
         paragraphPracticeBtn: "Paragraph practice",
+        writingPracticeBtn: "Writing practice",
         sentencePracticeBtn: "Sentence practice",
 
         feat1Title: "Paragraphs build cohesion",
@@ -333,9 +362,10 @@
         mainTitle: "Latihan tata bahasa dan paragraf bahasa Inggris.",
         subtitle: "Tes diagnostik singkat dan paragraf rumpang dengan umpan balik langsung. Setiap jawaban disertai penjelasan kaidahnya — dari pemula (A1) hingga IELTS band 9.",
         startParagraphBtn: "Mulai tes paragraf",
+        startWritingBtn: "Latihan Menulis IELTS",
         startSentenceBtn: "Mulai tes kalimat",
 
-        section1Title: "Dua mode latihan",
+        section1Title: "Tiga mode latihan",
         mode1Badge: "Mode paragraf",
         mode1Meta: "Isi bagian rumpang",
         mode1Title: "Latihan paragraf",
@@ -355,7 +385,7 @@
         mode2Btn: "Mulai tes kalimat",
 
         section2Title: "Pilih tingkat Anda",
-        section2Intro: "Setiap tingkat tersedia di kedua mode. Pilih “Semua tingkat” untuk diagnostik campuran.",
+        section2Intro: "Setiap tingkat tersedia di semua mode. Pilih “Semua tingkat” untuk diagnostik campuran.",
 
         levelBeginnerTitle: "Pemula",
         levelBeginnerDesc: "Tenses sederhana, kata ganti subjek, kata hubung dasar (and, but, because, so), dan struktur kalimat sederhana.",
@@ -388,6 +418,7 @@
         levelAllBullet3: "Menunjukkan titik lemah Anda",
 
         paragraphPracticeBtn: "Latihan paragraf",
+        writingPracticeBtn: "Latihan menulis",
         sentencePracticeBtn: "Latihan kalimat",
 
         feat1Title: "Paragraf melatih kohesi",

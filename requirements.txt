@@ -2,3 +2,10 @@ Django>=5.1,<6.0
 gunicorn>=23,<24
 openai>=1.40,<2
 whitenoise>=6.8.0,<7
+
+# Local analysis for writing mode. NLTK handles tokenisation; spaCy adds
+# dependency-based clause and passive detection. Both are optional at runtime -
+# practice/nlp.py falls back to regex analysis if either is missing or its data
+# has not been downloaded. Drop the spacy line for a much smaller image.
+nltk>=3.9,<4
+spacy>=3.7,<4

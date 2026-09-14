@@ -9,7 +9,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && python -m nltk.downloader -d /usr/share/nltk_data punkt punkt_tab stopwords \
+    && python -m spacy download en_core_web_sm
 
 COPY . /app/
 RUN python manage.py collectstatic --noinput

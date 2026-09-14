@@ -57,6 +57,8 @@
     selectedAnswer: null,
     selectedAnswers: {}, // for paragraph mode: { "1": "A", "2": "C", ... }
     activeBlankId: 1,
+    essay: "", // for writing mode
+    totalTasks: 1,
     busy: false,
   };
 
@@ -78,7 +80,13 @@
   }
 
   function modeDisplayName(mode) {
-    return mode === "paragraph" ? "Paragraph Builder" : "Sentence Diagnostic";
+    if (mode === "paragraph") {
+      return "Paragraph Builder";
+    }
+    if (mode === "writing") {
+      return "IELTS Writing";
+    }
+    return "Sentence Diagnostic";
   }
 
   function escapeHtml(value) {
@@ -102,9 +110,10 @@
     els.loadingMessage.textContent = message;
     els.loadingOverlay.classList.toggle("hidden", !active);
 
-    const isParagraph = state.mode === "paragraph";
     let canSubmit = false;
-    if (isParagraph && state.currentQuestion?.blanks) {
+    if (state.mode === "writing") {
+      canSubmit = countWords(state.essay) >= MIN_SUBMIT_WORDS;
+    } else if (state.mode === "paragraph" && state.currentQuestion?.blanks) {
       canSubmit = state.currentQuestion.blanks.every((b) => state.selectedAnswers[b.blank_id]);
     } else {
       canSubmit = Boolean(state.selectedAnswer);
@@ -168,7 +177,26 @@
       els.levelPill.textContent = `Level: ${levelDisplayName(state.level)}`;
     }
 
-    if (state.mode === "paragraph") {
+    if (state.mode === "writing") {
+      if (els.testPageTitle) {
+        els.testPageTitle.textContent = "IELTS Writing Practice";
+      }
+      if (els.testPageSubtitle) {
+        els.testPageSubtitle.textContent =
+          "Write your response, then receive band scores for vocabulary range, structure, cohesion, and accuracy.";
+      }
+      if (els.sideCardEyebrow) {
+        els.sideCardEyebrow.textContent = "How Writing Practice Works";
+      }
+      if (els.sideCardList) {
+        els.sideCardList.innerHTML = `
+          <li>Plan a paragraph for each part of the question before you start writing.</li>
+          <li>Open every paragraph with a topic sentence, then develop it with a reason or example.</li>
+          <li>Vary your vocabulary and mix simple, compound, and complex sentences.</li>
+          <li>Your draft is saved in this browser until you submit it.</li>
+        `;
+      }
+    } else if (state.mode === "paragraph") {
       if (els.testPageTitle) {
         els.testPageTitle.textContent = "Paragraph Cloze Practice";
       }
@@ -207,6 +235,18 @@
     }
 
     if (!state.currentQuestion) {
+      return;
+    }
+
+    if (state.mode === "writing") {
+      const currentTask = state.currentQuestion.task_number || 1;
+      const totalTasks = state.totalTasks || 1;
+      const progress = progressPercent(currentTask - 1, totalTasks);
+
+      els.questionCounter.textContent = `Writing task ${currentTask} of ${totalTasks}`;
+      els.scoreCounter.textContent = state.currentQuestion.title || "IELTS Writing";
+      els.progressLabel.textContent = `${progress}%`;
+      els.progressBar.style.width = `${progress}%`;
       return;
     }
 
@@ -379,6 +419,460 @@
     `;
   }
 
+  // ---------------------------------------------------------------------------
+  // WRITING MODE RENDERING
+  // ---------------------------------------------------------------------------
+  const MIN_SUBMIT_WORDS = 25;
+  const WORD_PATTERN = /[A-Za-z][A-Za-z'’-]*/g;
+
+  function countWords(text) {
+    return (String(text || "").match(WORD_PATTERN) || []).length;
+  }
+
+  function countSentences(text) {
+    const trimmed = String(text || "").trim();
+    if (!trimmed) {
+      return 0;
+    }
+    return trimmed.split(/[.!?]+(?:\s|$)/).filter((part) => part.trim()).length;
+  }
+
+  function countParagraphs(text) {
+    const trimmed = String(text || "").trim();
+    if (!trimmed) {
+      return 0;
+    }
+    return trimmed.split(/\n\s*\n+/).filter((part) => part.trim()).length;
+  }
+
+  function taskTypeLabel(taskType) {
+    switch (taskType) {
+      case "opinion":
+        return "Opinion essay";
+      case "discussion":
+        return "Discussion essay";
+      case "advantages_disadvantages":
+        return "Advantages & disadvantages";
+      case "problem_solution":
+        return "Problem & solution";
+      case "descriptive":
+        return "Descriptive writing";
+      case "narrative":
+        return "Narrative writing";
+      default:
+        return "Writing task";
+    }
+  }
+
+  // Drafts survive an accidental reload; storage may be unavailable, so every
+  // access is guarded.
+  function draftKey() {
+    return `english-practice:draft:${state.testId || "new"}:${state.currentQuestion?.id || "w1"}`;
+  }
+
+  function loadDraft() {
+    try {
+      return window.localStorage.getItem(draftKey()) || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function saveDraft(text) {
+    try {
+      window.localStorage.setItem(draftKey(), text);
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
+  function clearDraft() {
+    try {
+      window.localStorage.removeItem(draftKey());
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
+  function renderWritingTask() {
+    const task = state.currentQuestion;
+    els.submitAnswerButton.textContent = "Submit for IELTS review";
+
+    if (!state.essay) {
+      state.essay = loadDraft();
+    }
+
+    const guidanceHtml = (task.guidance || []).map((tip) => `<li>${escapeHtml(tip)}</li>`).join("");
+
+    els.questionPanel.innerHTML = `
+      <div class="writing-task-card">
+        <div class="writing-task-head">
+          <span class="badge writing-badge">IELTS Writing</span>
+          <span class="chip topic">${escapeHtml(taskTypeLabel(task.task_type))}</span>
+          <span class="chip level">${escapeHtml(levelDisplayName(task.level))}</span>
+        </div>
+        <h3 class="writing-title">${escapeHtml(task.title)}</h3>
+        <p class="writing-prompt">${escapeHtml(task.prompt)}</p>
+        <div class="writing-guidance">
+          <p class="eyebrow">How to approach it</p>
+          <ul>${guidanceHtml}</ul>
+        </div>
+        <p class="writing-requirements">
+          Minimum <strong>${escapeHtml(task.min_words)} words</strong> &middot;
+          suggested time <strong>${escapeHtml(task.suggested_minutes)} minutes</strong>
+        </p>
+      </div>
+
+      <div class="writing-composer">
+        <label class="eyebrow" for="essayInput">Your response</label>
+        <textarea
+          id="essayInput"
+          class="essay-input"
+          rows="16"
+          spellcheck="true"
+          placeholder="Plan for a minute, then write your response here. Leave a blank line between paragraphs."
+        >${escapeHtml(state.essay)}</textarea>
+        <div class="essay-stats" id="essayStats"></div>
+        <div class="progress-track writing-progress" aria-hidden="true">
+          <div id="essayProgressBar" class="progress-bar" style="width: 0%"></div>
+        </div>
+        <p class="writing-note">
+          Length, vocabulary range, sentence structure, and cohesion are measured on the server with
+          NLTK and spaCy. Only your finished response and a one-line statistics summary are sent for
+          band scoring, which keeps the review cheap.
+        </p>
+      </div>
+    `;
+
+    updateEssayStats();
+  }
+
+  function updateEssayStats() {
+    const task = state.currentQuestion;
+    const statsNode = document.getElementById("essayStats");
+    const barNode = document.getElementById("essayProgressBar");
+    if (!task || !statsNode) {
+      return;
+    }
+
+    const words = countWords(state.essay);
+    const minWords = Number(task.min_words) || 250;
+    const reached = words >= minWords;
+    const remaining = Math.max(0, minWords - words);
+
+    statsNode.innerHTML = `
+      <span class="stat-chip ${reached ? "is-reached" : ""}">${words} / ${minWords} words</span>
+      <span class="stat-chip">${countSentences(state.essay)} sentences</span>
+      <span class="stat-chip">${countParagraphs(state.essay)} paragraphs</span>
+      ${
+        reached
+          ? `<span class="stat-chip is-reached">Length requirement met</span>`
+          : `<span class="stat-chip is-pending">${remaining} more words needed</span>`
+      }
+    `;
+
+    if (barNode) {
+      barNode.style.width = `${Math.min(100, Math.round((words / minWords) * 100))}%`;
+    }
+
+    els.submitAnswerButton.disabled = state.busy || words < MIN_SUBMIT_WORDS;
+  }
+
+  function band(value) {
+    return Number(value || 0).toFixed(1);
+  }
+
+  function percent(value) {
+    return `${Math.round((Number(value) || 0) * 100)}%`;
+  }
+
+  function listSection(title, items, className) {
+    if (!items || !items.length) {
+      return "";
+    }
+    const rows = items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    return `
+      <div class="report-block ${className}">
+        <p class="eyebrow">${escapeHtml(title)}</p>
+        <ul class="report-list">${rows}</ul>
+      </div>
+    `;
+  }
+
+  function writingReportHtml(report) {
+    const metrics = report.metrics || {};
+    const byExaminer = report.assessed_by === "examiner";
+
+    const criteriaHtml = (report.criteria || [])
+      .map(
+        (criterion) => `
+          <article class="criterion-card">
+            <div class="criterion-head">
+              <span class="criterion-label">${escapeHtml(criterion.label)}</span>
+              <span class="criterion-band">${band(criterion.band)}</span>
+            </div>
+            <p class="criterion-comment">${escapeHtml(criterion.comment)}</p>
+            <p class="criterion-measured">Measured estimate ${band(criterion.measured_band)}</p>
+          </article>
+        `,
+      )
+      .join("");
+
+    const notesHtml = (report.notes || []).length
+      ? `<div class="report-notes">${(report.notes || [])
+          .map((note) => `<p>${escapeHtml(note)}</p>`)
+          .join("")}</div>`
+      : "";
+
+    const correctionsHtml = (report.corrections || []).length
+      ? `
+        <div class="report-block">
+          <p class="eyebrow">Corrections</p>
+          <div class="corrections-grid">
+            ${(report.corrections || [])
+              .map(
+                (fix) => `
+                  <div class="correction-card">
+                    <p class="correction-original">${escapeHtml(fix.original)}</p>
+                    <p class="correction-fixed">${escapeHtml(fix.corrected)}</p>
+                    ${fix.why ? `<p class="correction-why">${escapeHtml(fix.why)}</p>` : ""}
+                  </div>
+                `,
+              )
+              .join("")}
+          </div>
+        </div>
+      `
+      : "";
+
+    const upgradesHtml = (report.vocabulary_upgrades || []).length
+      ? `
+        <div class="report-block">
+          <p class="eyebrow">Wider vocabulary</p>
+          <table class="upgrade-table">
+            <thead>
+              <tr><th>You wrote</th><th>Stronger alternatives</th><th>Source</th></tr>
+            </thead>
+            <tbody>
+              ${(report.vocabulary_upgrades || [])
+                .map(
+                  (item) => `
+                    <tr>
+                      <td>${escapeHtml(item.basic)}${
+                        item.count ? ` <span class="upgrade-count">&times;${escapeHtml(item.count)}</span>` : ""
+                      }</td>
+                      <td>${escapeHtml(item.stronger)}</td>
+                      <td><span class="chip ${item.source === "examiner" ? "topic" : "level"}">${escapeHtml(
+                        item.source === "examiner" ? "examiner" : "measured",
+                      )}</span></td>
+                    </tr>
+                  `,
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+      `
+      : "";
+
+    const metricChips = [
+      ["Words", metrics.word_count],
+      ["Sentences", metrics.sentence_count],
+      ["Paragraphs", metrics.paragraph_count],
+      ["Different words", metrics.unique_words],
+      ["Beyond core vocabulary", percent(metrics.beyond_core_ratio)],
+      ["Academic words", (metrics.academic_words_used || []).length],
+      ["Complex sentences", percent(metrics.complex_sentence_ratio)],
+      ["Average sentence", `${metrics.average_sentence_length || 0} words`],
+      ["Length variation", metrics.sentence_length_sd],
+      ["Passive forms", metrics.passive_count],
+    ]
+      .map(
+        ([label, value]) => `
+          <div class="metric-chip">
+            <span>${escapeHtml(label)}</span>
+            <strong>${escapeHtml(value === undefined || value === null ? "0" : value)}</strong>
+          </div>
+        `,
+      )
+      .join("");
+
+    const linkerGroups = Object.entries(metrics.linkers_by_group || {});
+    const linkersHtml = linkerGroups.length
+      ? `<ul class="report-list">${linkerGroups
+          .map(
+            ([group, phrases]) =>
+              `<li><strong>${escapeHtml(group)}:</strong> ${escapeHtml((phrases || []).join(", "))}</li>`,
+          )
+          .join("")}</ul>`
+      : `<p class="report-empty">No cohesive devices were detected. Linking words such as however,
+         therefore, and for instance guide the reader between ideas.</p>`;
+
+    const academicHtml = (metrics.academic_words_used || []).length
+      ? `<div class="word-chip-row">${(metrics.academic_words_used || [])
+          .map((word) => `<span class="word-chip">${escapeHtml(word)}</span>`)
+          .join("")}</div>`
+      : `<p class="report-empty">No academic vocabulary was detected in this response.</p>`;
+
+    const repeatedHtml = (metrics.overused_words || []).length
+      ? `<div class="word-chip-row">${(metrics.overused_words || [])
+          .map(
+            (item) =>
+              `<span class="word-chip is-warning">${escapeHtml(item.word)} &times;${escapeHtml(item.count)}</span>`,
+          )
+          .join("")}</div>`
+      : `<p class="report-empty">No word is over-repeated.</p>`;
+
+    const mechanicsHtml = (metrics.mechanics_issues || []).length
+      ? `<ul class="report-list">${(metrics.mechanics_issues || [])
+          .map((issue) => `<li>${escapeHtml(issue)}</li>`)
+          .join("")}</ul>`
+      : `<p class="report-empty">Punctuation, spacing, and capitalisation are clean.</p>`;
+
+    const revealed = report.revealed || {};
+    const revealedVocab = (revealed.useful_vocabulary || []).length
+      ? `<div class="word-chip-row">${(revealed.useful_vocabulary || [])
+          .map((word) => `<span class="word-chip is-target">${escapeHtml(word)}</span>`)
+          .join("")}</div>`
+      : "";
+
+    const usage = report.usage || {};
+    const usageLine =
+      byExaminer && usage.total_tokens
+        ? `<span class="report-meta-item">${escapeHtml(usage.total_tokens)} tokens used</span>`
+        : "";
+
+    return `
+      <div class="writing-report">
+        <div class="band-hero">
+          <div class="band-hero-score">
+            <span class="band-value">${band(report.overall_band)}</span>
+            <span class="band-scale">/ 9.0</span>
+          </div>
+          <div class="band-hero-copy">
+            <p class="eyebrow">Estimated IELTS band</p>
+            <h3>${escapeHtml(report.title || "Writing report")}</h3>
+            <div class="report-meta">
+              <span class="report-meta-item">${escapeHtml(
+                byExaminer ? "Examiner review + local analysis" : "Local analysis only",
+              )}</span>
+              <span class="report-meta-item">${escapeHtml(metrics.analyzer || "regex")}</span>
+              ${usageLine}
+            </div>
+          </div>
+        </div>
+
+        ${notesHtml}
+
+        <div class="criteria-grid">${criteriaHtml}</div>
+
+        <div class="report-columns">
+          ${listSection("What works", report.strengths, "is-positive")}
+          ${listSection("What to improve", report.improvements, "is-negative")}
+        </div>
+
+        ${listSection("Also measured", report.measured_observations, "is-neutral")}
+        ${correctionsHtml}
+        ${upgradesHtml}
+
+        <div class="report-block">
+          <p class="eyebrow">Measured analysis</p>
+          <div class="metric-grid">${metricChips}</div>
+          <div class="report-subblock">
+            <p class="report-subtitle">Cohesive devices used</p>
+            ${linkersHtml}
+          </div>
+          <div class="report-subblock">
+            <p class="report-subtitle">Academic vocabulary detected</p>
+            ${academicHtml}
+          </div>
+          <div class="report-subblock">
+            <p class="report-subtitle">Repetition</p>
+            ${repeatedHtml}
+          </div>
+          <div class="report-subblock">
+            <p class="report-subtitle">Mechanics</p>
+            ${mechanicsHtml}
+          </div>
+        </div>
+
+        ${
+          revealed.model_outline
+            ? `
+          <div class="report-block is-revealed">
+            <p class="eyebrow">Suggested paragraph plan</p>
+            <p>${escapeHtml(revealed.model_outline)}</p>
+            ${revealedVocab ? `<p class="report-subtitle">Target vocabulary for this task</p>${revealedVocab}` : ""}
+          </div>
+        `
+            : ""
+        }
+
+        <div class="report-block">
+          <p class="eyebrow">Your response</p>
+          <div class="submitted-essay">${escapeHtml(report.essay || "")}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderWritingFeedback() {
+    els.feedbackPanel.innerHTML = writingReportHtml(state.feedback);
+  }
+
+  function renderWritingResults() {
+    const results = state.results;
+    const currentLevel = results.level || state.level;
+
+    document.querySelectorAll(".mode-tab-btn").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.mode === "writing");
+    });
+    document.querySelectorAll(".level-tab-btn").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.level === currentLevel);
+    });
+
+    els.resultsSummary.innerHTML = [
+      ["Mode", modeDisplayName("writing")],
+      ["Level", levelDisplayName(currentLevel)],
+      ["Overall band", band(results.overall_band)],
+      ["Tasks completed", `${results.total_tasks || 1}`],
+    ]
+      .map(
+        ([label, value]) => `
+          <div class="summary-card">
+            <span>${escapeHtml(label)}</span>
+            <strong>${escapeHtml(value)}</strong>
+          </div>
+        `,
+      )
+      .join("");
+
+    els.topicSummary.innerHTML = `
+      <table>
+        <thead>
+          <tr><th>Assessment criterion</th><th>Band</th></tr>
+        </thead>
+        <tbody>
+          ${(results.criteria_summary || [])
+            .map(
+              (criterion) =>
+                `<tr><td>${escapeHtml(criterion.label)}</td><td>${band(criterion.band)}</td></tr>`,
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+
+    els.questionReview.innerHTML = (results.tasks || [])
+      .map(
+        (report) => `<article class="review-card writing-review-card">${writingReportHtml(report)}</article>`,
+      )
+      .join("");
+
+    setScreen("results");
+    setLoading(false);
+  }
+
   function renderQuestion() {
     if (!state.currentQuestion) {
       return;
@@ -392,7 +886,9 @@
     renderHeader();
     setScreen("question");
 
-    if (state.mode === "paragraph") {
+    if (state.mode === "writing") {
+      renderWritingTask();
+    } else if (state.mode === "paragraph") {
       renderParagraphQuestion();
     } else {
       renderSentenceQuestion();
@@ -493,7 +989,9 @@
       return;
     }
 
-    if (state.mode === "paragraph") {
+    if (state.mode === "writing") {
+      renderWritingFeedback();
+    } else if (state.mode === "paragraph") {
       renderParagraphFeedback();
     } else {
       renderSentenceFeedback();
@@ -513,6 +1011,11 @@
   function renderResults() {
     const results = state.results;
     if (!results) {
+      return;
+    }
+
+    if ((results.mode || results.test_type || state.mode) === "writing") {
+      renderWritingResults();
       return;
     }
 
@@ -683,6 +1186,8 @@
     state.score = serverState.score || 0;
     state.totalQuestions = serverState.total_questions || 10;
     state.totalParagraphs = serverState.total_paragraphs || 3;
+    state.totalTasks = serverState.total_tasks || 1;
+    state.essay = "";
     state.pendingQuestion = null;
     state.feedback = null;
     state.results = null;
@@ -734,6 +1239,8 @@
       state.score = data.score || 0;
       state.totalQuestions = data.total_questions || 10;
       state.totalParagraphs = data.total_items || data.total_paragraphs || 3;
+      state.totalTasks = data.total_items || data.total_tasks || 1;
+      state.essay = "";
       state.currentQuestion = data.question;
       state.pendingQuestion = null;
       state.feedback = null;
@@ -784,6 +1291,8 @@
       state.score = data.score || 0;
       state.totalQuestions = data.total_questions || 10;
       state.totalParagraphs = data.total_items || data.total_paragraphs || 3;
+      state.totalTasks = data.total_items || data.total_tasks || 1;
+      state.essay = "";
       state.currentQuestion = data.question;
       state.pendingQuestion = null;
       state.feedback = null;
@@ -805,10 +1314,17 @@
       return;
     }
 
+    const isWriting = state.mode === "writing";
     const isParagraph = state.mode === "paragraph";
     let bodyPayload = {};
 
-    if (isParagraph) {
+    if (isWriting) {
+      if (countWords(state.essay) < MIN_SUBMIT_WORDS) {
+        showError(`Write at least ${MIN_SUBMIT_WORDS} words before submitting.`);
+        return;
+      }
+      bodyPayload = { essay: state.essay };
+    } else if (isParagraph) {
       const blanks = state.currentQuestion?.blanks || [];
       const allFilled = blanks.length > 0 && blanks.every((b) => state.selectedAnswers[b.blank_id]);
       if (!allFilled) {
@@ -825,7 +1341,12 @@
     }
 
     hideError();
-    setLoading(true, "Checking your answer...");
+    setLoading(
+      true,
+      isWriting
+        ? "Analysing your writing and scoring it against the IELTS descriptors..."
+        : "Checking your answer...",
+    );
     try {
       const data = await requestJson(`${apiRoot}${state.testId}/answer/`, {
         method: "POST",
@@ -835,6 +1356,11 @@
       state.score = data.score;
       state.feedback = data.feedback;
       state.pendingQuestion = data.next_question;
+
+      if (isWriting) {
+        clearDraft();
+        state.essay = "";
+      }
 
       if (data.completed && data.results) {
         state.results = data.results;
@@ -858,11 +1384,21 @@
     state.currentQuestion = state.pendingQuestion;
     state.pendingQuestion = null;
     state.feedback = null;
+    state.essay = "";
     state.selectedAnswer = null;
     state.selectedAnswers = {};
     state.activeBlankId = 1;
     renderQuestion();
   }
+
+  document.addEventListener("input", (event) => {
+    if (!event.target || event.target.id !== "essayInput") {
+      return;
+    }
+    state.essay = event.target.value;
+    saveDraft(state.essay);
+    updateEssayStats();
+  });
 
   document.addEventListener("click", (event) => {
     const target = event.target.closest("[data-action]");
