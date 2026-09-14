@@ -1,9 +1,75 @@
 # English Practice Diagnostic
 
-A Django template app for a hidden-topic English grammar diagnostic.
+A Django app with three practice modes:
+
+| Mode | URL | What it does |
+| --- | --- | --- |
+| Sentence | `/test/?mode=sentence` | 10 multiple-choice questions with the grammar topic hidden until you answer |
+| Paragraph | `/test/?mode=paragraph` | Multi-blank cloze passages that test cohesion and paragraph flow |
+| Writing | `/test/?mode=writing` | A writing task scored against the four IELTS band descriptors |
+
+Every mode is available at five levels: `beginner`, `intermediate`, `advanced`, `ielts_8_9`, and `all`.
 
 The question generator uses the OpenAI Python SDK pointed at OpenRouter.
 If `OPENROUTER_API_KEY` is not set or the request fails, the app falls back to the local question bank so the UI still works.
+
+## Writing mode
+
+The learner is given a writing task and a minimum word count, writes a response, and receives an
+estimated band for **Task Response**, **Coherence & Cohesion**, **Lexical Resource**, and
+**Grammatical Range & Accuracy**, plus the overall band using the IELTS half-band rounding rule.
+
+### How it keeps token use low
+
+`practice/nlp.py` measures everything countable *before* any model is involved:
+
+- **Lexical resource** — different words, root type-token ratio, share of vocabulary outside the
+  most frequent core of English, academic word hits, over-repeated words, everyday words worth
+  upgrading, informal register, contractions.
+- **Sentence and paragraph structure** — paragraph count and balance, average sentence length and
+  its variation, share of sentences carrying a subordinate clause, compound sentences, passive
+  constructions.
+- **Cohesion** — which of eight cohesive-device families appear, referencing and substitution
+  (*this saving*, *such arrangements*, *the former*), whether the final paragraph signals a
+  conclusion, repeated sentence openings.
+- **Mechanics** — capitalisation, spacing, punctuation, over-long sentences.
+
+Those numbers are compressed into a single digest line (about seventy tokens) that is sent with the
+response. The model is told to trust it and never to recount, so it spends its tokens on judgement
+alone. On top of that:
+
+- the essay is truncated at `WRITING_MAX_ESSAY_WORDS` (default 450);
+- the reply uses short JSON keys and is capped at `WRITING_MAX_OUTPUT_TOKENS` (default 700);
+- the overall band and the under-length penalty are computed in Python, not paid for in tokens;
+- responses under `WRITING_AI_MIN_WORDS` (default 40) are scored locally with no model call at all;
+- writing prompts are never generated — they come from a fixed bank of 28 tasks.
+
+With no API key, or when the request fails or times out, the local measurements produce the whole
+report on their own, including band estimates, strengths, and specific improvements.
+
+The local bands are an estimate, and the report labels them as such. They measure form, not meaning:
+Task Response is capped below band 8 because relevance to the question cannot be judged from surface
+features, and the cohesion score rewards explicit linking words, so writing that connects ideas purely
+through referencing and lexical chains tends to be under-rated. Configure a model for the band that
+takes content into account; the measured estimate stays visible beside it either way.
+
+### Local analysis dependencies
+
+NLTK provides sentence segmentation and the stopword list; spaCy adds dependency-based clause and
+passive detection. Both are optional — `practice/nlp.py` probes them lazily and falls back to regex
+analysis if a library or its data is missing, so the app never fails because a corpus was not
+downloaded. Set `WRITING_DISABLE_SPACY=1` or `WRITING_DISABLE_NLTK=1` to force the fallback.
+
+Words are deliberately **not** counted with NLTK. The count drives the minimum-length rule and the
+Task Response cap, so it uses one fixed regular expression that produces the same number in every
+deployment and matches the live counter in the browser.
+
+To run writing mode at full fidelity outside Docker:
+
+```bash
+python -m nltk.downloader punkt punkt_tab stopwords
+python -m spacy download en_core_web_sm
+```
 
 ## Run locally
 
@@ -17,7 +83,16 @@ python manage.py runserver 0.0.0.0:5170
 
 Open `http://localhost:5170/`.
 
-The landing page is at `/`, and the diagnostic itself lives at `/test/`.
+The landing page is at `/`, and the practice modes live at `/test/`.
+
+## Tests
+
+```bash
+python manage.py test practice
+```
+
+The suite covers all three modes and never reaches the network: the writing tests either disable the
+model with `WRITING_AI_ENABLED=0` or mock the evaluator.
 
 ## Run in Docker
 
@@ -39,6 +114,6 @@ docker compose up --build
 
 The app listens on port `5170` in both local and containerized runs.
 
-The SQLite question bank is stored in `data/db.sqlite3` so Docker runs can persist generated questions across restarts when the `data/` volume is mounted.
+The SQLite question bank is stored in `data/db.sqlite3` so Docker runs can persist generated questions across restarts when the `data/` volume is mounted. The writing prompt bank is seeded into the same database from `practice/writing_bank.py` on first use.
 
 The active test session is stored in the same SQLite database through a Django model, so the current test can be restored after restarts as long as `data/db.sqlite3` remains in place.

@@ -7,6 +7,7 @@ from typing import Iterable, Sequence
 from django.db import models
 
 from .question_bank import BlankBlueprint, ParagraphBlueprint, QuestionBlueprint
+from .writing_bank import WritingPromptBlueprint
 
 
 class QuestionBankQuestion(models.Model):
@@ -341,6 +342,135 @@ class ParagraphBankQuestion(models.Model):
         level: str | None = None,
         exclude_hashes: Iterable[str] | None = None,
     ) -> list["ParagraphBankQuestion"]:
+        if count <= 0:
+            return []
+
+        queryset = cls.objects.all()
+        if exclude_hashes:
+            queryset = queryset.exclude(content_hash__in=list(exclude_hashes))
+
+        if level and level.lower() != "all":
+            level_queryset = queryset.filter(level=level.lower())
+            results = list(level_queryset.order_by("?")[:count])
+            if len(results) >= count:
+                return results
+            remaining = count - len(results)
+            seen_ids = {item.id for item in results}
+            extra = list(queryset.exclude(id__in=seen_ids).order_by("?")[:remaining])
+            return [*results, *extra]
+
+        return list(queryset.order_by("?")[:count])
+
+
+class WritingPromptBankQuestion(models.Model):
+    """A writing task the learner responds to in writing mode.
+
+    ``useful_vocabulary`` and ``model_outline`` are withheld from the public
+    payload until the report is produced.
+    """
+
+    title = models.CharField(max_length=255)
+    task_type = models.CharField(max_length=64, default="opinion")
+    prompt = models.TextField()
+    level = models.CharField(max_length=32, default="intermediate", db_index=True)
+    min_words = models.PositiveIntegerField(default=250)
+    suggested_minutes = models.PositiveIntegerField(default=40)
+    guidance = models.JSONField(default=list, blank=True)
+    useful_vocabulary = models.JSONField(default=list, blank=True)
+    model_outline = models.TextField(blank=True)
+    source = models.CharField(max_length=32, default="seed")
+    generation_metadata = models.JSONField(default=dict, blank=True)
+    content_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    @staticmethod
+    def fingerprint(*, title: str, prompt: str, level: str = "intermediate") -> str:
+        payload = {
+            "title": title.strip(),
+            "prompt": prompt.strip(),
+            "level": level.strip().lower(),
+        }
+        serialized = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    @classmethod
+    def from_blueprint(
+        cls,
+        blueprint: WritingPromptBlueprint,
+        *,
+        source: str = "seed",
+        generation_metadata: dict | None = None,
+    ) -> "WritingPromptBankQuestion":
+        return cls(
+            title=blueprint.title,
+            task_type=blueprint.task_type,
+            prompt=blueprint.prompt,
+            level=blueprint.level,
+            min_words=blueprint.min_words,
+            suggested_minutes=blueprint.suggested_minutes,
+            guidance=list(blueprint.guidance),
+            useful_vocabulary=list(blueprint.useful_vocabulary),
+            model_outline=blueprint.model_outline,
+            source=source,
+            generation_metadata=generation_metadata or {},
+            content_hash=cls.fingerprint(
+                title=blueprint.title,
+                prompt=blueprint.prompt,
+                level=blueprint.level,
+            ),
+        )
+
+    def to_blueprint(self) -> WritingPromptBlueprint:
+        return WritingPromptBlueprint(
+            title=self.title,
+            task_type=self.task_type,
+            prompt=self.prompt,
+            level=self.level,
+            min_words=self.min_words,
+            suggested_minutes=self.suggested_minutes,
+            guidance=tuple(str(item) for item in self.guidance),
+            useful_vocabulary=tuple(str(item) for item in self.useful_vocabulary),
+            model_outline=self.model_outline,
+        )
+
+    @classmethod
+    def seed_from_static_bank(cls) -> int:
+        from .writing_bank import WRITING_PROMPT_BANK
+
+        created_count = 0
+        for blueprint in WRITING_PROMPT_BANK:
+            entry = cls.from_blueprint(blueprint, source="seed")
+            _, created = cls.objects.get_or_create(
+                content_hash=entry.content_hash,
+                defaults={
+                    "title": entry.title,
+                    "task_type": entry.task_type,
+                    "prompt": entry.prompt,
+                    "level": entry.level,
+                    "min_words": entry.min_words,
+                    "suggested_minutes": entry.suggested_minutes,
+                    "guidance": entry.guidance,
+                    "useful_vocabulary": entry.useful_vocabulary,
+                    "model_outline": entry.model_outline,
+                    "source": entry.source,
+                    "generation_metadata": entry.generation_metadata,
+                },
+            )
+            if created:
+                created_count += 1
+        return created_count
+
+    @classmethod
+    def random_sample(
+        cls,
+        count: int,
+        *,
+        level: str | None = None,
+        exclude_hashes: Iterable[str] | None = None,
+    ) -> list["WritingPromptBankQuestion"]:
         if count <= 0:
             return []
 

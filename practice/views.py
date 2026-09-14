@@ -39,6 +39,17 @@ def _load_json(request: HttpRequest) -> dict[str, Any]:
     return data
 
 
+def _total_items(state: dict[str, Any]) -> int:
+    """How many steps the learner sees: paragraphs, writing tasks, or questions."""
+
+    test_type = state.get("test_type") or state.get("mode") or "sentence"
+    if test_type == "paragraph":
+        return state.get("total_paragraphs", state["total_questions"])
+    if test_type == "writing":
+        return state.get("total_tasks", state["total_questions"])
+    return state["total_questions"]
+
+
 def _get_state_or_error(request: HttpRequest, test_id: str) -> tuple[dict[str, Any] | None, JsonResponse | None]:
     state = load_state(request)
     if not state:
@@ -106,7 +117,7 @@ def start_test(request: HttpRequest):
 
     state = initialise_session_state(level=level, mode=mode)
     save_state(request, state)
-    total_items = state.get("total_paragraphs") if state.get("test_type") == "paragraph" else state["total_questions"]
+    total_items = _total_items(state)
     return JsonResponse(
         {
             "ok": True,
@@ -143,7 +154,7 @@ def retry_test(request: HttpRequest, test_id: str):
 
     new_state = initialise_session_state(level=level or "all", mode=mode or "sentence")
     save_state(request, new_state)
-    total_items = new_state.get("total_paragraphs") if new_state.get("test_type") == "paragraph" else new_state["total_questions"]
+    total_items = _total_items(new_state)
     return JsonResponse(
         {
             "ok": True,
@@ -170,7 +181,12 @@ def answer_test(request: HttpRequest, test_id: str):
     try:
         data = _load_json(request)
         test_type = state.get("test_type") or state.get("mode") or "sentence"
-        if test_type == "paragraph":
+        if test_type == "writing":
+            essay = data.get("essay")
+            if not isinstance(essay, str):
+                essay = data.get("text") or data.get("response") or ""
+            result = submit_answer(state, str(essay))
+        elif test_type == "paragraph":
             answers_payload = data.get("answers") or data.get("selected_answers") or {}
             result = submit_answer(state, answers_payload)
         else:

@@ -1,18 +1,27 @@
 from __future__ import annotations
 
+import os
 import random
+import re
 import uuid
 from typing import Any
 
-from .ai import generate_paragraph_blueprints, generate_question_blueprints
-from .models import ParagraphBankQuestion, QuestionBankQuestion, TestSession
+from . import nlp
+from .ai import evaluate_writing, generate_paragraph_blueprints, generate_question_blueprints
+from .models import (
+    ParagraphBankQuestion,
+    QuestionBankQuestion,
+    TestSession,
+    WritingPromptBankQuestion,
+)
 from .question_bank import ParagraphBlueprint, QuestionBlueprint
+from .writing_bank import WritingPromptBlueprint
 
 
 LETTERS = ["A", "B", "C", "D", "E"]
 TEST_SESSION_KEY = "english_practice_active_test"
 SUPPORTED_LEVELS = ("all", "beginner", "intermediate", "advanced", "ielts_8_9")
-SUPPORTED_MODES = ("sentence", "paragraph")
+SUPPORTED_MODES = ("sentence", "paragraph", "writing")
 
 
 def normalize_level(level: str | None) -> str:
@@ -39,6 +48,7 @@ def _randomizer() -> random.Random:
 def _ensure_seeded_bank() -> None:
     QuestionBankQuestion.seed_from_static_bank()
     ParagraphBankQuestion.seed_from_static_bank()
+    WritingPromptBankQuestion.seed_from_static_bank()
 
 
 def _lettered_options(options: list[str]) -> list[dict[str, str]]:
@@ -294,6 +304,12 @@ def public_paragraph_payload(paragraph: dict[str, Any]) -> dict[str, Any]:
 
 def current_question_payload(state: dict[str, Any]) -> dict[str, Any] | None:
     test_type = state.get("test_type") or state.get("mode") or "sentence"
+    if test_type == "writing":
+        total_tasks = state.get("total_tasks", len(state["questions"]))
+        if state["current_index"] >= total_tasks:
+            return None
+        return public_writing_payload(state["questions"][state["current_index"]])
+
     if test_type == "paragraph":
         if state["current_index"] >= state.get("total_paragraphs", len(state["questions"])):
             return None
@@ -387,6 +403,46 @@ def submit_answer(state: dict[str, Any], answer_payload: Any) -> dict[str, Any]:
         raise ValueError("This test has already been completed.")
 
     test_type = state.get("test_type") or state.get("mode") or "sentence"
+
+    # WRITING MODE SUBMISSION
+    if test_type == "writing":
+        total_tasks = state.get("total_tasks", len(state["questions"]))
+        if state["current_index"] >= total_tasks:
+            raise ValueError("No active writing task is available.")
+
+        task = state["questions"][state["current_index"]]
+        if task.get("completed"):
+            raise ValueError("This writing task has already been submitted.")
+        if not isinstance(answer_payload, str):
+            raise ValueError("A writing submission must be sent as text.")
+
+        essay = answer_payload.strip()
+        if len(essay) > WRITING_MAX_CHARS:
+            raise ValueError(
+                f"The response is too long. Keep it under {WRITING_MAX_CHARS} characters."
+            )
+        if len(nlp.WORD_RE.findall(essay)) < WRITING_MIN_SUBMIT_WORDS:
+            raise ValueError(
+                f"Write at least {WRITING_MIN_SUBMIT_WORDS} words before submitting."
+            )
+
+        task["submission"] = _evaluate_essay(task, essay)
+        task["completed"] = True
+        feedback = _build_writing_feedback(task)
+
+        state["current_index"] += 1
+        state["completed"] = state["current_index"] >= total_tasks
+
+        return {
+            "feedback": feedback,
+            "score": state["score"],
+            "completed": state["completed"],
+            "progress": {
+                "current": min(state["current_index"], total_tasks),
+                "total": total_tasks,
+            },
+            "next_question": None if state["completed"] else current_question_payload(state),
+        }
 
     # PARAGRAPH MODE ANSWER SUBMISSION
     if test_type == "paragraph":
@@ -550,6 +606,40 @@ def _paragraph_result_payload(paragraph: dict[str, Any]) -> dict[str, Any]:
 def build_results(state: dict[str, Any]) -> dict[str, Any]:
     test_type = state.get("test_type") or state.get("mode") or "sentence"
 
+    if test_type == "writing":
+        tasks = state["questions"]
+        reports = [_writing_report_payload(task) for task in tasks]
+        submitted = [report for report in reports if report.get("bands")]
+
+        if submitted:
+            averaged = {
+                key: round(sum(report["bands"][key] for report in submitted) / len(submitted) * 2) / 2
+                for key in nlp.CRITERIA
+            }
+        else:
+            averaged = {key: 0.0 for key in nlp.CRITERIA}
+        overall = nlp.overall_band(averaged) if submitted else 0.0
+
+        return {
+            "test_id": state["id"],
+            "test_type": "writing",
+            "mode": "writing",
+            "level": state.get("level", "all"),
+            "total_questions": len(tasks),
+            "total_tasks": len(tasks),
+            "correct_answers": 0,
+            "incorrect_answers": 0,
+            "overall_band": overall,
+            "percentage": round(overall / 9 * 100),
+            "criteria_summary": [
+                {"key": key, "label": nlp.CRITERION_LABELS[key], "band": averaged[key]}
+                for key in nlp.CRITERIA
+            ],
+            "topic_summary": [],
+            "tasks": reports,
+            "questions": reports,
+        }
+
     if test_type == "paragraph":
         paragraphs = state["questions"]
         all_blanks: list[dict[str, Any]] = []
@@ -599,6 +689,8 @@ def build_results(state: dict[str, Any]) -> dict[str, Any]:
 
 def initialise_session_state(level: str = "all", mode: str = "sentence") -> dict[str, Any]:
     normalized_mode = normalize_mode(mode)
+    if normalized_mode == "writing":
+        return create_writing_test_state(level=level)
     if normalized_mode == "paragraph":
         return create_paragraph_test_state(level=level)
     return create_test_state(level=level)
@@ -619,3 +711,437 @@ def load_state(request) -> dict[str, Any] | None:
     if not session:
         return None
     return session.to_state()
+
+
+# -----------------------------------------------------------------------------
+# WRITING MODE SERVICES
+# -----------------------------------------------------------------------------
+#
+# The learner answers a writing task, `practice.nlp` measures the response
+# locally, and the language model is asked only for the judgement that cannot
+# be computed. Without an API key the local assessment stands on its own.
+
+WRITING_MIN_SUBMIT_WORDS = int(os.environ.get("WRITING_MIN_SUBMIT_WORDS", "25"))
+WRITING_AI_MIN_WORDS = int(os.environ.get("WRITING_AI_MIN_WORDS", "40"))
+WRITING_MAX_CHARS = int(os.environ.get("WRITING_MAX_CHARS", "20000"))
+
+
+def _writing_ai_enabled() -> bool:
+    if os.environ.get("WRITING_AI_ENABLED", "").strip().lower() in {"0", "false", "no", "off"}:
+        return False
+    return bool(os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY"))
+
+
+def _build_writing_task(blueprint: WritingPromptBlueprint, task_number: int) -> dict[str, Any]:
+    return {
+        "id": f"w{task_number}",
+        "task_number": task_number,
+        "title": blueprint.title,
+        "task_type": blueprint.task_type,
+        "prompt": blueprint.prompt,
+        "level": blueprint.level,
+        "min_words": blueprint.min_words,
+        "suggested_minutes": blueprint.suggested_minutes,
+        "guidance": list(blueprint.guidance),
+        "useful_vocabulary": list(blueprint.useful_vocabulary),
+        "model_outline": blueprint.model_outline,
+        "submission": None,
+        "completed": False,
+    }
+
+
+def _writing_blueprints(count: int, level: str = "all") -> list[WritingPromptBlueprint]:
+    """Draw tasks from the seeded bank.
+
+    Writing prompts are deliberately never generated by the model: a fixed bank
+    costs nothing and the token budget belongs to the assessment.
+    """
+
+    _ensure_seeded_bank()
+    normalized_level = normalize_level(level)
+
+    sampled = WritingPromptBankQuestion.random_sample(
+        count,
+        level=normalized_level if normalized_level != "all" else None,
+    )
+    if not sampled:
+        sampled = WritingPromptBankQuestion.random_sample(count)
+    if not sampled:
+        raise ValueError("No writing prompts are available in the bank.")
+
+    return [entry.to_blueprint() for entry in sampled]
+
+
+def create_writing_test_state(total_tasks: int = 1, level: str = "all") -> dict[str, Any]:
+    normalized_level = normalize_level(level)
+    blueprints = _writing_blueprints(total_tasks, level=normalized_level)
+    tasks = [_build_writing_task(blueprint, index + 1) for index, blueprint in enumerate(blueprints)]
+
+    return {
+        "id": uuid.uuid4().hex,
+        "test_type": "writing",
+        "mode": "writing",
+        "level": normalized_level,
+        "total_tasks": len(tasks),
+        "total_questions": len(tasks),
+        "current_index": 0,
+        "score": 0,
+        "completed": False,
+        "questions": tasks,
+    }
+
+
+def public_writing_payload(task: dict[str, Any]) -> dict[str, Any]:
+    """The task as the learner sees it: no target lexis, no model outline."""
+
+    return {
+        "id": task["id"],
+        "task_number": task["task_number"],
+        "title": task["title"],
+        "task_type": task["task_type"],
+        "prompt": task["prompt"],
+        "level": task["level"],
+        "min_words": task["min_words"],
+        "suggested_minutes": task["suggested_minutes"],
+        "guidance": list(task["guidance"]),
+    }
+
+
+def _percent(value: float) -> int:
+    return int(round(value * 100))
+
+
+def _local_criterion_comments(metrics: dict[str, Any]) -> dict[str, str]:
+    """Criterion comments derived only from the measurements."""
+
+    groups = metrics["linker_groups_used"]
+    comments = {
+        "task_response": (
+            f"{metrics['word_count']} words against a {metrics['min_words']}-word minimum, "
+            f"developed over {metrics['paragraph_count']} paragraph(s)."
+        ),
+        "coherence_cohesion": (
+            f"{metrics['paragraph_count']} paragraph(s) using cohesive devices from "
+            f"{len(groups)} function group(s)"
+            + (f" ({', '.join(groups)})." if groups else ".")
+        ),
+        "lexical_resource": (
+            f"{metrics['unique_words']} different words in {metrics['word_count']}; "
+            f"{_percent(metrics['beyond_core_ratio'])}% sit outside the most frequent core of English, "
+            f"including {len(metrics['academic_words_used'])} academic item(s)."
+        ),
+        "grammatical_range": (
+            f"Sentences average {metrics['average_sentence_length']} words "
+            f"(variation {metrics['sentence_length_sd']}); "
+            f"{_percent(metrics['complex_sentence_ratio'])}% carry a subordinate clause."
+        ),
+    }
+
+    if not metrics["meets_min_words"]:
+        comments["task_response"] += f" {metrics['words_missing']} more words are needed."
+    if metrics["overused_words"]:
+        top = metrics["overused_words"][0]
+        comments["lexical_resource"] += f" {top['word'].capitalize()} is repeated {top['count']} times."
+    if metrics["mechanics_issues"]:
+        comments["grammatical_range"] += f" {len(metrics['mechanics_issues'])} mechanical issue(s) found."
+
+    return comments
+
+
+def _local_strengths(metrics: dict[str, Any]) -> list[str]:
+    strengths: list[str] = []
+
+    if metrics["beyond_core_ratio"] >= 0.40:
+        strengths.append(
+            f"Vocabulary reaches well beyond everyday English: {_percent(metrics['beyond_core_ratio'])}% "
+            "of your words fall outside the most frequent core."
+        )
+    if len(metrics["academic_words_used"]) >= 4:
+        sample = ", ".join(metrics["academic_words_used"][:4])
+        strengths.append(f"You use precise academic vocabulary such as {sample}.")
+    if len(metrics["linker_groups_used"]) >= 4:
+        strengths.append(
+            "Cohesion is handled with a wide range of devices covering "
+            f"{', '.join(metrics['linker_groups_used'])}."
+        )
+    if metrics["complex_sentence_ratio"] >= 0.40:
+        strengths.append(
+            f"{_percent(metrics['complex_sentence_ratio'])}% of your sentences contain a subordinate clause, "
+            "which demonstrates grammatical range."
+        )
+    if metrics["sentence_length_sd"] >= 5:
+        strengths.append(
+            f"Sentence length varies (average {metrics['average_sentence_length']} words, "
+            f"spread {metrics['sentence_length_sd']}), so the writing does not read mechanically."
+        )
+    if metrics["paragraph_count"] >= 3 and min(metrics["paragraph_sentence_counts"] or [0]) >= 2:
+        strengths.append(
+            f"The response is organised into {metrics['paragraph_count']} developed paragraphs."
+        )
+    if metrics["meets_min_words"]:
+        strengths.append(f"The response meets the {metrics['min_words']}-word requirement.")
+    if not metrics["mechanics_issues"]:
+        strengths.append("Capitalisation, spacing, and punctuation are clean throughout.")
+
+    return strengths[:5]
+
+
+def _local_improvements(metrics: dict[str, Any]) -> list[str]:
+    improvements: list[str] = []
+
+    if not metrics["meets_min_words"]:
+        improvements.append(
+            f"Add roughly {metrics['words_missing']} more words to reach the "
+            f"{metrics['min_words']}-word minimum."
+        )
+
+    for item in metrics["overused_words"][:2]:
+        alternatives = nlp.BASIC_UPGRADES.get(item["word"])
+        suggestion = (
+            f" Try {', '.join(alternatives[:3])}."
+            if alternatives
+            else " Refer back to it with a synonym, a pronoun, or a related noun phrase."
+        )
+        improvements.append(
+            f"You repeat \"{item['word']}\" {item['count']} times.{suggestion}"
+        )
+
+    if metrics["paragraph_count"] < 3:
+        improvements.append(
+            "Organise the answer into at least three paragraphs - an introduction, developed body "
+            "paragraphs, and a conclusion - each opening with a topic sentence."
+        )
+
+    missing_groups = [group for group in ("contrast", "cause", "example", "conclusion") if group not in metrics["linker_groups_used"]]
+    if len(metrics["linker_groups_used"]) <= 2 and missing_groups:
+        improvements.append(
+            "Widen your cohesive devices: you have no "
+            f"{', '.join(missing_groups)} linkers (for example however, therefore, for instance, on balance)."
+        )
+
+    if metrics["complex_sentence_ratio"] < 0.25:
+        improvements.append(
+            "Most of your sentences are simple. Combine ideas with although, whereas, which, or since "
+            "to show a wider range of structures."
+        )
+    elif metrics["sentence_length_sd"] < 3 and metrics["sentence_count"] >= 4:
+        improvements.append(
+            "Sentence length barely varies. Follow a long developed sentence with a short emphatic one."
+        )
+
+    if not metrics["has_conclusion_signal"] and metrics["word_count"] >= 60:
+        improvements.append(
+            "Close with an explicit conclusion signalled by In conclusion, Overall, or On balance."
+        )
+
+    if metrics["repeated_openers"]:
+        opener = metrics["repeated_openers"][0]
+        improvements.append(
+            f"{opener['count']} sentences begin with \"{opener['opener']}\". Vary your sentence openings "
+            "with an adverbial or a subordinate clause."
+        )
+
+    if metrics["informal_expressions"]:
+        improvements.append(
+            "Replace conversational expressions ("
+            + ", ".join(metrics["informal_expressions"][:3])
+            + ") with formal equivalents."
+        )
+    elif metrics["contraction_count"] >= 3:
+        improvements.append(
+            f"You use {metrics['contraction_count']} contractions. Write them in full in formal writing."
+        )
+
+    if metrics["mechanics_issues"]:
+        improvements.append("Fix the mechanics: " + "; ".join(metrics["mechanics_issues"][:2]) + ".")
+
+    if metrics["average_sentence_length"] > 30:
+        improvements.append(
+            f"Sentences average {metrics['average_sentence_length']} words. Split the longest ones so each "
+            "carries a single idea."
+        )
+
+    return improvements[:6]
+
+
+_DEDUP_IGNORE = frozenset(
+    {
+        "with", "your", "that", "this", "each", "more", "than", "into", "from", "them",
+        "they", "when", "will", "would", "have", "been", "their", "there", "where",
+        "which", "should", "could", "rather", "instead", "response", "answer", "writing",
+    }
+)
+
+
+def _restates(candidate: str, existing: list[str]) -> bool:
+    """True when `candidate` makes substantially the same point as an existing item."""
+
+    def keywords(text: str) -> set[str]:
+        return {
+            word
+            for word in re.findall(r"[a-z]+", text.lower())
+            if len(word) > 3 and word not in _DEDUP_IGNORE
+        }
+
+    candidate_keys = keywords(candidate)
+    if not candidate_keys:
+        return False
+
+    for item in existing:
+        item_keys = keywords(item)
+        if not item_keys:
+            continue
+        shared = len(candidate_keys & item_keys)
+        if max(shared / len(candidate_keys), shared / len(item_keys)) >= 0.5:
+            return True
+    return False
+
+
+def _merge_vocabulary_upgrades(
+    ai_upgrades: list[dict[str, str]],
+    metrics: dict[str, Any],
+) -> list[dict[str, str]]:
+    """Examiner suggestions first, then measured ones that add something new."""
+
+    merged: list[dict[str, str]] = []
+    seen: set[str] = set()
+
+    for item in ai_upgrades:
+        key = item["basic"].lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append({"basic": item["basic"], "stronger": item["stronger"], "source": "examiner"})
+
+    for item in metrics["basic_word_upgrades"]:
+        key = item["basic"].lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(
+            {
+                "basic": item["basic"],
+                "stronger": ", ".join(item["suggestions"]),
+                "source": "measured",
+                "count": item["count"],
+            }
+        )
+
+    return merged[:10]
+
+
+def _evaluate_essay(task: dict[str, Any], essay: str) -> dict[str, Any]:
+    """Measure locally, then spend tokens on judgement only."""
+
+    metrics = nlp.analyze_writing(essay, min_words=task["min_words"])
+    local_bands = metrics["local_bands"]
+
+    ai_report: dict[str, Any] | None = None
+    ai_error: str | None = None
+    if _writing_ai_enabled() and metrics["word_count"] >= WRITING_AI_MIN_WORDS:
+        try:
+            ai_report = evaluate_writing(
+                essay=essay,
+                digest=metrics["digest"],
+                local_bands=local_bands,
+                task_title=task["title"],
+                task_prompt=task["prompt"],
+                level=task["level"],
+            )
+        except Exception as exc:  # any failure falls back to the local assessment
+            ai_error = f"{type(exc).__name__}: {exc}"[:200]
+
+    assessed_by = "examiner" if ai_report else "measured"
+    bands = dict(ai_report["bands"]) if ai_report else dict(local_bands)
+    bands, notes = nlp.apply_length_penalty(bands, metrics)
+
+    comments = ai_report["comments"] if ai_report else _local_criterion_comments(metrics)
+    criteria = [
+        {
+            "key": key,
+            "label": nlp.CRITERION_LABELS[key],
+            "band": bands[key],
+            "comment": comments.get(key, ""),
+            "measured_band": local_bands[key],
+        }
+        for key in nlp.CRITERIA
+    ]
+
+    local_improvements = _local_improvements(metrics)
+    if ai_report:
+        strengths = ai_report["strengths"] or _local_strengths(metrics)
+        improvements = ai_report["improvements"] or local_improvements
+        # Keep only the measured points the examiner did not already make.
+        measured_observations = [
+            observation
+            for observation in local_improvements
+            if not _restates(observation, improvements)
+        ]
+    else:
+        strengths = _local_strengths(metrics)
+        improvements = local_improvements
+        measured_observations = []
+        if metrics["word_count"] < WRITING_AI_MIN_WORDS:
+            notes.append(
+                f"Responses under {WRITING_AI_MIN_WORDS} words are scored locally only, without an examiner review."
+            )
+        elif not _writing_ai_enabled():
+            notes.append(
+                "No model is configured, so these bands come from the local analysis alone. It measures "
+                "length, vocabulary range, structure, and cohesion, but it cannot judge how well your "
+                "ideas answer the question."
+            )
+        elif ai_error:
+            notes.append("The examiner review could not be reached, so the local analysis was used instead.")
+
+    return {
+        "essay": essay,
+        "metrics": metrics,
+        "bands": bands,
+        "measured_bands": local_bands,
+        "overall_band": nlp.overall_band(bands),
+        "measured_overall_band": nlp.overall_band(local_bands),
+        "criteria": criteria,
+        "strengths": strengths,
+        "improvements": improvements,
+        "measured_observations": measured_observations,
+        "corrections": ai_report["corrections"] if ai_report else [],
+        "vocabulary_upgrades": _merge_vocabulary_upgrades(
+            ai_report["vocabulary_upgrades"] if ai_report else [],
+            metrics,
+        ),
+        "notes": notes,
+        "assessed_by": assessed_by,
+        "ai_error": ai_error,
+        "model": ai_report.get("model") if ai_report else None,
+        "usage": ai_report.get("usage") if ai_report else None,
+        "revealed": {
+            "useful_vocabulary": list(task["useful_vocabulary"]),
+            "model_outline": task["model_outline"],
+        },
+    }
+
+
+def _writing_report_payload(task: dict[str, Any]) -> dict[str, Any]:
+    submission = task.get("submission") or {}
+    return {
+        "id": task["id"],
+        "task_number": task["task_number"],
+        "title": task["title"],
+        "task_type": task["task_type"],
+        "prompt": task["prompt"],
+        "level": task["level"],
+        "min_words": task["min_words"],
+        "suggested_minutes": task["suggested_minutes"],
+        "guidance": list(task["guidance"]),
+        **submission,
+    }
+
+
+def _build_writing_feedback(task: dict[str, Any]) -> dict[str, Any]:
+    submission = task.get("submission") or {}
+    band = submission.get("overall_band", 0.0)
+    return {
+        "headline": f"Estimated IELTS band {band:.1f}",
+        **_writing_report_payload(task),
+    }

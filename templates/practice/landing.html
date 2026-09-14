@@ -1,10 +1,10 @@
 {% extends "practice/base.html" %}
 {% load static %}
 
-{% block title %}English Grammar & Paragraph Practice Diagnostic{% endblock %}
-{% block meta_description %}Practice English grammar and paragraph building with sentence diagnostics and multi-blank paragraph cloze exercises divided by English level.{% endblock %}
-{% block og_title %}English Grammar & Paragraph Practice Diagnostic{% endblock %}
-{% block og_description %}Start a hidden-topic grammar or paragraph diagnostic with instant feedback and topic-by-topic results.{% endblock %}
+{% block title %}English Grammar, Paragraph & IELTS Writing Practice{% endblock %}
+{% block meta_description %}Practice English with sentence diagnostics, multi-blank paragraph cloze exercises, and IELTS writing tasks scored for vocabulary range, paragraph structure, cohesion, and grammatical accuracy.{% endblock %}
+{% block og_title %}English Grammar, Paragraph & IELTS Writing Practice{% endblock %}
+{% block og_description %}Start a hidden-topic grammar diagnostic, a paragraph cloze exercise, or an IELTS writing task with an estimated band score.{% endblock %}
 {% block body_class %}landing-body{% endblock %}
 {% block head_extra %}
 <script type="application/ld+json">
@@ -12,7 +12,7 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "English Practice Diagnostic",
-    "description": "An interactive English grammar diagnostic featuring both sentence and multi-blank paragraph builder modes divided by English proficiency level.",
+    "description": "An interactive English practice app with sentence diagnostics, multi-blank paragraph builder exercises, and IELTS writing tasks scored against the four band descriptors.",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Web",
     "url": "{{ canonical_url }}"
@@ -28,13 +28,14 @@
   <header class="topbar landing-topbar">
     <div class="topbar-copy">
       <p class="eyebrow">English Practice</p>
-      <h1>Grammar diagnostic & multi-blank paragraph builder.</h1>
+      <h1>Grammar diagnostic, paragraph builder & IELTS writing.</h1>
       <p class="topbar-note">
-        Master English grammar in context. Choose between sentence diagnostics and full paragraph cloze exercises to understand sentence flow, transitions, and cohesive paragraph construction.
+        Master English in context. Answer sentence diagnostics, rebuild whole paragraphs, or write a full response and have it scored for vocabulary range, paragraph structure, and sentence accuracy.
       </p>
     </div>
     <div class="topbar-actions">
       <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button topbar-cta">Start Paragraph Mode</a>
+      <a href="{% url 'practice:test' %}?mode=writing&level=all" class="secondary-button">IELTS Writing</a>
       <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button">Sentence Mode</a>
     </div>
   </header>
@@ -43,7 +44,7 @@
     <!-- Practice Mode Showcase -->
     <section class="card practice-modes-section" aria-label="Practice Modes">
       <div class="section-heading">
-        <p class="eyebrow">Two Practice Modes</p>
+        <p class="eyebrow">Three Practice Modes</p>
         <h2>Choose how you want to train your English.</h2>
       </div>
 
@@ -64,6 +65,27 @@
           </ul>
           <div class="mode-cta-row">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button">Start Paragraph Test</a>
+          </div>
+        </article>
+
+        <article class="mode-card is-writing">
+          <div class="mode-badge-row">
+            <span class="mode-badge writing-mode-badge">IELTS Writing</span>
+            <span class="mode-meta">Scored Response</span>
+          </div>
+          <h3>Writing Practice &amp; Band Score</h3>
+          <p class="mode-desc">
+            Answer a real writing task, then receive an estimated IELTS band for Task Response, Coherence
+            &amp; Cohesion, Lexical Resource, and Grammatical Range. Your text is measured with NLTK and
+            spaCy before it is scored, so the feedback cites your actual numbers.
+          </p>
+          <ul class="mode-bullets">
+            <li>Vocabulary range, repetition, and academic word use measured</li>
+            <li>Paragraph structure, cohesive devices, and clause variety checked</li>
+            <li>Corrections and stronger word choices for your own sentences</li>
+          </ul>
+          <div class="mode-cta-row">
+            <a href="{% url 'practice:test' %}?mode=writing&level=all" class="primary-button">Start Writing Task</a>
           </div>
         </article>
 
@@ -93,7 +115,7 @@
       <div class="section-heading">
         <p class="eyebrow">Choose your level</p>
         <h2>Divided by English proficiency.</h2>
-        <p class="level-intro">Select a difficulty tier tailored to your learning goals, available for both paragraph and sentence modes.</p>
+        <p class="level-intro">Select a difficulty tier tailored to your learning goals, available across all three practice modes.</p>
       </div>
 
       <div class="level-grid">
@@ -109,6 +131,7 @@
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=beginner" class="primary-button level-btn">Paragraph Practice</a>
             <a href="{% url 'practice:test' %}?mode=sentence&level=beginner" class="secondary-button level-btn">Sentence Practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=beginner" class="secondary-button level-btn is-writing-btn">Writing Practice</a>
           </div>
         </article>
 
@@ -124,6 +147,7 @@
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=intermediate" class="primary-button level-btn">Paragraph Practice</a>
             <a href="{% url 'practice:test' %}?mode=sentence&level=intermediate" class="secondary-button level-btn">Sentence Practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=intermediate" class="secondary-button level-btn is-writing-btn">Writing Practice</a>
           </div>
         </article>
 
@@ -139,6 +163,7 @@
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=advanced" class="primary-button level-btn">Paragraph Practice</a>
             <a href="{% url 'practice:test' %}?mode=sentence&level=advanced" class="secondary-button level-btn">Sentence Practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=advanced" class="secondary-button level-btn is-writing-btn">Writing Practice</a>
           </div>
         </article>
 
@@ -154,6 +179,7 @@
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=ielts_8_9" class="primary-button level-btn">Paragraph Practice</a>
             <a href="{% url 'practice:test' %}?mode=sentence&level=ielts_8_9" class="secondary-button level-btn">Sentence Practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=ielts_8_9" class="secondary-button level-btn is-writing-btn">Writing Practice</a>
           </div>
         </article>
 
@@ -169,6 +195,7 @@
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button level-btn">Paragraph Practice</a>
             <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button level-btn">Sentence Practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=all" class="secondary-button level-btn is-writing-btn">Writing Practice</a>
           </div>
         </article>
       </div>
