@@ -404,9 +404,11 @@
   // ---------------------------------------------------------------------------
   function renderSentenceFeedback() {
     const feedback = state.feedback;
-    const isCorrect = feedback.is_correct;
+    const isCorrect = Boolean(feedback.is_correct);
     const headlineClass = isCorrect ? "is-correct" : "is-wrong";
     const itemLevel = feedback.level || state.level;
+    const reasonRight = feedback.reason_right || (isCorrect ? feedback.explanation : "-");
+    const reasonWrong = feedback.reason_wrong || (!isCorrect ? (feedback.selected_answer_explanation || (feedback.rule ? `${(feedback.selected_answer || "").split(". ")[1] || feedback.selected_answer} does not fit because ${feedback.rule[0].toLowerCase() + feedback.rule.slice(1)}` : "-")) : "-");
 
     els.feedbackPanel.innerHTML = `
       <div class="chip-row">
@@ -419,8 +421,8 @@
         <p class="feedback-line"><strong>Correct answer:</strong> ${escapeHtml(feedback.correct_answer)}</p>
         <p class="feedback-line"><strong>Your answer:</strong> ${escapeHtml(feedback.selected_answer)}</p>
         <p class="feedback-line"><strong>Grammar rule:</strong> ${escapeHtml(feedback.rule)}</p>
-        <p class="feedback-line"><strong>Why the correct answer is right:</strong> ${escapeHtml(feedback.explanation)}</p>
-        <p class="feedback-line"><strong>Why your selection is wrong:</strong> ${escapeHtml(feedback.selected_answer_explanation)}</p>
+        <p class="feedback-line"><strong>Reason you were right:</strong> ${escapeHtml(reasonRight)}</p>
+        <p class="feedback-line"><strong>Reason you were wrong:</strong> ${escapeHtml(reasonWrong)}</p>
         <p class="feedback-line"><strong>Sentence:</strong> ${escapeHtml(feedback.sentence_explanation)}</p>
       </div>
     `;
@@ -434,7 +436,10 @@
 
     const blanksReviewHtml = (feedback.blanks_feedback || [])
       .map((b) => {
-        const isCorr = b.is_correct;
+        const isCorr = Boolean(b.is_correct);
+        const reasonRight = b.reason_right || (isCorr ? b.explanation : "-");
+        const reasonWrong = b.reason_wrong || (!isCorr ? (b.rule ? `${(b.selected_answer || "").split(". ")[1] || b.selected_answer} does not fit because ${b.rule[0].toLowerCase() + b.rule.slice(1)}` : "-") : "-");
+
         return `
           <div class="blank-feedback-card ${isCorr ? "is-correct-border" : "is-wrong-border"}">
             <div class="blank-feedback-head">
@@ -446,7 +451,8 @@
               <p class="feedback-line"><strong>Correct answer:</strong> ${escapeHtml(b.correct_answer)}</p>
               <p class="feedback-line"><strong>Your answer:</strong> ${escapeHtml(b.selected_answer)}</p>
               <p class="feedback-line"><strong>Rule:</strong> ${escapeHtml(b.rule)}</p>
-              <p class="feedback-line"><strong>Why it fits:</strong> ${escapeHtml(b.explanation)}</p>
+              <p class="feedback-line"><strong>Reason you were right:</strong> ${escapeHtml(reasonRight)}</p>
+              <p class="feedback-line"><strong>Reason you were wrong:</strong> ${escapeHtml(reasonWrong)}</p>
             </div>
           </div>
         `;
@@ -560,8 +566,11 @@
         .map((p) => {
           const blanksReview = (p.blanks || [])
             .map((b) => {
-              const isCorr = b.is_correct;
+              const isCorr = Boolean(b.is_correct);
               const selected = b.selected_answer || "No answer";
+              const reasonRight = b.reason_right || (isCorr ? b.explanation : "-");
+              const reasonWrong = b.reason_wrong || (!isCorr ? (b.rule ? `${(selected || "").split(". ")[1] || selected} does not fit because ${b.rule[0].toLowerCase() + b.rule.slice(1)}` : "-") : "-");
+
               return `
                 <div class="review-blank-row ${isCorr ? "is-corr" : "is-incorr"}">
                   <div class="review-blank-head">
@@ -574,7 +583,8 @@
                     <span><strong>Correct:</strong> ${escapeHtml(b.correct_answer)}</span>
                   </div>
                   <p class="review-blank-rule"><strong>Rule:</strong> ${escapeHtml(b.rule)}</p>
-                  <p class="review-blank-why"><strong>Why:</strong> ${escapeHtml(b.explanation)}</p>
+                  <p class="review-blank-why"><strong>Reason you were right:</strong> ${escapeHtml(reasonRight)}</p>
+                  <p class="review-blank-why"><strong>Reason you were wrong:</strong> ${escapeHtml(reasonWrong)}</p>
                 </div>
               `;
             })
@@ -608,10 +618,13 @@
     } else if (results.questions) {
       reviewCardsHtml = results.questions
         .map((question) => {
-          const statusClass = question.is_correct ? "status-positive" : "status-negative";
-          const statusText = question.is_correct ? "Correct" : "Incorrect";
+          const isCorr = Boolean(question.is_correct);
+          const statusClass = isCorr ? "status-positive" : "status-negative";
+          const statusText = isCorr ? "Correct" : "Incorrect";
           const selected = question.selected_answer || "No answer recorded";
           const qLevel = question.level ? levelDisplayName(question.level) : levelDisplayName(currentLevel);
+          const reasonRight = question.reason_right || (isCorr ? question.explanation : "-");
+          const reasonWrong = question.reason_wrong || (!isCorr ? (question.rule ? `${(selected || "").split(". ")[1] || selected} does not fit because ${question.rule[0].toLowerCase() + question.rule.slice(1)}` : "-") : "-");
 
           return `
             <article class="review-card">
@@ -627,11 +640,12 @@
                 <span class="chip topic">Topic: ${escapeHtml(question.grammar_topic)}</span>
                 <span class="chip level">Level: ${escapeHtml(qLevel)}</span>
                 <span class="chip correct">Correct: ${escapeHtml(question.correct_answer)}</span>
-                <span class="chip ${question.is_correct ? "correct" : "wrong"}">Your answer: ${escapeHtml(selected)}</span>
+                <span class="chip ${isCorr ? "correct" : "wrong"}">Your answer: ${escapeHtml(selected)}</span>
               </div>
               <ul class="review-list">
                 <li><strong>Rule:</strong> <span>${escapeHtml(question.rule)}</span></li>
-                <li><strong>Why it is correct:</strong> <span>${escapeHtml(question.explanation)}</span></li>
+                <li><strong>Reason you were right:</strong> <span>${escapeHtml(reasonRight)}</span></li>
+                <li><strong>Reason you were wrong:</strong> <span>${escapeHtml(reasonWrong)}</span></li>
                 <li><strong>Sentence:</strong> <span>${escapeHtml(question.sentence_explanation)}</span></li>
               </ul>
             </article>

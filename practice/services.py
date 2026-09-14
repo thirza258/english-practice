@@ -318,17 +318,21 @@ def _build_feedback(question: dict[str, Any]) -> dict[str, Any]:
     correct_label = question["correct_answer"]
     selected_display = _selected_choice_display(question["options"], selected_label)
     correct_display = _selected_choice_display(question["options"], correct_label)
-    is_correct = question["is_correct"]
+    is_correct = bool(question.get("is_correct"))
     rule = question["rule"]
     correct_reason = question["explanation"]
 
     if is_correct:
-        incorrect_reason = "Your selection matches the grammar rule."
         headline = "Correct!"
+        reason_right = correct_reason
+        reason_wrong = "-"
+        incorrect_reason = "-"
     else:
-        selected_text = selected_display.split(". ", 1)[1] if ". " in selected_display else selected_display
-        incorrect_reason = f"{selected_text} does not fit because {rule[0].lower() + rule[1:]}"
         headline = "Incorrect."
+        reason_right = "-"
+        selected_text = selected_display.split(". ", 1)[1] if ". " in selected_display else selected_display
+        reason_wrong = f"{selected_text} does not fit because {rule[0].lower() + rule[1:]}"
+        incorrect_reason = reason_wrong
 
     return {
         "headline": headline,
@@ -339,6 +343,8 @@ def _build_feedback(question: dict[str, Any]) -> dict[str, Any]:
         "selected_answer": selected_display,
         "rule": rule,
         "explanation": correct_reason,
+        "reason_right": reason_right,
+        "reason_wrong": reason_wrong,
         "selected_answer_explanation": incorrect_reason,
         "sentence_explanation": question["sentence_explanation"],
     }
@@ -348,11 +354,21 @@ def _build_paragraph_feedback(paragraph: dict[str, Any]) -> dict[str, Any]:
     blanks_feedback = []
     total_correct = 0
     for b in paragraph["blanks"]:
-        is_corr = b["is_correct"]
+        is_corr = bool(b.get("is_correct"))
         if is_corr:
             total_correct += 1
-        sel_display = _selected_choice_display(b["options"], b["selected_answer"])
+        sel_display = _selected_choice_display(b["options"], b.get("selected_answer"))
         corr_display = _selected_choice_display(b["options"], b["correct_answer"])
+        rule = b["rule"]
+        corr_reason = b["explanation"]
+
+        if is_corr:
+            reason_right = corr_reason
+            reason_wrong = "-"
+        else:
+            reason_right = "-"
+            sel_text = sel_display.split(". ", 1)[1] if ". " in sel_display else sel_display
+            reason_wrong = f"{sel_text} does not fit because {rule[0].lower() + rule[1:]}"
 
         blanks_feedback.append(
             {
@@ -361,8 +377,10 @@ def _build_paragraph_feedback(paragraph: dict[str, Any]) -> dict[str, Any]:
                 "grammar_topic": b["grammar_topic"],
                 "correct_answer": corr_display,
                 "selected_answer": sel_display,
-                "rule": b["rule"],
-                "explanation": b["explanation"],
+                "rule": rule,
+                "explanation": corr_reason,
+                "reason_right": reason_right,
+                "reason_wrong": reason_wrong,
             }
         )
 
@@ -497,6 +515,20 @@ def _question_result_payload(question: dict[str, Any]) -> dict[str, Any]:
     selected = question["selected_answer"]
     selected_display = _selected_choice_display(question["options"], selected) if selected else None
     correct_display = _selected_choice_display(question["options"], question["correct_answer"])
+    is_corr = bool(question.get("is_correct"))
+    rule = question["rule"]
+    corr_reason = question["explanation"]
+
+    if is_corr:
+        reason_right = corr_reason
+        reason_wrong = "-"
+    else:
+        reason_right = "-"
+        if selected_display:
+            sel_text = selected_display.split(". ", 1)[1] if ". " in selected_display else selected_display
+        else:
+            sel_text = "No answer"
+        reason_wrong = f"{sel_text} does not fit because {rule[0].lower() + rule[1:]}"
 
     return {
         "id": question["id"],
@@ -506,32 +538,50 @@ def _question_result_payload(question: dict[str, Any]) -> dict[str, Any]:
         "grammar_topic": question["grammar_topic"],
         "grammar_topics": question["grammar_topics"],
         "level": question.get("level", "intermediate"),
-        "rule": question["rule"],
-        "explanation": question["explanation"],
+        "rule": rule,
+        "explanation": corr_reason,
+        "reason_right": reason_right,
+        "reason_wrong": reason_wrong,
         "sentence_explanation": question["sentence_explanation"],
         "correct_answer": correct_display,
         "selected_answer": selected_display,
-        "is_correct": question["is_correct"],
+        "is_correct": is_corr,
     }
 
 
 def _paragraph_result_payload(paragraph: dict[str, Any]) -> dict[str, Any]:
     blanks_result = []
     for b in paragraph["blanks"]:
-        selected = b["selected_answer"]
+        selected = b.get("selected_answer")
         selected_display = _selected_choice_display(b["options"], selected) if selected else None
         correct_display = _selected_choice_display(b["options"], b["correct_answer"])
+        is_corr = bool(b.get("is_correct"))
+        rule = b["rule"]
+        corr_reason = b["explanation"]
+
+        if is_corr:
+            reason_right = corr_reason
+            reason_wrong = "-"
+        else:
+            reason_right = "-"
+            if selected_display:
+                sel_text = selected_display.split(". ", 1)[1] if ". " in selected_display else selected_display
+            else:
+                sel_text = "No answer"
+            reason_wrong = f"{sel_text} does not fit because {rule[0].lower() + rule[1:]}"
 
         blanks_result.append(
             {
                 "blank_id": b["blank_id"],
                 "options": b["options"],
                 "grammar_topic": b["grammar_topic"],
-                "rule": b["rule"],
-                "explanation": b["explanation"],
+                "rule": rule,
+                "explanation": corr_reason,
+                "reason_right": reason_right,
+                "reason_wrong": reason_wrong,
                 "correct_answer": correct_display,
                 "selected_answer": selected_display,
-                "is_correct": b["is_correct"],
+                "is_correct": is_corr,
             }
         )
 

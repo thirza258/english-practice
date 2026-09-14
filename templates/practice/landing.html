@@ -1,10 +1,10 @@
 {% extends "practice/base.html" %}
 {% load static %}
 
-{% block title %}English Grammar & Paragraph Practice Diagnostic{% endblock %}
-{% block meta_description %}Practice English grammar and paragraph building with sentence diagnostics and multi-blank paragraph cloze exercises divided by English level.{% endblock %}
-{% block og_title %}English Grammar & Paragraph Practice Diagnostic{% endblock %}
-{% block og_description %}Start a hidden-topic grammar or paragraph diagnostic with instant feedback and topic-by-topic results.{% endblock %}
+{% block title %}English Grammar & Paragraph Practice{% endblock %}
+{% block meta_description %}Practice English grammar with fill-the-blank paragraphs and sentence tests, with instant feedback for every answer.{% endblock %}
+{% block og_title %}English Grammar & Paragraph Practice{% endblock %}
+{% block og_description %}Practice English grammar with fill-the-blank paragraphs and sentence tests, with instant feedback for every answer.{% endblock %}
 {% block body_class %}landing-body{% endblock %}
 {% block head_extra %}
 <script type="application/ld+json">
@@ -22,205 +22,444 @@
 
 {% block content %}
 <div class="page-shell landing-page">
-  <div class="ambient ambient-a"></div>
-  <div class="ambient ambient-b"></div>
-
-  <header class="topbar landing-topbar">
-    <div class="topbar-copy">
-      <p class="eyebrow">English Practice</p>
-      <h1>Grammar diagnostic & multi-blank paragraph builder.</h1>
-      <p class="topbar-note">
-        Master English grammar in context. Choose between sentence diagnostics and full paragraph cloze exercises to understand sentence flow, transitions, and cohesive paragraph construction.
-      </p>
+  <header class="academic-masthead">
+    <div class="running-head-row">
+      <span class="running-head-text" data-i18n="siteName">English Practice</span>
+      <div class="academic-lang-switcher" aria-label="Language Selector">
+        <span class="lang-label" data-i18n="langLabel">Language / Bahasa:</span>
+        <div class="lang-toggle-pill" role="group" aria-label="Choose Language">
+          <button type="button" class="lang-btn is-active" data-lang="en" id="langBtnEn" aria-pressed="true">
+            English
+          </button>
+          <span class="lang-divider">|</span>
+          <button type="button" class="lang-btn" data-lang="id" id="langBtnId" aria-pressed="false">
+            Bahasa Indonesia
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="topbar-actions">
-      <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button topbar-cta">Start Paragraph Mode</a>
-      <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button">Sentence Mode</a>
+
+    <div class="masthead-main">
+      <h1 class="book-title" data-i18n="mainTitle">Grammar and paragraph practice.</h1>
+      <p class="book-subtitle" data-i18n="subtitle">
+        Short diagnostic tests and fill-the-blank paragraphs with instant feedback. Every answer comes with the rule explained — from beginner (A1) to IELTS band 9.
+      </p>
+
+      <div class="masthead-actions">
+        <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button" data-i18n="startParagraphBtn">Start paragraph test</a>
+        <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button" data-i18n="startSentenceBtn">Start sentence test</a>
+      </div>
     </div>
   </header>
 
   <main class="landing-layout">
-    <!-- Practice Mode Showcase -->
-    <section class="card practice-modes-section" aria-label="Practice Modes">
+    <section class="book-card practice-modes-section" aria-label="Practice Modes">
       <div class="section-heading">
-        <p class="eyebrow">Two Practice Modes</p>
-        <h2>Choose how you want to train your English.</h2>
+        <h2 data-i18n="section1Title">Two practice modes</h2>
       </div>
 
       <div class="mode-grid">
         <article class="mode-card is-featured">
           <div class="mode-badge-row">
-            <span class="mode-badge new-badge">Paragraph Builder</span>
-            <span class="mode-meta">Multi-Blank Cloze</span>
+            <span class="academic-badge" data-i18n="mode1Badge">Paragraph mode</span>
+            <span class="mode-meta" data-i18n="mode1Meta">Fill the blanks</span>
           </div>
-          <h3>Paragraph Cloze Practice</h3>
-          <p class="mode-desc">
-            Read complete, coherent paragraphs with multiple numbered blanks. Choose the best option for each blank to master transitions, discourse connectors, clause cohesion, and paragraph flow.
+          <h3 data-i18n="mode1Title">Paragraph practice</h3>
+          <p class="mode-desc" data-i18n="mode1Desc">
+            Read a short paragraph with numbered blanks and choose the best option for each one.
           </p>
           <ul class="mode-bullets">
-            <li>Multiple interactive blanks per passage</li>
-            <li>Real-time preview as you fill each blank</li>
-            <li>Full paragraph cohesion analysis & rule breakdown</li>
+            <li data-i18n="mode1Bullet1">Multiple blanks per paragraph</li>
+            <li data-i18n="mode1Bullet2">Live preview as you pick answers</li>
+            <li data-i18n="mode1Bullet3">Every blank explained after you submit</li>
           </ul>
           <div class="mode-cta-row">
-            <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button">Start Paragraph Test</a>
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button" data-i18n="mode1Btn">Start paragraph test</a>
           </div>
         </article>
 
         <article class="mode-card">
           <div class="mode-badge-row">
-            <span class="mode-badge">Sentence Mode</span>
-            <span class="mode-meta">10 Questions</span>
+            <span class="academic-badge" data-i18n="mode2Badge">Sentence mode</span>
+            <span class="mode-meta" data-i18n="mode2Meta">10 questions</span>
           </div>
-          <h3>Sentence Diagnostic</h3>
-          <p class="mode-desc">
-            Fast diagnostic test with 10 multiple-choice questions. The grammar topic remains hidden until you submit your answer, giving you instant educational feedback.
+          <h3 data-i18n="mode2Title">Sentence practice</h3>
+          <p class="mode-desc" data-i18n="mode2Desc">
+            10 multiple-choice questions. The grammar topic stays hidden until you answer.
           </p>
           <ul class="mode-bullets">
-            <li>One targeted blank per question</li>
-            <li>Immediate feedback & rule explanations</li>
-            <li>Topic-by-topic accuracy summary</li>
+            <li data-i18n="mode2Bullet1">One blank per question</li>
+            <li data-i18n="mode2Bullet2">Instant feedback with the rule</li>
+            <li data-i18n="mode2Bullet3">Accuracy summary by grammar topic</li>
           </ul>
           <div class="mode-cta-row">
-            <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button">Start Sentence Test</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button" data-i18n="mode2Btn">Start sentence test</a>
           </div>
         </article>
       </div>
     </section>
 
-    <!-- English Level Selection Cards -->
-    <section class="card level-section" aria-label="Select English Level">
+    <section class="book-card level-section" aria-label="Select English Level">
       <div class="section-heading">
-        <p class="eyebrow">Choose your level</p>
-        <h2>Divided by English proficiency.</h2>
-        <p class="level-intro">Select a difficulty tier tailored to your learning goals, available for both paragraph and sentence modes.</p>
+        <h2 data-i18n="section2Title">Choose your level</h2>
+        <p class="level-intro" data-i18n="section2Intro">Every level works in both modes. Choose “All levels” for a mixed diagnostic.</p>
       </div>
 
       <div class="level-grid">
         <article class="level-card" data-level="beginner">
-          <div class="level-badge beginner-badge">A1 – A2</div>
-          <h3>Beginner Level</h3>
-          <p class="level-desc">Foundational grammar, simple tenses, subject pronouns, basic conjunctions (and, but, because, so), and elementary sentence structures.</p>
+          <div class="level-badge beginner-badge">CEFR A1–A2</div>
+          <h3 data-i18n="levelBeginnerTitle">Beginner</h3>
+          <p class="level-desc" data-i18n="levelBeginnerDesc">Simple tenses, subject pronouns, basic conjunctions (and, but, because, so), and simple sentence structures.</p>
           <ul class="level-features">
-            <li>Simple sentences & daily routines</li>
-            <li>Subject-verb agreement basics</li>
-            <li>Elementary pronoun & preposition use</li>
+            <li data-i18n="levelBeginnerBullet1">Simple sentences and daily routines</li>
+            <li data-i18n="levelBeginnerBullet2">Subject–verb agreement basics</li>
+            <li data-i18n="levelBeginnerBullet3">Basic pronouns and prepositions</li>
           </ul>
           <div class="level-actions-stack">
-            <a href="{% url 'practice:test' %}?mode=paragraph&level=beginner" class="primary-button level-btn">Paragraph Practice</a>
-            <a href="{% url 'practice:test' %}?mode=sentence&level=beginner" class="secondary-button level-btn">Sentence Practice</a>
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=beginner" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=beginner" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
           </div>
         </article>
 
         <article class="level-card" data-level="intermediate">
-          <div class="level-badge intermediate-badge">B1 – B2</div>
-          <h3>Intermediate Level</h3>
-          <p class="level-desc">Discourse connectors (however, therefore, nonetheless), relative/adverb clauses, gerunds, participles, conditionals, and prepositional idioms.</p>
+          <div class="level-badge intermediate-badge">CEFR B1–B2</div>
+          <h3 data-i18n="levelInterTitle">Intermediate</h3>
+          <p class="level-desc" data-i18n="levelInterDesc">Connectors (however, therefore, nonetheless), relative and adverb clauses, gerunds, participles, and conditionals.</p>
           <ul class="level-features">
-            <li>Expository paragraph structure</li>
-            <li>Adjective, adverb & noun clauses</li>
-            <li>Participle & gerund modifiers</li>
+            <li data-i18n="levelInterBullet1">Paragraph structure and connectors</li>
+            <li data-i18n="levelInterBullet2">Adjective, adverb, and noun clauses</li>
+            <li data-i18n="levelInterBullet3">Gerunds and participles</li>
           </ul>
           <div class="level-actions-stack">
-            <a href="{% url 'practice:test' %}?mode=paragraph&level=intermediate" class="primary-button level-btn">Paragraph Practice</a>
-            <a href="{% url 'practice:test' %}?mode=sentence&level=intermediate" class="secondary-button level-btn">Sentence Practice</a>
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=intermediate" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=intermediate" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
           </div>
         </article>
 
         <article class="level-card" data-level="advanced">
-          <div class="level-badge advanced-badge">C1 – C2</div>
-          <h3>Advanced Level</h3>
-          <p class="level-desc">Academic syntax, mandative subjunctive mood, inverted word order, causative structures, elliptical clauses, and nuanced rhetorical transitions.</p>
+          <div class="level-badge advanced-badge">CEFR C1–C2</div>
+          <h3 data-i18n="levelAdvTitle">Advanced</h3>
+          <p class="level-desc" data-i18n="levelAdvDesc">Subjunctive mood, inversion, causative structures, elliptical clauses, and academic syntax.</p>
           <ul class="level-features">
-            <li>Subjunctive mood & inversion</li>
-            <li>Concessive & counterfactual clauses</li>
-            <li>Correlative syntactic parallelism</li>
+            <li data-i18n="levelAdvBullet1">Subjunctive and inversion</li>
+            <li data-i18n="levelAdvBullet2">Concessive and counterfactual clauses</li>
+            <li data-i18n="levelAdvBullet3">Parallel structures</li>
           </ul>
           <div class="level-actions-stack">
-            <a href="{% url 'practice:test' %}?mode=paragraph&level=advanced" class="primary-button level-btn">Paragraph Practice</a>
-            <a href="{% url 'practice:test' %}?mode=sentence&level=advanced" class="secondary-button level-btn">Sentence Practice</a>
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=advanced" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=advanced" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
           </div>
         </article>
 
         <article class="level-card ielts-card" data-level="ielts_8_9">
-          <div class="level-badge ielts-badge">IELTS Band 8.0 – 9.0</div>
-          <h3>IELTS 8–9 (Lexical Mastery)</h3>
-          <p class="level-desc">Rare, low-frequency academic vocabulary (cogent, obfuscate, salutary, perspicacious, lacuna, exacerbate), nuanced collocations, and dense scholarly syntax.</p>
+          <div class="level-badge ielts-badge">IELTS 8.0–9.0</div>
+          <h3 data-i18n="levelIeltsTitle">IELTS 8–9</h3>
+          <p class="level-desc" data-i18n="levelIeltsDesc">Rare academic vocabulary and collocations of the kind used in high-band IELTS writing.</p>
           <ul class="level-features">
-            <li>Rare & low-frequency lexical resource</li>
-            <li>Academic collocations & nuances</li>
-            <li>Advanced inversion & subjunctive syntax</li>
+            <li data-i18n="levelIeltsBullet1">Low-frequency academic vocabulary</li>
+            <li data-i18n="levelIeltsBullet2">Academic collocations</li>
+            <li data-i18n="levelIeltsBullet3">Advanced inversion and subjunctive</li>
           </ul>
           <div class="level-actions-stack">
-            <a href="{% url 'practice:test' %}?mode=paragraph&level=ielts_8_9" class="primary-button level-btn">Paragraph Practice</a>
-            <a href="{% url 'practice:test' %}?mode=sentence&level=ielts_8_9" class="secondary-button level-btn">Sentence Practice</a>
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=ielts_8_9" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=ielts_8_9" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
           </div>
         </article>
 
         <article class="level-card is-featured" data-level="all">
-          <div class="level-badge all-badge">A1 – C2 & IELTS</div>
-          <h3>All Levels (Mixed)</h3>
-          <p class="level-desc">A comprehensive diagnostic test covering a balanced variety across beginner, intermediate, advanced, and rare IELTS 8-9 vocabulary.</p>
+          <div class="level-badge all-badge">All levels</div>
+          <h3 data-i18n="levelAllTitle">All levels</h3>
+          <p class="level-desc" data-i18n="levelAllDesc">A balanced mix from beginner to IELTS 8–9. A full diagnostic of your grammar.</p>
           <ul class="level-features">
-            <li>Full diagnostic assessment</li>
-            <li>Broad topic coverage</li>
-            <li>Pinpoints exact grammar weaknesses</li>
+            <li data-i18n="levelAllBullet1">Full diagnostic</li>
+            <li data-i18n="levelAllBullet2">Wide topic coverage</li>
+            <li data-i18n="levelAllBullet3">Shows your weak points</li>
           </ul>
           <div class="level-actions-stack">
-            <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button level-btn">Paragraph Practice</a>
-            <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button level-btn">Sentence Practice</a>
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
           </div>
         </article>
       </div>
     </section>
 
-    <section class="feature-grid" aria-label="Diagnostic benefits">
-      <article class="card feature-card">
-        <p class="eyebrow">Paragraph Building</p>
-        <h3>Understand Cohesion & Flow</h3>
-        <p>Filling multiple blanks within a complete paragraph teaches you how sentences connect, how pronouns refer across sentences, and how transitions link ideas.</p>
+    <section class="feature-grid" aria-label="Why use this site">
+      <article class="book-card feature-card">
+        <h3 data-i18n="feat1Title">Paragraphs build cohesion</h3>
+        <p data-i18n="feat1Desc">Filling blanks in a full paragraph shows how sentences connect through pronouns, connectors, and transitions.</p>
       </article>
-      <article class="card feature-card">
-        <p class="eyebrow">Hidden topic</p>
-        <h3>Focus on Context, Not Labels</h3>
-        <p>The grammar topic stays internal until you submit your answer, ensuring you evaluate the sentence and paragraph meaning naturally.</p>
+
+      <article class="book-card feature-card">
+        <h3 data-i18n="feat2Title">The topic stays hidden</h3>
+        <p data-i18n="feat2Desc">You answer by meaning, not by guessing the grammar label. The rule is revealed together with the feedback.</p>
       </article>
-      <article class="card feature-card">
-        <p class="eyebrow">Instant feedback</p>
-        <h3>Detailed Rule Explanations</h3>
-        <p>Every response breaks down why the correct answer fits the discourse and why the distractors fail, reinforcing the grammar rule.</p>
+
+      <article class="book-card feature-card">
+        <h3 data-i18n="feat3Title">Every answer is explained</h3>
+        <p data-i18n="feat3Desc">After you submit, each question shows why the correct option fits and why the others do not.</p>
       </article>
     </section>
 
-    <section class="card steps-card">
+    <section class="book-card steps-card">
       <div class="section-heading">
-        <p class="eyebrow">How Paragraph Practice Works</p>
-        <h2>Read the passage, fill each blank, and learn the rules.</h2>
+        <h2 data-i18n="section4Title">How it works</h2>
       </div>
       <ol class="step-list">
         <li>
           <span class="step-number">1</span>
           <div>
-            <h3>Read the paragraph passage</h3>
-            <p>Review the full context of the paragraph and identify the numbered blank placeholders `[ 1 ]`, `[ 2 ]`, `[ 3 ]`.</p>
+            <h3 data-i18n="step1Title">Read the passage</h3>
+            <p data-i18n="step1Desc">Read the paragraph and notice the numbered blanks.</p>
           </div>
         </li>
         <li>
           <span class="step-number">2</span>
           <div>
-            <h3>Select choices for each blank</h3>
-            <p>Click on each blank to choose from 5 multiple choices (A-E). Watch your chosen words fill the paragraph in real time.</p>
+            <h3 data-i18n="step2Title">Pick answers for each blank</h3>
+            <p data-i18n="step2Desc">Click a blank and choose from five options (A–E). The text updates as you go.</p>
           </div>
         </li>
         <li>
           <span class="step-number">3</span>
           <div>
-            <h3>Submit and review paragraph cohesion</h3>
-            <p>See color-coded feedback for every blank, learn the specific grammar rules, and read the paragraph cohesion analysis.</p>
+            <h3 data-i18n="step3Title">Submit and learn</h3>
+            <p data-i18n="step3Desc">Get color-coded feedback for every blank, the grammar rule behind each answer, and a cohesion summary.</p>
           </div>
         </li>
       </ol>
     </section>
   </main>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (() => {
+    const TRANSLATIONS = {
+      en: {
+        pageTitle: "English Grammar & Paragraph Practice",
+        metaDescription: "Practice English grammar with fill-the-blank paragraphs and sentence tests, with instant feedback for every answer.",
+        siteName: "English Practice",
+        footerHome: "Home",
+        langLabel: "Language / Bahasa:",
+        mainTitle: "Grammar and paragraph practice.",
+        subtitle: "Short diagnostic tests and fill-the-blank paragraphs with instant feedback. Every answer comes with the rule explained — from beginner (A1) to IELTS band 9.",
+        startParagraphBtn: "Start paragraph test",
+        startSentenceBtn: "Start sentence test",
+
+        section1Title: "Two practice modes",
+        mode1Badge: "Paragraph mode",
+        mode1Meta: "Fill the blanks",
+        mode1Title: "Paragraph practice",
+        mode1Desc: "Read a short paragraph with numbered blanks and choose the best option for each one.",
+        mode1Bullet1: "Multiple blanks per paragraph",
+        mode1Bullet2: "Live preview as you pick answers",
+        mode1Bullet3: "Every blank explained after you submit",
+        mode1Btn: "Start paragraph test",
+
+        mode2Badge: "Sentence mode",
+        mode2Meta: "10 questions",
+        mode2Title: "Sentence practice",
+        mode2Desc: "10 multiple-choice questions. The grammar topic stays hidden until you answer.",
+        mode2Bullet1: "One blank per question",
+        mode2Bullet2: "Instant feedback with the rule",
+        mode2Bullet3: "Accuracy summary by grammar topic",
+        mode2Btn: "Start sentence test",
+
+        section2Title: "Choose your level",
+        section2Intro: "Every level works in both modes. Choose “All levels” for a mixed diagnostic.",
+
+        levelBeginnerTitle: "Beginner",
+        levelBeginnerDesc: "Simple tenses, subject pronouns, basic conjunctions (and, but, because, so), and simple sentence structures.",
+        levelBeginnerBullet1: "Simple sentences and daily routines",
+        levelBeginnerBullet2: "Subject–verb agreement basics",
+        levelBeginnerBullet3: "Basic pronouns and prepositions",
+
+        levelInterTitle: "Intermediate",
+        levelInterDesc: "Connectors (however, therefore, nonetheless), relative and adverb clauses, gerunds, participles, and conditionals.",
+        levelInterBullet1: "Paragraph structure and connectors",
+        levelInterBullet2: "Adjective, adverb, and noun clauses",
+        levelInterBullet3: "Gerunds and participles",
+
+        levelAdvTitle: "Advanced",
+        levelAdvDesc: "Subjunctive mood, inversion, causative structures, elliptical clauses, and academic syntax.",
+        levelAdvBullet1: "Subjunctive and inversion",
+        levelAdvBullet2: "Concessive and counterfactual clauses",
+        levelAdvBullet3: "Parallel structures",
+
+        levelIeltsTitle: "IELTS 8–9",
+        levelIeltsDesc: "Rare academic vocabulary and collocations of the kind used in high-band IELTS writing.",
+        levelIeltsBullet1: "Low-frequency academic vocabulary",
+        levelIeltsBullet2: "Academic collocations",
+        levelIeltsBullet3: "Advanced inversion and subjunctive",
+
+        levelAllTitle: "All levels",
+        levelAllDesc: "A balanced mix from beginner to IELTS 8–9. A full diagnostic of your grammar.",
+        levelAllBullet1: "Full diagnostic",
+        levelAllBullet2: "Wide topic coverage",
+        levelAllBullet3: "Shows your weak points",
+
+        paragraphPracticeBtn: "Paragraph practice",
+        sentencePracticeBtn: "Sentence practice",
+
+        feat1Title: "Paragraphs build cohesion",
+        feat1Desc: "Filling blanks in a full paragraph shows how sentences connect through pronouns, connectors, and transitions.",
+
+        feat2Title: "The topic stays hidden",
+        feat2Desc: "You answer by meaning, not by guessing the grammar label. The rule is revealed together with the feedback.",
+
+        feat3Title: "Every answer is explained",
+        feat3Desc: "After you submit, each question shows why the correct option fits and why the others do not.",
+
+        section4Title: "How it works",
+
+        step1Title: "Read the passage",
+        step1Desc: "Read the paragraph and notice the numbered blanks.",
+
+        step2Title: "Pick answers for each blank",
+        step2Desc: "Click a blank and choose from five options (A–E). The text updates as you go.",
+
+        step3Title: "Submit and learn",
+        step3Desc: "Get color-coded feedback for every blank, the grammar rule behind each answer, and a cohesion summary.",
+
+        footerText: "English practice — grammar and paragraph exercises with instant feedback."
+      },
+      id: {
+        pageTitle: "Latihan Tata Bahasa & Paragraf Bahasa Inggris",
+        metaDescription: "Latihan tata bahasa Inggris dengan paragraf rumpang dan tes kalimat, disertai umpan balik langsung untuk setiap jawaban.",
+        siteName: "Latihan Bahasa Inggris",
+        footerHome: "Beranda",
+        langLabel: "Bahasa / Language:",
+        mainTitle: "Latihan tata bahasa dan paragraf bahasa Inggris.",
+        subtitle: "Tes diagnostik singkat dan paragraf rumpang dengan umpan balik langsung. Setiap jawaban disertai penjelasan kaidahnya — dari pemula (A1) hingga IELTS band 9.",
+        startParagraphBtn: "Mulai tes paragraf",
+        startSentenceBtn: "Mulai tes kalimat",
+
+        section1Title: "Dua mode latihan",
+        mode1Badge: "Mode paragraf",
+        mode1Meta: "Isi bagian rumpang",
+        mode1Title: "Latihan paragraf",
+        mode1Desc: "Baca paragraf singkat dengan bagian rumpang bernomor, lalu pilih jawaban terbaik untuk setiap rumpang.",
+        mode1Bullet1: "Beberapa rumpang per paragraf",
+        mode1Bullet2: "Pratinjau langsung saat memilih jawaban",
+        mode1Bullet3: "Setiap rumpang dijelaskan setelah dikirim",
+        mode1Btn: "Mulai tes paragraf",
+
+        mode2Badge: "Mode kalimat",
+        mode2Meta: "10 soal",
+        mode2Title: "Latihan kalimat",
+        mode2Desc: "10 soal pilihan ganda. Topik tata bahasanya disembunyikan sampai Anda menjawab.",
+        mode2Bullet1: "Satu rumpang per soal",
+        mode2Bullet2: "Umpan balik langsung beserta kaidahnya",
+        mode2Bullet3: "Rangkuman akurasi per topik tata bahasa",
+        mode2Btn: "Mulai tes kalimat",
+
+        section2Title: "Pilih tingkat Anda",
+        section2Intro: "Setiap tingkat tersedia di kedua mode. Pilih “Semua tingkat” untuk diagnostik campuran.",
+
+        levelBeginnerTitle: "Pemula",
+        levelBeginnerDesc: "Tenses sederhana, kata ganti subjek, kata hubung dasar (and, but, because, so), dan struktur kalimat sederhana.",
+        levelBeginnerBullet1: "Kalimat sederhana dan rutinitas harian",
+        levelBeginnerBullet2: "Dasar kesesuaian subjek–kata kerja",
+        levelBeginnerBullet3: "Kata ganti dan preposisi dasar",
+
+        levelInterTitle: "Menengah",
+        levelInterDesc: "Kata hubung wacana (however, therefore, nonetheless), klausa relatif dan keterangan, gerund, partisip, dan kalimat pengandaian.",
+        levelInterBullet1: "Struktur paragraf dan kata hubung",
+        levelInterBullet2: "Klausa kata sifat, keterangan, dan benda",
+        levelInterBullet3: "Gerund dan partisip",
+
+        levelAdvTitle: "Lanjutan",
+        levelAdvDesc: "Modus subjungtif, inversi, struktur kausatif, klausa eliptis, dan sintaksis akademis.",
+        levelAdvBullet1: "Subjungtif dan inversi",
+        levelAdvBullet2: "Klausa konsesif dan kontrafaktual",
+        levelAdvBullet3: "Struktur paralel",
+
+        levelIeltsTitle: "IELTS 8–9",
+        levelIeltsDesc: "Kosakata akademis langka dan kolokasi seperti yang digunakan dalam tulisan IELTS band tinggi.",
+        levelIeltsBullet1: "Kosakata akademis frekuensi rendah",
+        levelIeltsBullet2: "Kolokasi akademis",
+        levelIeltsBullet3: "Inversi dan subjungtif lanjutan",
+
+        levelAllTitle: "Semua tingkat",
+        levelAllDesc: "Campuran seimbang dari pemula hingga IELTS 8–9. Diagnostik lengkap kemampuan tata bahasa Anda.",
+        levelAllBullet1: "Diagnostik lengkap",
+        levelAllBullet2: "Cakupan topik luas",
+        levelAllBullet3: "Menunjukkan titik lemah Anda",
+
+        paragraphPracticeBtn: "Latihan paragraf",
+        sentencePracticeBtn: "Latihan kalimat",
+
+        feat1Title: "Paragraf melatih kohesi",
+        feat1Desc: "Mengisi rumpang dalam paragraf utuh menunjukkan bagaimana kalimat terhubung melalui kata ganti, kata hubung, dan transisi.",
+
+        feat2Title: "Topik tetap tersembunyi",
+        feat2Desc: "Anda menjawab berdasarkan makna, bukan menebak label tata bahasa. Kaidahnya muncul bersama umpan balik.",
+
+        feat3Title: "Setiap jawaban dijelaskan",
+        feat3Desc: "Setelah dikirim, setiap soal menunjukkan mengapa opsi yang benar cocok dan mengapa opsi lain tidak.",
+
+        section4Title: "Cara kerjanya",
+
+        step1Title: "Baca teks",
+        step1Desc: "Baca paragraf dan perhatikan bagian rumpang bernomor.",
+
+        step2Title: "Pilih jawaban untuk setiap rumpang",
+        step2Desc: "Klik sebuah rumpang lalu pilih dari lima opsi (A–E). Teks diperbarui saat Anda memilih.",
+
+        step3Title: "Kirim dan pelajari",
+        step3Desc: "Dapatkan umpan balik berkode warna untuk setiap rumpang, kaidah di balik setiap jawaban, dan ringkasan kohesi.",
+
+        footerText: "Latihan bahasa Inggris — tes tata bahasa dan paragraf dengan umpan balik langsung."
+      }
+    };
+
+    function applyLanguage(lang) {
+      const validLang = lang === "id" ? "id" : "en";
+      const dict = TRANSLATIONS[validLang];
+
+      document.documentElement.lang = validLang;
+      document.title = dict.pageTitle || document.title;
+
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key]) {
+          el.textContent = dict[key];
+        }
+      });
+
+      const btnEn = document.getElementById("langBtnEn");
+      const btnId = document.getElementById("langBtnId");
+      if (btnEn && btnId) {
+        btnEn.classList.toggle("is-active", validLang === "en");
+        btnEn.setAttribute("aria-pressed", validLang === "en" ? "true" : "false");
+        btnId.classList.toggle("is-active", validLang === "id");
+        btnId.setAttribute("aria-pressed", validLang === "id" ? "true" : "false");
+      }
+
+      try {
+        localStorage.setItem("practice_landing_lang", validLang);
+      } catch (e) {}
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnEn = document.getElementById("langBtnEn");
+      const btnId = document.getElementById("langBtnId");
+
+      if (btnEn) {
+        btnEn.addEventListener("click", () => applyLanguage("en"));
+      }
+      if (btnId) {
+        btnId.addEventListener("click", () => applyLanguage("id"));
+      }
+
+      let savedLang = "en";
+      try {
+        savedLang = localStorage.getItem("practice_landing_lang") || "en";
+      } catch (e) {}
+
+      applyLanguage(savedLang);
+    });
+  })();
+</script>
 {% endblock %}

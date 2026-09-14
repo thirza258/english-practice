@@ -16,4 +16,4 @@ RUN python manage.py collectstatic --noinput
 
 EXPOSE 5170
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn english_practice.wsgi:application --bind 0.0.0.0:5170 --workers 2 --access-logfile - --error-logfile -"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn english_practice.wsgi:application --bind 0.0.0.0:5170 --workers 2 --timeout 120 --access-logfile - --error-logfile -"]

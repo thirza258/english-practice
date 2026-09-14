@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -19,6 +19,38 @@ from .services import (
     save_state,
     submit_answer,
 )
+from .vocabulary import DOMAIN_NAME_MAP, POS_NAME_MAP, vocabulary_repo
+
+CANONICAL_HOST = "https://english.nevatal.id"
+
+
+def robots_txt(request: HttpRequest) -> HttpResponse:
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /api/",
+        "",
+        f"Sitemap: {CANONICAL_HOST}/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain; charset=utf-8")
+
+
+def sitemap_xml(request: HttpRequest) -> HttpResponse:
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{CANONICAL_HOST}/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>{CANONICAL_HOST}/test/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
+"""
+    return HttpResponse(xml.strip(), content_type="application/xml; charset=utf-8")
 
 
 def _error(message: str, status: int = 400, **extra: Any) -> JsonResponse:
@@ -53,7 +85,7 @@ def landing(request: HttpRequest):
         request,
         "practice/landing.html",
         {
-            "canonical_url": request.build_absolute_uri(reverse("practice:landing")),
+            "canonical_url": f"{CANONICAL_HOST}{reverse('practice:landing')}",
         },
     )
 
@@ -83,7 +115,7 @@ def test_page(request: HttpRequest):
         request,
         "practice/test.html",
         {
-            "canonical_url": request.build_absolute_uri(reverse("practice:test")),
+            "canonical_url": f"{CANONICAL_HOST}{reverse('practice:test')}",
             "initial_state": state,
             "initial_results": initial_results,
             "requested_level": active_level,
@@ -104,7 +136,10 @@ def start_test(request: HttpRequest):
     except ValueError:
         pass
 
-    state = initialise_session_state(level=level, mode=mode)
+    try:
+        state = initialise_session_state(level=level, mode=mode)
+    except ValueError as exc:
+        return _error(f"Could not prepare the test: {exc}", status=503)
     save_state(request, state)
     total_items = state.get("total_paragraphs") if state.get("test_type") == "paragraph" else state["total_questions"]
     return JsonResponse(
@@ -141,7 +176,10 @@ def retry_test(request: HttpRequest, test_id: str):
     if not mode and existing_state:
         mode = existing_state.get("test_type") or existing_state.get("mode") or "sentence"
 
-    new_state = initialise_session_state(level=level or "all", mode=mode or "sentence")
+    try:
+        new_state = initialise_session_state(level=level or "all", mode=mode or "sentence")
+    except ValueError as exc:
+        return _error(f"Could not prepare the test: {exc}", status=503)
     save_state(request, new_state)
     total_items = new_state.get("total_paragraphs") if new_state.get("test_type") == "paragraph" else new_state["total_questions"]
     return JsonResponse(
@@ -201,3 +239,59 @@ def test_results(request: HttpRequest, test_id: str):
     if not state["completed"]:
         return _error("The test is not complete yet.", status=409)
     return JsonResponse({"ok": True, **build_results(state)})
+
+
+@require_GET
+def vocabulary_sample(request: HttpRequest) -> JsonResponse:
+    """Return authentic vocabulary sample and context from Oxford 5000 and AVL datasets."""
+    level = request.GET.get("level", "all")
+    mode = request.GET.get("mode", "sentence")
+    try:
+        count = int(request.GET.get("count", 8))
+    except ValueError:
+        count = 8
+
+    context_prompt = vocabulary_repo.format_prompt_vocabulary_context(level=level, count=count, mode=mode)
+    oxford_sample = [
+        {"word": w.word, "pos": w.pos, "level": w.level}
+        for w in vocabulary_repo.get_oxford_sample(level=level, count=count)
+    ]
+    academic_sample = [
+        {
+            "family": fam.family,
+            "fam_rank": fam.fam_rank,
+            "fam_freq": fam.fam_freq,
+            "words": [
+                {
+                    "word": e.word,
+                    "pos": POS_NAME_MAP.get(e.pos, e.pos),
+                    "freq": e.freq,
+                    "categ": "core academic" if e.categ == "y" else "technical domain" if e.categ == "r" else "general member",
+                    "domain": DOMAIN_NAME_MAP.get(e.domain, e.domain) if e.domain else "General Academic",
+                }
+                for e in fam.words[:6]
+            ],
+        }
+        for fam in vocabulary_repo.get_academic_sample(level=level, count=max(4, count // 2))
+    ]
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "level": level,
+            "mode": mode,
+            "context_prompt": context_prompt,
+            "oxford_words": oxford_sample,
+            "academic_families": academic_sample,
+        }
+    )
+
+
+@require_GET
+def vocabulary_lookup(request: HttpRequest) -> JsonResponse:
+    """Look up a word in Oxford 5000 and AVL datasets."""
+    query = request.GET.get("q", "").strip()
+    if not query:
+        return _error("Query parameter 'q' is required.")
+    data = vocabulary_repo.lookup_word(query)
+    return JsonResponse({"ok": True, **data})

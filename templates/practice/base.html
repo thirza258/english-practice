@@ -4,7 +4,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#07111f">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="icon" href="{% static 'practice/favicon.svg' %}" type="image/svg+xml">
+    <link rel="icon" href="{% static 'practice/favicon.ico' %}" sizes="any">
+    <link rel="apple-touch-icon" href="{% static 'practice/favicon-180.png' %}">
     <title>{% block title %}English Practice Diagnostic{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}A hidden-topic English grammar diagnostic with immediate feedback and topic-based results.{% endblock %}">
     <meta name="robots" content="{% block robots %}index,follow{% endblock %}">
@@ -20,6 +23,23 @@
   </head>
   <body class="{% block body_class %}{% endblock %}">
     {% block content %}{% endblock %}
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <div class="site-footer-brand">
+          <span class="site-footer-name" data-i18n="siteName">English Practice</span>
+          <p class="footer-text" data-i18n="footerText">English practice — grammar and paragraph exercises with instant feedback.</p>
+        </div>
+        <nav class="site-footer-links" aria-label="Footer">
+          <a href="{% url 'practice:landing' %}" data-i18n="footerHome">Home</a>
+          <a href="{% url 'practice:test' %}?mode=paragraph&level=all" data-i18n="startParagraphBtn">Start paragraph test</a>
+          <a href="{% url 'practice:test' %}?mode=sentence&level=all" data-i18n="startSentenceBtn">Start sentence test</a>
+          <a href="https://nevatal.id">Nevatal</a>
+        </nav>
+        <p class="site-footer-copyright">© 2026 Nevatal</p>
+      </div>
+    </footer>
+
     {% block scripts %}{% endblock %}
   </body>
 </html>

@@ -1,41 +1,47 @@
 {% extends "practice/base.html" %}
 {% load static %}
 
-{% block title %}English Practice Diagnostic | Test{% endblock %}
-{% block meta_description %}Take the English Practice Diagnostic: sentence and paragraph builder modes, immediate feedback, and a topic summary at the end.{% endblock %}
-{% block og_title %}English Practice Diagnostic | Test{% endblock %}
-{% block og_description %}Take the English Practice Diagnostic: sentence and paragraph builder modes, immediate feedback, and a topic summary at the end.{% endblock %}
+{% block title %}English Practice | Test{% endblock %}
+{% block meta_description %}Practice English grammar: sentence and paragraph modes, immediate feedback, and a topic summary at the end.{% endblock %}
+{% block og_title %}English Practice | Test{% endblock %}
+{% block og_description %}Practice English grammar: sentence and paragraph modes, immediate feedback, and a topic summary at the end.{% endblock %}
 {% block robots %}noindex,nofollow{% endblock %}
 {% block body_class %}test-body{% endblock %}
 
 {% block content %}
 <div class="page-shell test-page">
-  <div class="ambient ambient-a"></div>
-  <div class="ambient ambient-b"></div>
-
-  <header class="topbar test-topbar">
-    <div>
-      <p class="eyebrow">English Practice</p>
-      <h1 id="testPageTitle">Grammar Diagnostic</h1>
-      <p class="topbar-note" id="testPageSubtitle">Answer carefully. The topic and grammar rules appear only after submission.</p>
+  <header class="academic-masthead test-topbar">
+    <div class="running-head-row">
+      <span class="running-head-text">English Practice</span>
+      <div class="topbar-actions-pills">
+        <div id="modePill" class="academic-pill mode-pill">Mode: Paragraph</div>
+        <div id="levelPill" class="academic-pill level-pill">Level: All</div>
+      </div>
     </div>
-    <div class="topbar-actions">
-      <a href="{% url 'practice:landing' %}" class="secondary-button">Back to Landing</a>
-      <div id="modePill" class="topbar-pill mode-pill">Mode: Paragraph</div>
-      <div id="levelPill" class="topbar-pill level-pill">Level: All</div>
+
+    <div class="test-topbar-content">
+      <div class="test-topbar-copy">
+        <p class="academic-eyebrow">Grammar practice</p>
+        <h1 id="testPageTitle" class="book-title">Grammar diagnostic</h1>
+        <p class="book-subtitle" id="testPageSubtitle">The grammar topic stays hidden until you submit. Rules appear with the feedback.</p>
+      </div>
+      <div class="test-topbar-nav">
+        <a href="{% url 'practice:landing' %}" class="secondary-button back-btn">← Back</a>
+      </div>
     </div>
   </header>
 
   <main class="layout">
+    <!-- Active Test Screen -->
     <section id="testScreen" class="screen screen-active">
       <div class="test-grid">
-        <article class="card test-card">
+        <article class="book-card test-card">
           <div class="test-header">
             <div>
-              <p id="questionCounter" class="eyebrow">Question 1 of 10</p>
-              <h2 id="scoreCounter">Score 0 / 10</h2>
+              <p id="questionCounter" class="academic-eyebrow">Question 1 of 10</p>
+              <h2 id="scoreCounter" class="test-score-counter">Score 0 / 10</h2>
             </div>
-            <div id="progressLabel" class="progress-label">0%</div>
+            <div id="progressLabel" class="progress-label">0% Complete</div>
           </div>
 
           <div class="progress-track" aria-hidden="true">
@@ -50,13 +56,13 @@
               Submit Answer
             </button>
             <button id="nextQuestionButton" class="secondary-button hidden" type="button" data-action="next-question">
-              Next
+              Next →
             </button>
           </div>
         </article>
 
-        <aside class="card side-card" id="sideCard">
-          <p class="eyebrow" id="sideCardEyebrow">How Paragraph Practice Works</p>
+        <aside class="book-card side-card" id="sideCard">
+          <p class="academic-eyebrow" id="sideCardEyebrow">How to answer</p>
           <ul class="side-list" id="sideCardList">
             <li>Read the full paragraph and identify each numbered blank.</li>
             <li>Click on each blank or its tab to choose the best multiple-choice option.</li>
@@ -67,12 +73,14 @@
       </div>
     </section>
 
+    <!-- Results Screen -->
     <section id="resultsScreen" class="screen hidden">
-      <div class="card results-card">
+      <div class="book-card results-card">
         <div class="results-header">
           <div>
-            <p class="eyebrow">Results</p>
-            <h2>Your Diagnostic Summary</h2>
+            <p class="academic-eyebrow">Results</p>
+            <h2 class="book-title">Your results</h2>
+            <p class="book-subtitle">Your accuracy by grammar topic and a review of every question.</p>
           </div>
           <div class="results-actions">
             <button id="retryTestButton" class="primary-button" type="button" data-action="retry-test">
@@ -103,21 +111,25 @@
         </div>
 
         <div id="resultsSummary" class="results-summary"></div>
+
+        <h3 class="results-section-heading">Accuracy by topic</h3>
         <div id="topicSummary" class="topic-summary"></div>
+
+        <h3 class="results-section-heading">Question review</h3>
         <div id="questionReview" class="question-review"></div>
       </div>
     </section>
   </main>
-
-  <div id="loadingOverlay" class="loading-overlay hidden" aria-live="polite" aria-busy="true">
-    <div class="loading-card">
-      <div class="spinner"></div>
-      <p id="loadingMessage">Preparing your diagnostic...</p>
-    </div>
-  </div>
-
-  <div id="errorBanner" class="error-banner hidden" role="alert"></div>
 </div>
+
+<div id="loadingOverlay" class="loading-overlay hidden" aria-live="polite" aria-busy="true">
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <p id="loadingMessage">Loading questions...</p>
+  </div>
+</div>
+
+<div id="errorBanner" class="error-banner hidden" role="alert"></div>
 
 {% if initial_state %}
   {{ initial_state|json_script:"initial-state-data" }}

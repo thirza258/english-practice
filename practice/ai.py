@@ -1,18 +1,60 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
-from typing import Any
+import time
+from typing import Any, Callable, TypeVar
 
 from openai import OpenAI
 
 from .question_bank import BlankBlueprint, ParagraphBlueprint, QUESTION_BANK, QuestionBlueprint
+from .vocabulary import vocabulary_repo
 
+
+logger = logging.getLogger(__name__)
+
+MAX_GENERATION_ATTEMPTS = 5
+GENERATION_RETRY_DELAY_SECONDS = 1.5
+
+T = TypeVar("T")
 
 OPENROUTER_BASE_URL = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openai/gpt-4o-mini")
 OPENROUTER_APP_TITLE = os.environ.get("OPENROUTER_APP_TITLE", "English Practice Diagnostic")
 OPENROUTER_REFERER = os.environ.get("OPENROUTER_REFERER")
+
+
+def _generate_with_retries(generate_fn: Callable[[], T], label: str) -> T:
+    """Run an AI generation up to MAX_GENERATION_ATTEMPTS times, then raise.
+
+    After the final failure the caller (services) falls back to the database
+    question bank, so a provider outage never blocks a test.
+    """
+    last_error: Exception | None = None
+    for attempt in range(1, MAX_GENERATION_ATTEMPTS + 1):
+        try:
+            return generate_fn()
+        except RuntimeError:
+            # Configuration error (e.g. missing OPENROUTER_API_KEY) — retrying will not help.
+            raise
+        except Exception as exc:
+            last_error = exc
+            logger.warning(
+                "AI %s generation attempt %d/%d failed: %s",
+                label,
+                attempt,
+                MAX_GENERATION_ATTEMPTS,
+                exc,
+            )
+            if attempt < MAX_GENERATION_ATTEMPTS:
+                time.sleep(GENERATION_RETRY_DELAY_SECONDS)
+    logger.error(
+        "AI %s generation failed after %d attempts; using database bank only.",
+        label,
+        MAX_GENERATION_ATTEMPTS,
+    )
+    raise last_error  # type: ignore[misc]
 
 SUPPORTED_TOPICS = sorted({question.topic for question in QUESTION_BANK})
 VALID_LEVELS = ("all", "beginner", "intermediate", "advanced", "ielts_8_9")
@@ -101,12 +143,17 @@ def _prompt(total_questions: int, level: str = "all") -> list[dict[str, str]]:
     topics = "\n".join(f"- {topic}" for topic in SUPPORTED_TOPICS)
     level_key = level.lower() if level.lower() in LEVEL_GUIDANCE else "all"
     guidance = LEVEL_GUIDANCE[level_key]
+    vocab_context = vocabulary_repo.format_prompt_vocabulary_context(
+        level=level_key,
+        count=max(total_questions, 8),
+        mode="sentence",
+    )
 
     system = (
         "You generate English grammar diagnostic questions for a web app. "
         "Return only valid JSON. Do not use markdown. "
         "Every question must have exactly one correct answer, four plausible distractors, "
-        "a hidden grammar topic, an English level (beginner, intermediate, or advanced), "
+        "a hidden grammar topic, an English level (beginner, intermediate, advanced, or ielts_8_9), "
         "a short rule, a concise explanation, and a sentence-based explanation. "
         "The visible question text must not reveal the topic."
     )
@@ -116,6 +163,9 @@ Generate exactly {total_questions} multiple-choice grammar questions.
 Difficulty & Level requirement:
 {guidance}
 
+Vocabulary & Lexicon Grounding:
+{vocab_context}
+
 Rules:
 - Use only topics from this list.
 - Topics may repeat, but the set should feel varied.
@@ -124,7 +174,7 @@ Rules:
 - The correct answer should be the exact value of "correct_answer".
 - Do not include answer letters in options or answers.
 - Do not reveal the topic in the question text.
-- Set "level" for each question to "beginner", "intermediate", or "advanced".
+- Set "level" for each question to "beginner", "intermediate", "advanced", or "ielts_8_9".
 - Keep questions natural, accurate, and concise.
 
 Allowed topics:
@@ -135,7 +185,7 @@ Return JSON in this shape:
   "questions": [
     {{
       "topic": "one of the allowed topics",
-      "level": "beginner | intermediate | advanced",
+      "level": "beginner | intermediate | advanced | ielts_8_9",
       "question": "sentence with one blank",
       "correct_answer": "answer text",
       "distractors": ["wrong 1", "wrong 2", "wrong 3", "wrong 4"],
@@ -191,7 +241,6 @@ def _validate_question(item: dict[str, Any], default_level: str = "intermediate"
     if item_level not in ("beginner", "intermediate", "advanced", "ielts_8_9"):
         item_level = default_level if default_level in ("beginner", "intermediate", "advanced", "ielts_8_9") else "intermediate"
 
-
     return QuestionBlueprint(
         topic=topic,
         question=question,
@@ -206,28 +255,31 @@ def _validate_question(item: dict[str, Any], default_level: str = "intermediate"
 
 
 def generate_question_blueprints(total_questions: int, level: str = "all") -> list[QuestionBlueprint]:
-    client = _client()
-    normalized_level = level.lower() if level.lower() in VALID_LEVELS else "all"
-    response = client.chat.completions.create(
-        model=OPENROUTER_MODEL,
-        messages=_prompt(total_questions, normalized_level),
-        temperature=0.8,
-        response_format={"type": "json_object"},
-    )
+    def _attempt() -> list[QuestionBlueprint]:
+        client = _client()
+        normalized_level = level.lower() if level.lower() in VALID_LEVELS else "all"
+        response = client.chat.completions.create(
+            model=OPENROUTER_MODEL,
+            messages=_prompt(total_questions, normalized_level),
+            temperature=0.8,
+            response_format={"type": "json_object"},
+        )
 
-    content = response.choices[0].message.content or "{}"
-    data = json.loads(content)
-    questions = data.get("questions")
-    if not isinstance(questions, list):
-        raise ValueError("AI output did not include a questions array.")
-    if len(questions) != total_questions:
-        raise ValueError(f"AI output must contain exactly {total_questions} questions.")
+        content = response.choices[0].message.content or "{}"
+        data = json.loads(content)
+        questions = data.get("questions")
+        if not isinstance(questions, list):
+            raise ValueError("AI output did not include a questions array.")
+        if len(questions) != total_questions:
+            raise ValueError(f"AI output must contain exactly {total_questions} questions.")
 
-    default_level = normalized_level if normalized_level in ("beginner", "intermediate", "advanced") else "intermediate"
-    blueprints = [_validate_question(item, default_level=default_level) for item in questions]
-    if len({blueprint.question.strip().lower() for blueprint in blueprints}) != total_questions:
-        raise ValueError("AI output must contain unique question text.")
-    return blueprints
+        default_level = normalized_level if normalized_level in ("beginner", "intermediate", "advanced", "ielts_8_9") else "intermediate"
+        blueprints = [_validate_question(item, default_level=default_level) for item in questions]
+        if len({blueprint.question.strip().lower() for blueprint in blueprints}) != total_questions:
+            raise ValueError("AI output must contain unique question text.")
+        return blueprints
+
+    return _generate_with_retries(_attempt, "question")
 
 
 # -----------------------------------------------------------------------------
@@ -237,6 +289,11 @@ def generate_question_blueprints(total_questions: int, level: str = "all") -> li
 def _paragraph_prompt(count: int, level: str = "all") -> list[dict[str, str]]:
     level_key = level.lower() if level.lower() in PARAGRAPH_LEVEL_GUIDANCE else "all"
     guidance = PARAGRAPH_LEVEL_GUIDANCE[level_key]
+    vocab_context = vocabulary_repo.format_prompt_vocabulary_context(
+        level=level_key,
+        count=max(count * 3, 8),
+        mode="paragraph",
+    )
 
     system = (
         "You generate English paragraph practice cloze exercises for an interactive web app. "
@@ -252,19 +309,22 @@ Generate exactly {count} paragraph cloze exercises.
 Difficulty & Level Guidance:
 {guidance}
 
+Thematic Academic Vocabulary & Word Families Context (from Academic Vocabulary List CSV & Oxford 5000 MD):
+{vocab_context}
+
 Rules:
 - Each paragraph must be cohesive, natural English with exactly 3 blanks marked as [1], [2], and [3].
 - Each blank must have exactly 1 clearly correct answer and exactly 4 plausible distractors.
 - For each blank, specify topic, rule, explanation, and distractors.
 - Provide "full_text" (the complete paragraph without blanks) and "paragraph_explanation" (explaining paragraph structure, transitions, and cohesion).
-- Set "level" to "beginner", "intermediate", or "advanced".
+- Set "level" to "beginner", "intermediate", "advanced", or "ielts_8_9".
 
 Return JSON in this shape:
 {{
   "paragraphs": [
     {{
       "title": "Topic title",
-      "level": "beginner | intermediate | advanced",
+      "level": "beginner | intermediate | advanced | ielts_8_9",
       "text_with_blanks": "Paragraph text with [1], [2], and [3] markers...",
       "full_text": "Completed paragraph text...",
       "paragraph_explanation": "Paragraph Building: explanation of cohesion, structure, and transitions...",
@@ -355,7 +415,6 @@ def _validate_paragraph(item: dict[str, Any], default_level: str = "intermediate
     if item_level not in ("beginner", "intermediate", "advanced", "ielts_8_9"):
         item_level = default_level if default_level in ("beginner", "intermediate", "advanced", "ielts_8_9") else "intermediate"
 
-
     return ParagraphBlueprint(
         title=title,
         text_with_blanks=text_with_blanks,
@@ -367,22 +426,25 @@ def _validate_paragraph(item: dict[str, Any], default_level: str = "intermediate
 
 
 def generate_paragraph_blueprints(count: int, level: str = "all") -> list[ParagraphBlueprint]:
-    client = _client()
-    normalized_level = level.lower() if level.lower() in VALID_LEVELS else "all"
-    response = client.chat.completions.create(
-        model=OPENROUTER_MODEL,
-        messages=_paragraph_prompt(count, normalized_level),
-        temperature=0.8,
-        response_format={"type": "json_object"},
-    )
+    def _attempt() -> list[ParagraphBlueprint]:
+        client = _client()
+        normalized_level = level.lower() if level.lower() in VALID_LEVELS else "all"
+        response = client.chat.completions.create(
+            model=OPENROUTER_MODEL,
+            messages=_paragraph_prompt(count, normalized_level),
+            temperature=0.8,
+            response_format={"type": "json_object"},
+        )
 
-    content = response.choices[0].message.content or "{}"
-    data = json.loads(content)
-    paragraphs = data.get("paragraphs")
-    if not isinstance(paragraphs, list):
-        raise ValueError("AI output did not include a paragraphs array.")
-    if len(paragraphs) != count:
-        raise ValueError(f"AI output must contain exactly {count} paragraphs.")
+        content = response.choices[0].message.content or "{}"
+        data = json.loads(content)
+        paragraphs = data.get("paragraphs")
+        if not isinstance(paragraphs, list):
+            raise ValueError("AI output did not include a paragraphs array.")
+        if len(paragraphs) != count:
+            raise ValueError(f"AI output must contain exactly {count} paragraphs.")
 
-    default_level = normalized_level if normalized_level in ("beginner", "intermediate", "advanced") else "intermediate"
-    return [_validate_paragraph(p, default_level=default_level) for p in paragraphs]
+        default_level = normalized_level if normalized_level in ("beginner", "intermediate", "advanced", "ielts_8_9") else "intermediate"
+        return [_validate_paragraph(p, default_level=default_level) for p in paragraphs]
+
+    return _generate_with_retries(_attempt, "paragraph")

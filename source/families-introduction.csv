@@ -1,0 +1,35 @@
+The Academic Vocabulary List
+[ http://www.academicwords.info ]
+Mark Davies and Dee Gardner
+Brigham Young University
+"Provo, Utah, USA"
+"August 9, 2013"
+
+"For more details on the construction of the vocabulary list, see:"
+"Gardner, Dee and Mark Davies. (2013) “A New Academic Vocabulary List”. In Applied Linguistics."
+[http://applij.oxfordjournals.org/content/early/2013/08/02/applin.amt015.abstract.html?papetoc ]
+
+"We believe that our Academic Vocabulary List improves significantly on the traditional Academic Word List (Coxhead, 2000) in a number of ways. First, while the traditional AWL is based on just 3.5 million words from the 1990s, our new list is based on the 120 million words (in 13,000 academic texts) in the 425 million word Corpus of Contemporary American English, with texts as recent as 2011.
+"
+"Second, our “word families” version of the list -- shown in these spreadsheets -- contains a great deal of information that is not available in the traditional AWL:"
+"· We list the words (lemmas actually; see below) in order of frequency. In a traditional word families list, there is no indication of which words are frequent and which are not. As a result, you cannot maximize your time in learning the words that you will most likely see again. With our list, you can."
+"· We separate lemmas by part of speech and we list the frequency of each lemma and part of speech. For example, in the word family [effect], we show effect as a noun (60,078 tokens) and effect as a verb (1,581; i.e. much less common). Knowing the part of speech of a word helps immensely in knowing the meaning of a word and how it is used."
+"· As noted, we group words by lemma, e.g. [apply]  = {apply, applies, applies, applying}. You probably don’t want or need to see the frequency of each individual form of a noun or verb – it usually doesn’t help much with learning the words."
+"· We format the words so that you know whether they are part of the general Academic Vocabulary List (yellow), whether they are more technical and occur mainly in one domain (such as Law or Medicine) (red), or whether they are not really an academic word, but are just a member of the word family (white and blue). For the technical words, we indicate in which sub-genre(s) they are most frequent."
+
+The following explanation is based on word #2 in the list (develop) and it shows how the list is organized.
+
+
+
+
+"The word family [develop] is the second most frequent word family (#2) in COCA academic texts. (The rank order is based on the cumulative total of just the yellow “core academic” words.) The nine “core academic” words occur a total of 128,974 times in COCA academic. The frequency of the word in academic texts is listed after each word, and the words/lemmas are listed in order of frequency; e.g. the word development occurs 63,509 times."
+
+"Note that because lemmas are combined to form word families, the rank order in the word family file does not match the rank order in the lemma file.
+"
+"To be listed as a “core” word, the word must:"
+
+1)  Occur at least 50% more frequently in the academic portion of COCA than would otherwise be expected (per million words)
+"2)  Have a good “dispersion” across the nine sub-genres of academic (a Juilland “d” measure of at least 0.80, for those who know what that means)"
+"3)  Not be a “technical” word, as is explained below"
+"Each of the four red words with ""develop"" occurs much more in one (or two) of the nine academic domains than in the others: developmental (adj), developmentally (adv) are used primarily in Education texts, underdevelopment (noun) is used primarily in History texts, and developing (noun) is used primarily in Law and Political Science (mostly political science in this case). (The nine sub-genres are: Education, Humanities, Philosophy / Religion / Psychology, Social Sciences, History, Law and Political Science, Science / Technology, Medicine, and Business.) To be listed as “technical” word, the frequency must have at least three times the “expected” frequency in a given sub-genre, based on the size of that sub-genre."
+"The white words are not academic or technical words, as defined above. But they are still included in the word family, for ease in learning."

@@ -25,17 +25,19 @@ class PracticePageTests(TestCase):
         response = self.client.get(reverse("practice:landing"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Paragraph Cloze Practice")
-        self.assertContains(response, "Sentence Diagnostic")
-        self.assertContains(response, "Beginner Level")
-        self.assertContains(response, "Intermediate Level")
-        self.assertContains(response, "Advanced Level")
-        self.assertContains(response, "IELTS Band 8.0 – 9.0")
-        self.assertContains(response, "All Levels (Mixed)")
+        self.assertContains(response, "Grammar and paragraph practice.")
+        self.assertContains(response, "Sentence practice")
+        self.assertContains(response, "Beginner")
+        self.assertContains(response, "Intermediate")
+        self.assertContains(response, "Advanced")
+        self.assertContains(response, "IELTS 8.0–9.0")
+        self.assertContains(response, "All levels")
         self.assertContains(response, f'{reverse("practice:test")}?mode=paragraph&level=beginner')
         self.assertContains(response, f'{reverse("practice:test")}?mode=sentence&level=beginner')
         self.assertContains(response, f'{reverse("practice:test")}?mode=paragraph&level=ielts_8_9')
         self.assertContains(response, f'{reverse("practice:test")}?mode=sentence&level=ielts_8_9')
+        self.assertContains(response, 'href="https://english.nevatal.id/"')
+        self.assertContains(response, 'content="https://english.nevatal.id/"')
 
     def test_test_page_is_noindex_and_has_quiz_controls_and_level_pill(self) -> None:
         response = self.client.get(reverse("practice:test"))
@@ -49,6 +51,7 @@ class PracticePageTests(TestCase):
         self.assertContains(response, 'data-action="retry-level"')
         self.assertContains(response, 'data-level="ielts_8_9"')
         self.assertContains(response, reverse("practice:landing"))
+        self.assertContains(response, 'href="https://english.nevatal.id/test/"')
 
     def test_test_page_with_mode_and_level_query_params(self) -> None:
         response = self.client.get(reverse("practice:test") + "?mode=paragraph&level=ielts_8_9")
@@ -56,6 +59,25 @@ class PracticePageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'requestedLevel: "ielts_8_9"')
         self.assertContains(response, 'requestedMode: "paragraph"')
+
+    def test_robots_txt_seo_and_sitemap(self) -> None:
+        response = self.client.get(reverse("practice:robots-txt"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/plain", response["Content-Type"])
+        self.assertContains(response, "User-agent: *")
+        self.assertContains(response, "Allow: /")
+        self.assertContains(response, "Disallow: /api/")
+        self.assertContains(response, "Sitemap: https://english.nevatal.id/sitemap.xml")
+
+    def test_sitemap_xml_seo(self) -> None:
+        response = self.client.get(reverse("practice:sitemap-xml"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("application/xml", response["Content-Type"])
+        self.assertContains(response, "https://english.nevatal.id/")
+        self.assertContains(response, "https://english.nevatal.id/test/")
+        self.assertContains(response, "<urlset")
 
 
 class LevelAndModeServiceTests(TestCase):
@@ -135,12 +157,35 @@ class LevelAndModeServiceTests(TestCase):
         self.assertNotIn("rule", current_q)
         self.assertNotIn("correct_answer", current_q)
 
-        result = submit_answer(state, "A")
-        self.assertIn("feedback", result)
-        self.assertIn("grammar_topic", result["feedback"])
-        self.assertIn("level", result["feedback"])
-        self.assertIn("rule", result["feedback"])
-        self.assertIn("explanation", result["feedback"])
+        correct_choice = state["questions"][0]["correct_answer"]
+        wrong_choice = "B" if correct_choice == "A" else "A"
+
+        # Test correct answer
+        result_corr = submit_answer(state, correct_choice)
+        self.assertIn("feedback", result_corr)
+        fb_corr = result_corr["feedback"]
+        self.assertTrue(fb_corr["is_correct"])
+        self.assertIn("grammar_topic", fb_corr)
+        self.assertIn("level", fb_corr)
+        self.assertIn("rule", fb_corr)
+        self.assertIn("explanation", fb_corr)
+        self.assertEqual(fb_corr["reason_right"], state["questions"][0]["explanation"])
+        self.assertEqual(fb_corr["reason_wrong"], "-")
+
+        # Test incorrect answer on question 2
+        result_wrong = submit_answer(state, wrong_choice)
+        fb_wrong = result_wrong["feedback"]
+        self.assertFalse(fb_wrong["is_correct"])
+        self.assertEqual(fb_wrong["reason_right"], "-")
+        self.assertNotEqual(fb_wrong["reason_wrong"], "-")
+        self.assertIn("does not fit because", fb_wrong["reason_wrong"])
+
+        # Test results payload
+        results = build_results(state)
+        self.assertEqual(results["questions"][0]["reason_right"], state["questions"][0]["explanation"])
+        self.assertEqual(results["questions"][0]["reason_wrong"], "-")
+        self.assertEqual(results["questions"][1]["reason_right"], "-")
+        self.assertNotEqual(results["questions"][1]["reason_wrong"], "-")
 
     def test_paragraph_hidden_topic_and_submission(self) -> None:
         state = create_paragraph_test_state(total_paragraphs=2, level="ielts_8_9")
@@ -157,24 +202,47 @@ class LevelAndModeServiceTests(TestCase):
             self.assertNotIn("rule", b)
             self.assertNotIn("explanation", b)
 
-        # Build answers for each blank
+        # Build answers: 1st blank correct, 2nd blank wrong
         p_blanks = state["questions"][0]["blanks"]
-        answers = {str(b["blank_id"]): b["correct_answer"] for b in p_blanks}
+        corr_1 = p_blanks[0]["correct_answer"]
+        corr_2 = p_blanks[1]["correct_answer"]
+        wrong_2 = "B" if corr_2 == "A" else "A"
+
+        answers = {
+            str(p_blanks[0]["blank_id"]): corr_1,
+            str(p_blanks[1]["blank_id"]): wrong_2,
+        }
+        for b in p_blanks[2:]:
+            answers[str(b["blank_id"])] = b["correct_answer"]
 
         result = submit_answer(state, answers)
         self.assertIn("feedback", result)
         fb = result["feedback"]
-        self.assertTrue(fb["all_correct"])
-        self.assertEqual(fb["score_this_paragraph"], len(p_blanks))
+        self.assertFalse(fb["all_correct"])
         self.assertIn("paragraph_explanation", fb)
         self.assertIn("full_text", fb)
         self.assertEqual(len(fb["blanks_feedback"]), len(p_blanks))
 
-        for b_fb in fb["blanks_feedback"]:
-            self.assertTrue(b_fb["is_correct"])
-            self.assertIn("grammar_topic", b_fb)
-            self.assertIn("rule", b_fb)
-            self.assertIn("explanation", b_fb)
+        # Blank 1 was correct: reason_right is explanation, reason_wrong is "-"
+        b1_fb = fb["blanks_feedback"][0]
+        self.assertTrue(b1_fb["is_correct"])
+        self.assertEqual(b1_fb["reason_right"], p_blanks[0]["explanation"])
+        self.assertEqual(b1_fb["reason_wrong"], "-")
+
+        # Blank 2 was wrong: reason_right is "-", reason_wrong explains why wrong
+        b2_fb = fb["blanks_feedback"][1]
+        self.assertFalse(b2_fb["is_correct"])
+        self.assertEqual(b2_fb["reason_right"], "-")
+        self.assertNotEqual(b2_fb["reason_wrong"], "-")
+        self.assertIn("does not fit because", b2_fb["reason_wrong"])
+
+        # Check results payload
+        results = build_results(state)
+        p0_blanks = results["paragraphs"][0]["blanks"]
+        self.assertEqual(p0_blanks[0]["reason_right"], p_blanks[0]["explanation"])
+        self.assertEqual(p0_blanks[0]["reason_wrong"], "-")
+        self.assertEqual(p0_blanks[1]["reason_right"], "-")
+        self.assertNotEqual(p0_blanks[1]["reason_wrong"], "-")
 
 
 class APITests(TestCase):
@@ -329,3 +397,81 @@ class ModelAndAITests(TestCase):
         self.assertEqual(restored_state["test_type"], "paragraph")
         self.assertEqual(restored_state["mode"], "paragraph")
         self.assertEqual(restored_state["level"], "ielts_8_9")
+
+
+class VocabularyRepositoryAndAPITests(TestCase):
+    def test_vocabulary_repo_loads_datasets(self) -> None:
+        from .vocabulary import vocabulary_repo
+
+        vocabulary_repo.ensure_loaded()
+        self.assertGreaterEqual(len(vocabulary_repo.oxford_words), 1900)
+        self.assertGreaterEqual(len(vocabulary_repo.academic_families), 1900)
+        self.assertGreaterEqual(len(vocabulary_repo.academic_entries), 7000)
+
+    def test_vocabulary_sampling_levels_and_modes(self) -> None:
+        from .vocabulary import vocabulary_repo
+
+        for lvl in ["beginner", "intermediate", "advanced", "ielts_8_9", "all"]:
+            oxford_sample = vocabulary_repo.get_oxford_sample(level=lvl, count=5)
+            self.assertEqual(len(oxford_sample), 5)
+
+            academic_sample = vocabulary_repo.get_academic_sample(level=lvl, count=4)
+            self.assertEqual(len(academic_sample), 4)
+
+            prompt_sentence = vocabulary_repo.format_prompt_vocabulary_context(level=lvl, count=5, mode="sentence")
+            self.assertIn("Source Vocabulary & Lexicon", prompt_sentence)
+
+            prompt_para = vocabulary_repo.format_prompt_vocabulary_context(level=lvl, count=5, mode="paragraph")
+            self.assertIn("Source Academic Vocabulary & Word Families", prompt_para)
+
+    def test_vocabulary_lookup_functionality(self) -> None:
+        from .vocabulary import vocabulary_repo
+
+        res_ox = vocabulary_repo.lookup_word("scrutiny")
+        self.assertIsNotNone(res_ox["oxford"])
+        self.assertEqual(res_ox["oxford"]["word"].lower(), "scrutiny")
+
+        res_avl = vocabulary_repo.lookup_word("developmental")
+        self.assertTrue(len(res_avl["academic_entries"]) > 0)
+        self.assertEqual(res_avl["academic_entries"][0]["family"], "develop")
+
+    def test_ai_prompts_include_vocabulary_context(self) -> None:
+        from .ai import _paragraph_prompt, _prompt
+
+        p_sentence = _prompt(total_questions=10, level="advanced")
+        self.assertEqual(len(p_sentence), 2)
+        user_content_s = p_sentence[1]["content"]
+        self.assertIn("Vocabulary & Lexicon Grounding:", user_content_s)
+        self.assertIn("Oxford 5000", user_content_s)
+        self.assertIn("Academic Vocabulary List", user_content_s)
+
+        p_para = _paragraph_prompt(count=3, level="ielts_8_9")
+        self.assertEqual(len(p_para), 2)
+        user_content_p = p_para[1]["content"]
+        self.assertIn("Thematic Academic Vocabulary & Word Families Context", user_content_p)
+        self.assertIn("Academic Vocabulary List", user_content_p)
+
+    def test_vocabulary_sample_api_endpoint(self) -> None:
+        response = self.client.get(reverse("practice:vocabulary-sample") + "?level=intermediate&mode=sentence&count=6")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["ok"])
+        self.assertEqual(data["level"], "intermediate")
+        self.assertEqual(data["mode"], "sentence")
+        self.assertIn("context_prompt", data)
+        self.assertIn("oxford_words", data)
+        self.assertIn("academic_families", data)
+        self.assertEqual(len(data["oxford_words"]), 6)
+        self.assertGreaterEqual(len(data["academic_families"]), 3)
+
+    def test_vocabulary_lookup_api_endpoint(self) -> None:
+        response = self.client.get(reverse("practice:vocabulary-lookup") + "?q=research")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["ok"])
+        self.assertEqual(data["query"], "research")
+        self.assertTrue(len(data["academic_entries"]) > 0 or data["oxford"] is not None)
+
+        err_response = self.client.get(reverse("practice:vocabulary-lookup"))
+        self.assertEqual(err_response.status_code, 400)
+        self.assertFalse(err_response.json()["ok"])
