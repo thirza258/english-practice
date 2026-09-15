@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from dataclasses import replace
 from unittest import mock
 
 from django.test import TestCase
@@ -175,7 +176,6 @@ class LevelAndModeServiceTests(TestCase):
         self.assertNotIn("correct_answer", current_q)
 
         correct_choice = state["questions"][0]["correct_answer"]
-        wrong_choice = "B" if correct_choice == "A" else "A"
 
         # Test correct answer
         result_corr = submit_answer(state, correct_choice)
@@ -190,6 +190,7 @@ class LevelAndModeServiceTests(TestCase):
         self.assertEqual(fb_corr["reason_wrong"], "-")
 
         # Test incorrect answer on question 2
+        wrong_choice = "B" if state["questions"][1]["correct_answer"] == "A" else "A"
         result_wrong = submit_answer(state, wrong_choice)
         fb_wrong = result_wrong["feedback"]
         self.assertFalse(fb_wrong["is_correct"])
@@ -708,6 +709,23 @@ class WritingModeServiceTests(TestCase):
         self.assertNotIn("model_outline", payload)
         self.assertNotIn("submission", payload)
 
+    def test_writing_tasks_stay_at_the_requested_level_when_bank_runs_short(self) -> None:
+        expected = [item for item in WRITING_PROMPT_BANK if item.level == "beginner"]
+        state = create_writing_test_state(total_tasks=len(WRITING_PROMPT_BANK), level="beginner")
+
+        self.assertEqual(state["total_tasks"], len(expected))
+        self.assertEqual(state["total_questions"], len(expected))
+        self.assertCountEqual(
+            [task["prompt"] for task in state["questions"]],
+            [item.prompt for item in expected],
+        )
+
+    def test_missing_writing_level_does_not_fall_back_to_other_levels(self) -> None:
+        bank = [item for item in WRITING_PROMPT_BANK if item.level != "beginner"]
+        with mock.patch("practice.writing_bank.WRITING_PROMPT_BANK", bank):
+            with self.assertRaisesMessage(ValueError, "No writing prompts"):
+                create_writing_test_state(level="beginner")
+
     def test_submission_produces_a_band_report(self) -> None:
         state = create_writing_test_state(level="intermediate")
         result = submit_answer(state, self.ESSAY)
@@ -818,6 +836,27 @@ class WritingModeServiceTests(TestCase):
 
 @mock.patch.dict(os.environ, {"WRITING_AI_ENABLED": "0"}, clear=False)
 class WritingApiTests(TestCase):
+    def test_start_uses_corrected_prompt_content_from_an_existing_bank(self) -> None:
+        corrected = WRITING_PROMPT_BANK[0]
+        previous = replace(corrected, prompt="Previous task wording.")
+        entry = WritingPromptBankQuestion.from_blueprint(previous)
+        entry.save()
+
+        with mock.patch("practice.writing_bank.WRITING_PROMPT_BANK", [corrected]):
+            response = self.client.post(
+                reverse("practice:test-start"),
+                data=json.dumps({"level": corrected.level, "mode": "writing"}),
+                content_type="application/json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        question = response.json()["question"]
+        self.assertEqual(question["prompt"], corrected.prompt)
+        self.assertEqual(question["guidance"], list(corrected.guidance))
+        self.assertNotIn("model_outline", question)
+        self.assertNotIn("useful_vocabulary", question)
+        self.assertEqual(WritingPromptBankQuestion.objects.count(), 1)
+
     def test_writing_test_lifecycle_over_the_api(self) -> None:
         start = self.client.post(
             reverse("practice:test-start"),
@@ -1021,6 +1060,74 @@ class WritingPromptBankTests(TestCase):
 
         self.assertEqual(WritingPromptBankQuestion.objects.count(), before)
 
+    def test_reseeding_refreshes_task_details_without_replacing_the_prompt(self) -> None:
+        WritingPromptBankQuestion.seed_from_static_bank()
+        original = WRITING_PROMPT_BANK[0]
+        entry = WritingPromptBankQuestion.objects.get(title=original.title)
+        updated = replace(
+            original,
+            task_type="narrative",
+            min_words=100,
+            suggested_minutes=25,
+            guidance=("Explain what happened and how you felt.",),
+            useful_vocabulary=("afterwards", "eventually"),
+            model_outline="Describe the events, then reflect on the day.",
+        )
+
+        with mock.patch("practice.writing_bank.WRITING_PROMPT_BANK", [updated]):
+            created = WritingPromptBankQuestion.seed_from_static_bank()
+
+        entry.refresh_from_db()
+        self.assertEqual(created, 0)
+        self.assertEqual(WritingPromptBankQuestion.objects.count(), len(WRITING_PROMPT_BANK))
+        self.assertEqual(entry.to_blueprint(), updated)
+
+    def test_reseeding_preserves_custom_prompt_details(self) -> None:
+        custom = replace(WRITING_PROMPT_BANK[0], min_words=120, guidance=("Custom guidance.",))
+        entry = WritingPromptBankQuestion.from_blueprint(
+            custom, source="custom", generation_metadata={"note": "teacher supplied"}
+        )
+        entry.save()
+
+        WritingPromptBankQuestion.seed_from_static_bank()
+
+        entry.refresh_from_db()
+        self.assertEqual(entry.to_blueprint(), custom)
+        self.assertEqual(entry.source, "custom")
+        self.assertEqual(entry.generation_metadata, {"note": "teacher supplied"})
+
+    def test_reseeding_updates_prompt_wording_in_place(self) -> None:
+        corrected = WRITING_PROMPT_BANK[0]
+        entry = WritingPromptBankQuestion.from_blueprint(
+            replace(corrected, prompt="Previous task wording.")
+        )
+        entry.save()
+        old_hash = entry.content_hash
+
+        with mock.patch("practice.writing_bank.WRITING_PROMPT_BANK", [corrected]):
+            self.assertEqual(WritingPromptBankQuestion.seed_from_static_bank(), 0)
+            self.assertEqual(WritingPromptBankQuestion.seed_from_static_bank(), 0)
+
+        entry.refresh_from_db()
+        self.assertEqual(entry.to_blueprint(), corrected)
+        self.assertNotEqual(entry.content_hash, old_hash)
+        self.assertEqual(WritingPromptBankQuestion.objects.count(), 1)
+        self.assertFalse(WritingPromptBankQuestion.objects.filter(content_hash=old_hash).exists())
+
+    def test_reseeding_does_not_replace_a_custom_prompt_with_the_same_title(self) -> None:
+        corrected = WRITING_PROMPT_BANK[0]
+        custom = replace(corrected, prompt="A teacher's own version of this task.")
+        entry = WritingPromptBankQuestion.from_blueprint(custom, source="custom")
+        entry.save()
+
+        with mock.patch("practice.writing_bank.WRITING_PROMPT_BANK", [corrected]):
+            self.assertEqual(WritingPromptBankQuestion.seed_from_static_bank(), 1)
+
+        entry.refresh_from_db()
+        self.assertEqual(entry.to_blueprint(), custom)
+        self.assertEqual(entry.source, "custom")
+        self.assertEqual(WritingPromptBankQuestion.objects.count(), 2)
+
     def test_blueprint_round_trip(self) -> None:
         WritingPromptBankQuestion.seed_from_static_bank()
         entry = WritingPromptBankQuestion.objects.filter(level="ielts_8_9").first()
@@ -1039,6 +1146,32 @@ class WritingPromptBankTests(TestCase):
         self.assertEqual(len(sampled), 3)
         for item in sampled:
             self.assertEqual(item.level, "beginner")
+
+    def test_random_sample_does_not_fill_shortfall_from_other_levels(self) -> None:
+        WritingPromptBankQuestion.seed_from_static_bank()
+        expected = WritingPromptBankQuestion.objects.filter(level="beginner")
+
+        sampled = WritingPromptBankQuestion.random_sample(len(WRITING_PROMPT_BANK), level="BEGINNER")
+
+        self.assertCountEqual([item.pk for item in sampled], expected.values_list("pk", flat=True))
+
+    def test_random_sample_returns_empty_when_all_matching_prompts_are_excluded(self) -> None:
+        WritingPromptBankQuestion.seed_from_static_bank()
+        excluded = WritingPromptBankQuestion.objects.filter(level="beginner").values_list(
+            "content_hash", flat=True
+        )
+
+        sampled = WritingPromptBankQuestion.random_sample(3, level="beginner", exclude_hashes=excluded)
+
+        self.assertEqual(sampled, [])
+
+    def test_random_sample_all_levels_returns_each_prompt_at_most_once(self) -> None:
+        WritingPromptBankQuestion.seed_from_static_bank()
+
+        sampled = WritingPromptBankQuestion.random_sample(len(WRITING_PROMPT_BANK) + 1, level="all")
+
+        self.assertEqual(len(sampled), len(WRITING_PROMPT_BANK))
+        self.assertEqual(len({item.pk for item in sampled}), len(sampled))
 
 
 @mock.patch.dict(
@@ -1176,4 +1309,3 @@ class WritingExaminerMergeTests(TestCase):
         evaluator.assert_not_called()
         self.assertEqual(feedback["assessed_by"], "measured")
         self.assertTrue(any("scored locally only" in note for note in feedback["notes"]))
-

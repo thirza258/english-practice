@@ -19,6 +19,16 @@ The learner is given a writing task and a minimum word count, writes a response,
 estimated band for **Task Response**, **Coherence & Cohesion**, **Lexical Resource**, and
 **Grammatical Range & Accuracy**, plus the overall band using the IELTS half-band rounding rule.
 
+Beginner tasks are short personal writing exercises (80 words, 20 minutes), and intermediate tasks
+are shorter essay practice (180 words, 30 minutes). Advanced and IELTS Band 8–9 tasks use the
+[Task 2 length and timing](https://ielts.org/take-a-test/test-types/ielts-academic-test/ielts-academic-format-writing)
+of at least 250 words in about 40 minutes. These are original practice prompts.
+
+Prompts can be answered using general knowledge and experience. Vocabulary lists are optional
+suggestions, and each outline illustrates one possible structure. The guidance emphasises clear
+positions, developed reasons, and natural, precise language, following the
+[IELTS writing assessment guidance](https://ielts.org/take-a-test/preparation-resources/writing-test-resources).
+
 ### How it keeps token use low
 
 `practice/nlp.py` measures everything countable *before* any model is involved:
@@ -115,5 +125,10 @@ docker compose up --build
 The app listens on port `5170` in both local and containerized runs.
 
 The SQLite question bank is stored in `data/db.sqlite3` so Docker runs can persist generated questions across restarts when the `data/` volume is mounted. The writing prompt bank is seeded into the same database from `practice/writing_bank.py` on first use.
+
+Corrections to writing prompt wording and supporting details are applied to existing seed entries
+on use, matched by title and level. Custom entries and saved practice sessions keep their content.
+Writing practice stays within the selected level; if fewer prompts are available than requested,
+it returns the available unique prompts.
 
 The active test session is stored in the same SQLite database through a Django model, so the current test can be restored after restarts as long as `data/db.sqlite3` remains in place.

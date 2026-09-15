@@ -438,29 +438,51 @@ class WritingPromptBankQuestion(models.Model):
 
     @classmethod
     def seed_from_static_bank(cls) -> int:
+        """Refresh seeded tasks, matching wording revisions by their stable title and level."""
+
         from .writing_bank import WRITING_PROMPT_BANK
 
         created_count = 0
         for blueprint in WRITING_PROMPT_BANK:
             entry = cls.from_blueprint(blueprint, source="seed")
-            _, created = cls.objects.get_or_create(
-                content_hash=entry.content_hash,
-                defaults={
-                    "title": entry.title,
-                    "task_type": entry.task_type,
-                    "prompt": entry.prompt,
-                    "level": entry.level,
-                    "min_words": entry.min_words,
-                    "suggested_minutes": entry.suggested_minutes,
-                    "guidance": entry.guidance,
-                    "useful_vocabulary": entry.useful_vocabulary,
-                    "model_outline": entry.model_outline,
-                    "source": entry.source,
-                    "generation_metadata": entry.generation_metadata,
-                },
-            )
+            task_details = {
+                "content_hash": entry.content_hash,
+                "title": entry.title,
+                "task_type": entry.task_type,
+                "prompt": entry.prompt,
+                "level": entry.level,
+                "min_words": entry.min_words,
+                "suggested_minutes": entry.suggested_minutes,
+                "guidance": entry.guidance,
+                "useful_vocabulary": entry.useful_vocabulary,
+                "model_outline": entry.model_outline,
+            }
+            stored = cls.objects.filter(content_hash=entry.content_hash).first()
+            if stored is None:
+                # A wording change gets a new hash, but still belongs to the same seeded task.
+                stored = cls.objects.filter(
+                    source="seed", title=entry.title, level=entry.level
+                ).first()
+            created = False
+            if stored is None:
+                stored, created = cls.objects.get_or_create(
+                    content_hash=entry.content_hash,
+                    defaults={
+                        **task_details,
+                        "source": entry.source,
+                        "generation_metadata": entry.generation_metadata,
+                    },
+                )
             if created:
                 created_count += 1
+            elif stored.source == "seed":
+                changed_details = {
+                    field: value
+                    for field, value in task_details.items()
+                    if getattr(stored, field) != value
+                }
+                if changed_details:
+                    cls.objects.filter(pk=stored.pk, source="seed").update(**changed_details)
         return created_count
 
     @classmethod
@@ -471,6 +493,8 @@ class WritingPromptBankQuestion(models.Model):
         level: str | None = None,
         exclude_hashes: Iterable[str] | None = None,
     ) -> list["WritingPromptBankQuestion"]:
+        """Return distinct prompts from the requested level, up to the available count."""
+
         if count <= 0:
             return []
 
@@ -479,14 +503,7 @@ class WritingPromptBankQuestion(models.Model):
             queryset = queryset.exclude(content_hash__in=list(exclude_hashes))
 
         if level and level.lower() != "all":
-            level_queryset = queryset.filter(level=level.lower())
-            results = list(level_queryset.order_by("?")[:count])
-            if len(results) >= count:
-                return results
-            remaining = count - len(results)
-            seen_ids = {item.id for item in results}
-            extra = list(queryset.exclude(id__in=seen_ids).order_by("?")[:remaining])
-            return [*results, *extra]
+            queryset = queryset.filter(level=level.lower())
 
         return list(queryset.order_by("?")[:count])
 

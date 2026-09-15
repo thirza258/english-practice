@@ -11,6 +11,10 @@ class WritingPromptBlueprint:
     ``useful_vocabulary`` and ``model_outline`` stay hidden while the learner
     writes and are revealed together with the IELTS report, following the same
     hidden-topic principle the sentence and paragraph modes use.
+
+    Vocabulary suggestions are optional, and outlines show one possible way to
+    organise an answer. Keep titles stable within each level so wording edits
+    can be applied to the corresponding saved prompt.
     """
 
     title: str
@@ -33,13 +37,13 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         task_type="descriptive",
         prompt=(
             "Describe a normal day in your life. Write about what you do in the morning, "
-            "in the afternoon, and in the evening, and say which part of the day you enjoy most."
+            "in the afternoon, and in the evening. Say which part of the day you enjoy most and why."
         ),
         level="beginner",
         min_words=80,
         suggested_minutes=20,
         guidance=(
-            "Write at least three short paragraphs: morning, afternoon, evening.",
+            "Group your ideas into short paragraphs about the different parts of your day.",
             "Use the simple present tense for habits (I wake up, she cooks).",
             "Join ideas with and, but, because, so, then, after that.",
             "Finish with one sentence saying which part of the day you like best and why.",
@@ -58,14 +62,14 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         title="A Person I Admire",
         task_type="descriptive",
         prompt=(
-            "Write about a person you admire. Explain who the person is, what they are like, "
-            "and why this person is important to you."
+            "Write about a person you admire. Say who the person is and what they are like. "
+            "Give an example of something they have done and explain why you admire them."
         ),
         level="beginner",
         min_words=80,
         suggested_minutes=20,
         guidance=(
-            "Introduce the person in the first sentence (name and relationship).",
+            "Introduce the person and say how you know them or know about them.",
             "Use adjectives to describe character: kind, patient, hard-working, honest.",
             "Give one short example of something the person did.",
             "Use because to explain your reasons.",
@@ -75,8 +79,8 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
             "take care of", "for example", "that is why",
         ),
         model_outline=(
-            "Paragraph 1: who the person is. Paragraph 2: what they look like and what they are like. "
-            "Paragraph 3: one example of their behaviour and why you admire them."
+            "Paragraph 1: who the person is. Paragraph 2: their character, with an example of what they did. "
+            "Paragraph 3: why you admire them."
         ),
     ),
     WritingPromptBlueprint(
@@ -90,8 +94,8 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         min_words=80,
         suggested_minutes=20,
         guidance=(
-            "Say where the place is and how you get there.",
-            "Describe what you can see, hear, and smell.",
+            "Begin by saying where the place is.",
+            "Describe what you can see there and the activities you enjoy.",
             "Use prepositions of place: near, next to, in front of, between.",
             "End with how the place makes you feel.",
         ),
@@ -108,25 +112,25 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         title="Food I Like to Eat",
         task_type="descriptive",
         prompt=(
-            "Write about a meal you enjoy. Explain what it is, how it is made, "
+            "Write about a meal you enjoy. Describe its main ingredients, how to make it, "
             "and when you usually eat it."
         ),
         level="beginner",
         min_words=80,
         suggested_minutes=20,
         guidance=(
-            "Name the dish and say where it comes from.",
+            "Start by naming the meal.",
             "List the main ingredients using and, with, also.",
             "Describe the steps in order: first, then, next, finally.",
-            "Say when and with whom you eat it.",
+            "Finish by saying when you usually eat it.",
         ),
         useful_vocabulary=(
             "ingredients", "delicious", "sweet", "spicy", "first",
             "then", "finally", "traditional",
         ),
         model_outline=(
-            "Paragraph 1: the dish and where it comes from. Paragraph 2: ingredients and how it is cooked. "
-            "Paragraph 3: when you eat it and why you like it."
+            "Paragraph 1: the meal and its main ingredients. Paragraph 2: the simple steps used to make it. "
+            "Paragraph 3: when you usually eat it."
         ),
     ),
     WritingPromptBlueprint(
@@ -165,7 +169,7 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         min_words=80,
         suggested_minutes=20,
         guidance=(
-            "Say where your hometown is and how big it is.",
+            "Begin by naming your hometown and saying where it is.",
             "Describe the weather and the people who live there.",
             "Mention two or three interesting places.",
             "Finish with one improvement you would like and the reason.",
@@ -175,7 +179,7 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
             "clean", "noisy", "I would like",
         ),
         model_outline=(
-            "Paragraph 1: location and size. Paragraph 2: weather, people, and places. "
+            "Paragraph 1: the name and location of your hometown. Paragraph 2: weather, people, and places. "
             "Paragraph 3: one improvement you want and why."
         ),
     ),
@@ -193,7 +197,7 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
             "Use the simple present for your usual weekend.",
             "Use going to or will for your plan.",
             "Compare the two with but, however, this time.",
-            "Say which one you prefer.",
+            "Explain what will be different from your usual weekend.",
         ),
         useful_vocabulary=(
             "usually", "at the weekend", "going to", "next Saturday", "but",
@@ -201,7 +205,7 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         ),
         model_outline=(
             "Paragraph 1: your usual weekend routine. Paragraph 2: your plan for next weekend. "
-            "Paragraph 3: the difference and which you prefer."
+            "Paragraph 3: the main similarities or differences."
         ),
     ),
     # -------------------------------------------------------------------------
@@ -222,7 +226,7 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
             "Write an introduction that rephrases the question in your own words.",
             "Devote one body paragraph to advantages and one to disadvantages.",
             "Open each body paragraph with a clear topic sentence.",
-            "Use linking words: however, in addition, as a result, for instance.",
+            "Use linking words where they help explain a contrast, an addition, or a result.",
         ),
         useful_vocabulary=(
             "flexibility", "commute", "productivity", "isolation", "work-life balance",
@@ -232,12 +236,12 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
             "Introduction: paraphrase the topic and state that the trend brings both benefits and drawbacks. "
             "Body 1: advantages such as saved commuting time, flexible hours, and lower office costs. "
             "Body 2: drawbacks such as isolation, blurred boundaries, and weaker teamwork. "
-            "Conclusion: a balanced judgement."
+            "Conclusion: summarise the main advantages and disadvantages."
         ),
     ),
     WritingPromptBlueprint(
         title="Social Media and Friendship",
-        task_type="opinion",
+        task_type="discussion",
         prompt=(
             "Some people believe that social media has made friendships weaker, while others "
             "think it helps people stay connected. Discuss both views and give your own opinion."
@@ -246,9 +250,9 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         min_words=180,
         suggested_minutes=30,
         guidance=(
-            "Present both views fairly before giving your own opinion.",
+            "Introduce both views and make your own position clear at the start.",
             "Support each view with a concrete example.",
-            "Signal your position clearly: in my view, I would argue that.",
+            "Explain how your reasons support your opinion as you discuss the two views.",
             "Keep one main idea per paragraph.",
         ),
         useful_vocabulary=(
@@ -256,8 +260,9 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
             "whereas", "nevertheless", "in my view",
         ),
         model_outline=(
-            "Introduction: summarise both positions. Body 1: the view that social media weakens friendship. "
-            "Body 2: the view that it sustains connection. Conclusion: your own reasoned opinion."
+            "Introduction: introduce both views and state your opinion. Body 1: explain how social media could "
+            "weaken friendships, with an example. Body 2: explain how it could sustain friendships, with an "
+            "example and a connection to your position. Conclusion: restate the opinion your reasons support."
         ),
     ),
     WritingPromptBlueprint(
@@ -271,9 +276,9 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         min_words=180,
         suggested_minutes=30,
         guidance=(
-            "State your position in the introduction and keep it consistent.",
-            "Give two or three supporting reasons, each in its own paragraph.",
-            "Acknowledge the opposing argument briefly before answering it.",
+            "State whether you agree fully, partly, or not at all, and keep your position consistent.",
+            "Develop two main reasons, each with an explanation or example.",
+            "If you mention an opposing view, explain how it affects your argument.",
             "Use cause and effect language: leads to, results in, therefore.",
         ),
         useful_vocabulary=(
@@ -281,8 +286,9 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
             "therefore", "consequently", "to a large extent",
         ),
         model_outline=(
-            "Introduction: paraphrase plus a clear position. Body 1: strongest reason with an example. "
-            "Body 2: second reason. Body 3: the opposing argument and your response. Conclusion: restate the position."
+            "Introduction: introduce the spending choice and state your position. Body 1: explain one reason "
+            "with an example. Body 2: develop a second reason, considering a limitation if relevant. "
+            "Conclusion: explain the extent of your agreement based on those reasons."
         ),
     ),
     WritingPromptBlueprint(
@@ -296,26 +302,27 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         min_words=180,
         suggested_minutes=30,
         guidance=(
+            "Introduce both views and state your own opinion.",
             "Explain the reasoning behind each view, not just the view itself.",
             "Use examples from education or your own experience.",
-            "Compare with while, whereas, in contrast.",
-            "Make your own opinion unmistakable in the conclusion.",
+            "Keep your opinion consistent through the discussion and conclusion.",
         ),
         useful_vocabulary=(
             "fluency", "curriculum", "pronunciation", "motivation", "immersion",
             "whereas", "in contrast", "arguably",
         ),
         model_outline=(
-            "Introduction: introduce both sides. Body 1: the early-start argument. "
-            "Body 2: the later-start argument. Conclusion: your opinion with a justification."
+            "Introduction: introduce both views and state your opinion. Body 1: explain the argument for "
+            "starting in primary school. Body 2: explain the argument for starting in secondary school and "
+            "relate the comparison to your view. Conclusion: summarise the reasons supporting your opinion."
         ),
     ),
     WritingPromptBlueprint(
         title="Online Shopping and Local Shops",
         task_type="problem_solution",
         prompt=(
-            "The growth of online shopping has caused many shops in town centres to close. "
-            "What problems does this create, and what measures could reduce them?"
+            "In some towns, local shops are losing customers to online retailers. "
+            "What problems can this cause for town centres, and what could be done to address them?"
         ),
         level="intermediate",
         min_words=180,
@@ -333,22 +340,22 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         model_outline=(
             "Introduction: describe the trend. Body 1: problems such as job losses, emptier town centres, and less "
             "community life. Body 2: measures such as lower rents, mixed-use spaces, and local delivery hubs. "
-            "Conclusion: which measure matters most."
+            "Conclusion: summarise how the proposed measures could address these problems."
         ),
     ),
     WritingPromptBlueprint(
         title="Everyday Environmental Habits",
         task_type="problem_solution",
         prompt=(
-            "People are often told to change their daily habits to protect the environment, "
-            "yet many do not. Why is this the case, and what could encourage people to act?"
+            "Many people find it difficult to change their daily habits to protect the environment. "
+            "What obstacles do they face, and what could help them change these habits?"
         ),
         level="intermediate",
         min_words=180,
         suggested_minutes=30,
         guidance=(
-            "Give reasons before suggesting solutions.",
-            "Make the link between each cause and its remedy explicit.",
+            "Identify the obstacles before suggesting ways to overcome them.",
+            "Explain how each suggestion addresses an obstacle you have described.",
             "Support claims with everyday examples.",
             "Use impersonal structures: it is often argued that, people tend to.",
         ),
@@ -357,14 +364,14 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
             "tend to", "one reason for this", "in practice",
         ),
         model_outline=(
-            "Introduction: state the gap between advice and behaviour. Body 1: reasons such as cost, convenience, and "
-            "low awareness. Body 2: encouragements such as education, discounts, and clearer labelling. "
-            "Conclusion: a realistic assessment."
+            "Introduction: introduce the difficulty of changing everyday habits. Body 1: explain obstacles "
+            "such as cost, limited facilities, or lack of information. Body 2: suggest practical support for "
+            "the obstacles you chose. Conclusion: summarise how this support could help people act."
         ),
     ),
     WritingPromptBlueprint(
         title="School Uniforms",
-        task_type="opinion",
+        task_type="advantages_disadvantages",
         prompt=(
             "Many schools require students to wear a uniform. Do the benefits of this policy "
             "outweigh the drawbacks? Give reasons and relevant examples."
@@ -395,184 +402,190 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         title="Automation and Employment",
         task_type="discussion",
         prompt=(
-            "Automation is expected to replace a substantial proportion of existing jobs. "
-            "Some argue that this change should be slowed, while others believe it should be welcomed "
-            "and its benefits shared widely. Discuss both positions and give your own view."
+            "Some people think governments should limit the use of machines and software that replace workers. "
+            "Others think these technologies should be encouraged because they can create new opportunities. "
+            "Discuss both views and give your own opinion."
         ),
         level="advanced",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Establish the terms of the debate precisely in the introduction.",
-            "Develop each position with a mechanism, not merely an assertion.",
-            "Concede the strongest opposing point before answering it.",
-            "Vary sentence structure: fronted adverbials, participle clauses, conditionals.",
+            "Introduce the debate and state your own position clearly.",
+            "Explain how each approach could affect workers and businesses, using relevant examples.",
+            "Consider both immediate job losses and possible longer-term opportunities.",
+            "Connect your evaluation of the two views to the opinion you gave in the introduction.",
         ),
         useful_vocabulary=(
-            "displacement", "retraining", "productivity gains", "transition", "labour market",
-            "albeit", "insofar as", "it follows that",
+            "job displacement", "retraining", "productivity", "transition", "labour market",
+            "employment opportunities", "in the short term", "provided that",
         ),
         model_outline=(
-            "Introduction: define the tension between protection and acceleration. "
-            "Body 1: the case for slowing automation, including transition costs and regional decline. "
-            "Body 2: the case for welcoming it, including productivity and shared gains. "
-            "Body 3: your synthesis with a qualified position. Conclusion: the decisive consideration."
+            "Introduction: introduce both views and state your opinion. Body 1: explain why limiting automation "
+            "might protect workers, with an example. Body 2: explain why encouraging it might create benefits, "
+            "and compare these with the concerns already discussed. Conclusion: draw together the reasons "
+            "for your position, including any conditions you have explained."
         ),
     ),
     WritingPromptBlueprint(
         title="Urban Growth and Quality of Life",
         task_type="problem_solution",
         prompt=(
-            "Rapid urban growth has improved economic opportunity but placed pressure on housing, transport, "
-            "and public services. Analyse the most serious consequences and evaluate possible responses."
+            "As cities grow, housing, transport, and public services can struggle to meet residents' needs. "
+            "What problems can this cause, and what measures could address them?"
         ),
         level="advanced",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Prioritise consequences rather than listing every possible one.",
-            "Evaluate each response, including its limitations.",
-            "Use hedging where evidence is uncertain: may, is likely to, tends to.",
-            "Link paragraphs with referencing expressions: this pressure, such measures.",
+            "Choose a few significant problems and explain their effects on residents.",
+            "Connect each proposed measure to a problem you have described.",
+            "Explain who could take action and consider practical limits such as cost or space.",
+            "Use cautious language for uncertain outcomes, and keep references between ideas clear.",
         ),
         useful_vocabulary=(
-            "density", "zoning", "affordability", "mitigate", "public provision",
-            "consequently", "notwithstanding", "to that end",
+            "affordable housing", "congestion", "infrastructure", "public services", "urban planning",
+            "population growth", "as a result", "in the long term",
         ),
         model_outline=(
-            "Introduction: frame urban growth as a trade-off. Body 1: the most serious consequence, analysed causally. "
-            "Body 2: a secondary consequence. Body 3: responses evaluated with their limits. "
-            "Conclusion: the response with the best balance of cost and benefit."
+            "Introduction: introduce the pressures caused by urban growth. Body 1: explain two connected "
+            "problems and their effects on residents. Body 2: propose measures for those problems, explaining "
+            "how they could work and any practical limits. Conclusion: summarise the response you recommend."
         ),
     ),
     WritingPromptBlueprint(
         title="Public Funding for the Arts",
         task_type="opinion",
         prompt=(
-            "Some maintain that public money should be directed to healthcare and education rather than "
-            "to museums, theatres, and orchestras. To what extent do you agree with this view?"
+            "Some people believe governments should spend money on healthcare and education instead of "
+            "funding museums, theatres, and other arts organisations. To what extent do you agree or disagree?"
         ),
         level="advanced",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Take a defensible position and qualify it explicitly.",
-            "Distinguish between different kinds of cultural spending.",
-            "Use concessive structures: while it is true that, granted that.",
-            "Avoid absolute claims that you cannot defend.",
+            "State the extent of your agreement and keep it clear throughout the essay.",
+            "Explain why your spending priorities would benefit the public.",
+            "If you raise an opposing view, explain how it affects your position.",
+            "Use relevant examples and avoid claims that go beyond what you can support.",
         ),
         useful_vocabulary=(
-            "discretionary spending", "cultural heritage", "intangible", "custodianship", "wider benefit",
-            "granted that", "conversely", "on these grounds",
+            "budget allocation", "cultural heritage", "public services", "access to the arts", "opportunity cost",
+            "on balance", "to some extent", "in contrast",
         ),
         model_outline=(
-            "Introduction: the competing claims on public funds and your position. "
-            "Body 1: the strongest case for prioritising healthcare and education. "
-            "Body 2: what would be lost without cultural funding. "
-            "Body 3: a principled criterion for allocation. Conclusion: your qualified verdict."
+            "Introduction: introduce the funding choice and state your position. Body 1: explain one reason "
+            "for that position, with a relevant example. Body 2: develop another reason or explain a limit to "
+            "your agreement, considering the competing use of funds. Conclusion: restate the extent of your "
+            "agreement using the reasoning you have developed."
         ),
     ),
     WritingPromptBlueprint(
         title="Global English and Smaller Languages",
         task_type="discussion",
         prompt=(
-            "The dominance of English in science, commerce, and the internet is said to accelerate "
-            "the decline of smaller languages. Examine this claim and discuss what, if anything, should be done."
+            "Some people believe the growing use of English threatens languages spoken by smaller communities. "
+            "Others believe English can spread while these languages remain in everyday use. "
+            "Discuss both views and give your own opinion."
         ),
         level="advanced",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Test the claim rather than accepting it uncritically.",
-            "Separate correlation from causation in your reasoning.",
-            "Refer to counter-examples where they exist.",
-            "Use nominalisation to compress ideas: the decline of, the spread of.",
+            "Explain both the possible threat to local languages and how languages might coexist.",
+            "Use examples from settings such as home, school, work, or the media.",
+            "Consider whether the effects could differ between communities.",
+            "State your opinion at the start and support it through the comparison.",
         ),
         useful_vocabulary=(
-            "lingua franca", "language shift", "revitalisation", "transmission", "prestige",
-            "arguably", "in this respect", "far from being",
+            "international communication", "mother tongue", "language preservation", "bilingual education",
+            "community identity", "future generations", "meanwhile", "in this respect",
         ),
         model_outline=(
-            "Introduction: state the claim and signal that it requires qualification. "
-            "Body 1: evidence supporting the claim. Body 2: complicating evidence. "
-            "Body 3: what policy could achieve, and its limits. Conclusion: a measured judgement."
+            "Introduction: introduce both views and state your opinion. Body 1: explain how greater use of "
+            "English could reduce the use of a local language. Body 2: explain how communities might continue "
+            "using both, and assess the conditions that matter. Conclusion: summarise your view based on "
+            "the situations you have discussed."
         ),
     ),
     WritingPromptBlueprint(
         title="Prevention or Treatment",
         task_type="opinion",
         prompt=(
-            "Health systems spend far more on treating illness than on preventing it. "
-            "Should this balance be reversed? Argue your case with reasons and examples."
+            "Some people believe governments should spend more on preventing illness than on treating "
+            "people who are already ill. To what extent do you agree or disagree?"
         ),
         level="advanced",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Address the trade-off directly rather than praising both options.",
-            "Reason quantitatively even without exact figures.",
-            "Anticipate the objection about short political time horizons.",
-            "Maintain a consistently formal register.",
+            "Address the relative spending priority and state the extent of your agreement.",
+            "Explain the likely effects of your preferred approach on patients and public health.",
+            "Use examples you can explain clearly; exact spending figures are not needed.",
+            "Consider both present needs and future benefits when supporting your position.",
         ),
         useful_vocabulary=(
-            "screening", "long-term returns", "behavioural change", "allocation", "public health",
-            "were governments to", "not only ... but also", "by contrast",
+            "preventive care", "early intervention", "public health", "treatment costs", "health education",
+            "long-term benefits", "access to care", "by contrast",
         ),
         model_outline=(
-            "Introduction: the current imbalance and your position. Body 1: the case for prevention. "
-            "Body 2: why treatment retains its claim. Body 3: the objection about political incentives, answered. "
-            "Conclusion: the balance you would defend."
+            "Introduction: introduce the spending choice and state your position. Body 1: develop a reason "
+            "for your preferred priority, with an example. Body 2: explain a second reason or a limit to your "
+            "agreement, considering the needs of people affected. Conclusion: state the balance your "
+            "argument supports."
         ),
     ),
     WritingPromptBlueprint(
         title="Degrees Delivered Online",
         task_type="advantages_disadvantages",
         prompt=(
-            "Universities increasingly deliver degrees entirely online. "
-            "Assess the benefits and costs of this shift for students, institutions, and society."
+            "More universities now offer degree courses that can be completed entirely online. "
+            "What are the advantages and disadvantages of this development for students and universities?"
         ),
         level="advanced",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Treat the three groups distinctly rather than blurring them.",
-            "Weigh benefits against costs instead of listing them separately.",
-            "Use evaluative adjectives: marginal, decisive, negligible, substantial.",
-            "Close with a judgement, not a summary.",
+            "Include effects on both students and universities.",
+            "Explain advantages and disadvantages instead of listing them without support.",
+            "Use examples such as access to courses, student support, or practical training.",
+            "Organise related ideas together and summarise the main benefits and drawbacks at the end.",
         ),
         useful_vocabulary=(
-            "accessibility", "completion rates", "accreditation", "cohort", "teaching quality",
-            "whereas", "in the aggregate", "crucially",
+            "accessibility", "distance learning", "student support", "tuition fees", "practical training",
+            "flexibility", "whereas", "in addition",
         ),
         model_outline=(
-            "Introduction: the shift and the criteria for judging it. Body 1: students. "
-            "Body 2: institutions. Body 3: society. Conclusion: where the balance falls."
+            "Introduction: introduce fully online degrees. Body 1: explain advantages for students and "
+            "universities, with examples. Body 2: explain disadvantages for these groups, considering "
+            "different kinds of courses where relevant. Conclusion: summarise the main benefits and drawbacks."
         ),
     ),
     WritingPromptBlueprint(
         title="Consumption and Sustainability",
         task_type="discussion",
         prompt=(
-            "It is often claimed that sustainability cannot be achieved without reducing consumption. "
-            "Others argue that improvements in efficiency are sufficient. Evaluate both claims."
+            "Some people believe protecting the environment requires people to buy and use fewer goods. "
+            "Others think cleaner technology and more efficient production can solve environmental problems "
+            "without reducing consumption. Discuss both views and give your own opinion."
         ),
         level="advanced",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Explain the mechanism behind each claim before judging it.",
-            "Address the rebound effect if you argue for efficiency.",
-            "Sustain one line of argument across the whole essay.",
-            "Employ parallel structures for emphasis.",
+            "Explain how buying fewer goods could reduce environmental damage.",
+            "Explain how cleaner production could help and consider its possible limits.",
+            "Use everyday examples of products, energy use, or waste to develop the comparison.",
+            "Keep your own opinion clear while assessing both views.",
         ),
         useful_vocabulary=(
-            "decoupling", "rebound effect", "circular economy", "resource use", "sufficiency",
-            "insofar as", "it is precisely", "on this reading",
+            "consumption", "energy efficiency", "resource use", "reuse", "waste reduction",
+            "production methods", "over time", "in practice",
         ),
         model_outline=(
-            "Introduction: the two competing claims. Body 1: the argument for reducing consumption. "
-            "Body 2: the efficiency argument and the rebound objection. Body 3: your evaluation. "
-            "Conclusion: which claim survives scrutiny."
+            "Introduction: introduce both views and state your opinion. Body 1: explain the case for "
+            "reducing consumption, with an example. Body 2: explain the case for cleaner production and "
+            "compare its potential and limits with the first approach. Conclusion: state whether one "
+            "approach or a combination is better supported by your reasons."
         ),
     ),
     # -------------------------------------------------------------------------
@@ -582,183 +595,192 @@ WRITING_PROMPT_BANK: list[WritingPromptBlueprint] = [
         title="The Pace of Technological Change",
         task_type="opinion",
         prompt=(
-            "Some commentators contend that technological development is an autonomous force to which "
-            "societies must simply adapt. Others insist that its direction reflects deliberate collective choices. "
-            "To what extent do you agree that technological change is beyond collective control?"
+            "Some people believe that technological change happens too quickly for governments and "
+            "individuals to influence it. To what extent do you agree or disagree?"
         ),
         level="ielts_8_9",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Define what would count as evidence for and against the claim.",
-            "Sustain a single thesis and return to it at each stage of the argument.",
-            "Deploy low-frequency lexis precisely rather than decoratively.",
-            "Vary syntax with inversion, cleft sentences, and mixed conditionals.",
+            "State the extent of your agreement and develop it consistently through the essay.",
+            "Consider the influence of both governments and individuals, using examples you can explain.",
+            "Distinguish between influencing how a technology is used and stopping its development.",
+            "Choose precise vocabulary and sentence structures that express your meaning naturally.",
         ),
         useful_vocabulary=(
-            "contingent", "path dependency", "malleable", "inexorable", "deliberation",
-            "notwithstanding", "were it not for", "far from being inevitable",
+            "regulation", "consumer demand", "innovation", "public policy", "adoption",
+            "commercial interests", "over time", "to some extent",
         ),
         model_outline=(
-            "Introduction: delimit the claim and stake a thesis. Body 1: the strongest version of the autonomy case. "
-            "Body 2: historical counter-evidence of deliberate steering. Body 3: reconcile the two through a mechanism "
-            "such as path dependency. Conclusion: the precise extent of your agreement."
+            "Introduction: introduce the claim and state your position. Body 1: assess the influence of "
+            "governments, with an example and any relevant limits. Body 2: assess the influence of individuals "
+            "and explain how it supports or qualifies your position. Conclusion: draw together your reasons "
+            "and state the extent of your agreement."
         ),
     ),
     WritingPromptBlueprint(
         title="Curiosity-Driven Research",
         task_type="opinion",
         prompt=(
-            "Public research funding is increasingly allocated to projects with demonstrable practical application. "
-            "Assess whether curiosity-driven enquiry can be justified under such criteria."
+            "Some people believe that governments should fund scientific research only when it is likely "
+            "to produce practical benefits. To what extent do you agree or disagree?"
         ),
         level="ielts_8_9",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Examine the evaluation criterion itself, not merely its outcomes.",
-            "Use historical examples where basic research produced unforeseen applications.",
-            "Employ the mandative subjunctive where appropriate: it is imperative that funding be.",
-            "Avoid rhetorical questions as substitutes for argument.",
+            "Address the word only: explain whether practical benefits should be a condition of funding.",
+            "Distinguish between immediate uses and benefits that may emerge later.",
+            "Consider limited budgets and uncertainty when developing your reasons.",
+            "Use examples you understand; named studies or specialist scientific knowledge are not needed.",
         ),
         useful_vocabulary=(
-            "serendipity", "utilitarian", "incommensurable", "attenuate", "foundational",
-            "it is imperative that", "were funding to be", "precisely because",
+            "basic research", "practical applications", "long-term benefits", "research funding",
+            "scientific knowledge", "unexpected discoveries", "budget priorities", "uncertainty",
         ),
         model_outline=(
-            "Introduction: the funding criterion and your thesis. Body 1: why the criterion is intuitive. "
-            "Body 2: why it misdescribes how discovery proceeds. Body 3: an alternative allocation principle. "
-            "Conclusion: the justification you defend."
+            "Introduction: introduce the proposed funding rule and state your position. Body 1: develop "
+            "one reason for your agreement or disagreement, with an example. Body 2: develop another reason "
+            "or a limit to your position, considering uncertain outcomes and competing priorities. "
+            "Conclusion: explain whether, and to what extent, the rule should apply."
         ),
     ),
     WritingPromptBlueprint(
         title="Global Media and Local Culture",
         task_type="discussion",
         prompt=(
-            "Global media is often said to be eroding cultural distinctiveness. Others observe that local "
-            "cultures adapt and reinterpret imported forms. Evaluate these competing accounts."
+            "Some people believe that international films, television programmes, and online media make "
+            "local cultures less distinctive. Others think these media give people new ways to develop "
+            "and share their own culture. Discuss both views and give your own opinion."
         ),
         level="ielts_8_9",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Examine the assumptions each account makes about cultural change.",
-            "Use concrete cultural examples to test abstract claims.",
-            "Exploit fronting and inversion for emphasis: rarely has, only when.",
-            "Resist an unearned both-sides conclusion.",
+            "Explain how international media could both influence local traditions and provide opportunities.",
+            "Develop the two views with specific examples of cultural practices or media content.",
+            "State your opinion clearly and explain any circumstances in which the effects may differ.",
+            "Link your ideas through clear references and logical connections.",
         ),
         useful_vocabulary=(
-            "hybridity", "vernacular", "homogenisation", "reinterpretation", "distinctiveness",
-            "rarely has", "far from eroding", "to the extent that",
+            "cultural identity", "local traditions", "global audiences", "cultural exchange", "representation",
+            "adaptation", "creative industries", "in this way",
         ),
         model_outline=(
-            "Introduction: the two accounts and your position. Body 1: the erosion account and its evidence. "
-            "Body 2: the adaptation account and its evidence. Body 3: a criterion that separates them. "
-            "Conclusion: which account explains more."
+            "Introduction: introduce both views and state your opinion. Body 1: explain how international "
+            "media could weaken cultural distinctiveness, with an example. Body 2: explain how it could "
+            "support local cultural expression and compare the conditions behind the two effects. "
+            "Conclusion: summarise the judgement supported by your discussion."
         ),
     ),
     WritingPromptBlueprint(
         title="Preserving Historic Buildings",
         task_type="opinion",
         prompt=(
-            "Conserving historic buildings consumes resources that could fund new housing and public facilities. "
-            "Assess whether conservation can be justified when cities face pressing contemporary needs."
+            "Some people believe that cities should prioritise preserving old buildings over building "
+            "new homes and public facilities. To what extent do you agree or disagree?"
         ),
         level="ielts_8_9",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Avoid treating heritage value as self-evident; argue for it.",
-            "Distinguish between conservation, restoration, and adaptive reuse.",
-            "Concede the opportunity cost explicitly before answering it.",
-            "Sustain an information-dense, nominalised academic register.",
+            "Address the proposed priority and state the extent of your agreement.",
+            "Explain which features could make an old building worth preserving.",
+            "Consider residents' needs and the costs of the choices you discuss.",
+            "Support your position with examples and make any exceptions clear.",
         ),
         useful_vocabulary=(
-            "adaptive reuse", "opportunity cost", "irreplaceable", "continuity", "stewardship",
-            "granted that", "it does not follow that", "on these grounds",
+            "heritage", "renovation", "housing shortage", "public facilities", "maintenance costs",
+            "historical significance", "land use", "community needs",
         ),
         model_outline=(
-            "Introduction: the trade-off and your thesis. Body 1: the case that current needs should prevail. "
-            "Body 2: what conservation secures that new building cannot. Body 3: a criterion for deciding between "
-            "them. Conclusion: your scoped judgement."
+            "Introduction: introduce the competing priorities and state your position. Body 1: explain "
+            "one reason for that position, with an example. Body 2: develop a second reason or a limit to "
+            "your agreement, comparing the value of preservation with residents' needs. Conclusion: state "
+            "the priority your argument supports and any exceptions already explained."
         ),
     ),
     WritingPromptBlueprint(
         title="Funding Space Exploration",
         task_type="discussion",
         prompt=(
-            "Space exploration is defended as a driver of scientific progress and criticised as a costly "
-            "distraction from problems on Earth. Evaluate the strength of each position."
+            "Some people think governments should spend money on space exploration because it supports "
+            "scientific progress. Others believe this money should be used to solve problems on Earth. "
+            "Discuss both views and give your own opinion."
         ),
         level="ielts_8_9",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Assess the reasoning of each position, not merely its conclusion.",
-            "Question whether the two aims genuinely compete for the same resources.",
-            "Use precise quantifying language: a negligible fraction, disproportionate.",
-            "Reach a conclusion that follows from the argument you have made.",
+            "Explain the reasoning behind each spending priority and state your own position.",
+            "Consider possible benefits, costs, and the time needed for benefits to appear.",
+            "Use relevant examples without inventing figures or relying on technical knowledge.",
+            "Make your final judgement follow from the comparison you have developed.",
         ),
         useful_vocabulary=(
-            "spillover", "negligible", "disproportionate", "prestige", "long-horizon",
-            "insofar as", "by the same token", "it is far from clear that",
+            "scientific progress", "public investment", "technological advances", "research costs",
+            "competing priorities", "long-term benefits", "immediate needs", "on balance",
         ),
         model_outline=(
-            "Introduction: the competing positions and your thesis. Body 1: the scientific and technological case. "
-            "Body 2: the objection from terrestrial priorities. Body 3: whether the trade-off is real. "
-            "Conclusion: which position is better supported."
+            "Introduction: introduce both views and state your opinion. Body 1: explain the case for "
+            "funding space exploration, including a potential benefit and its limits. Body 2: explain the "
+            "case for spending on problems on Earth and compare the priorities. Conclusion: summarise "
+            "the allocation of resources your reasoning supports."
         ),
     ),
     WritingPromptBlueprint(
         title="Measuring National Progress",
         task_type="opinion",
         prompt=(
-            "Economic output remains the principal measure of national progress, although it captures neither "
-            "wellbeing nor environmental cost. Assess whether it should be replaced by broader indicators."
+            "Economic growth is often used to judge how much a country is progressing. "
+            "To what extent do you agree that it is the best way to measure national progress?"
         ),
         level="ielts_8_9",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Explain what the current measure does well before criticising it.",
-            "Address the practical objection that broader indicators resist measurement.",
-            "Use conditional inversion: were such indicators adopted.",
-            "Keep claims proportionate to the evidence you can offer.",
+            "State whether economic growth is the best measure and explain the extent of your agreement.",
+            "Explain what growth can indicate about people's lives and what it may leave out.",
+            "Compare it with relevant alternatives, developing the comparison rather than listing measures.",
+            "Support your judgement with clear examples; exact national statistics are not required.",
         ),
         useful_vocabulary=(
-            "aggregate", "proxy", "externality", "commensurable", "wellbeing",
-            "were such measures to", "not merely", "on no account",
+            "living standards", "quality of life", "economic output", "public health", "inequality",
+            "environmental impact", "wellbeing", "indicators",
         ),
         model_outline=(
-            "Introduction: the measure, its limits, and your thesis. Body 1: why output remains useful. "
-            "Body 2: what it systematically omits. Body 3: whether alternatives can be measured reliably. "
-            "Conclusion: the reform you would defend."
+            "Introduction: introduce economic growth as a measure and state your position. Body 1: assess "
+            "what growth can tell us about progress, with an example. Body 2: compare it with another "
+            "relevant measure and explain how that comparison supports your position. Conclusion: state "
+            "whether growth is the best measure, or whether your reasons support a broader approach."
         ),
     ),
     WritingPromptBlueprint(
         title="Universities and Employability",
         task_type="discussion",
         prompt=(
-            "Universities are increasingly judged by the employment outcomes of their graduates. "
-            "Discuss whether this expectation is compatible with the wider purposes of higher education."
+            "Some people think the main purpose of university education is to prepare students for employment. "
+            "Others believe universities should also help students develop knowledge and skills that benefit "
+            "society more widely. Discuss both views and give your own opinion."
         ),
         level="ielts_8_9",
         min_words=250,
         suggested_minutes=40,
         guidance=(
-            "Identify where the two purposes conflict in practice, not only in theory.",
-            "Argue for a priority ordering and defend it.",
-            "Use correlative structures: not merely ... but rather.",
-            "Ensure every paragraph advances the thesis rather than restating it.",
+            "Explain the reasoning behind both views and make your own position clear.",
+            "Use examples of how university courses or activities could serve each purpose.",
+            "Consider where the purposes might compete and where they could support each other.",
+            "Develop your argument across paragraphs, with reasons for any priorities you recommend.",
         ),
         useful_vocabulary=(
-            "vocational", "intellectual formation", "instrumental", "metric", "curriculum",
-            "not merely", "but rather", "were universities to",
+            "graduate employment", "career preparation", "critical thinking", "independent research",
+            "transferable skills", "social contribution", "curriculum", "in the long term",
         ),
         model_outline=(
-            "Introduction: the two purposes and the tension between them. Body 1: the legitimacy of the employment "
-            "expectation. Body 2: what a purely instrumental measure omits. Body 3: where the conflict is real and "
-            "how it should be resolved. Conclusion: your defended ordering."
+            "Introduction: introduce both views and state your opinion. Body 1: explain the case for "
+            "preparing students for employment, with an example. Body 2: explain the wider purposes of "
+            "higher education and consider how they relate to career preparation. Conclusion: summarise "
+            "the role of universities that your discussion supports."
         ),
     ),
 ]

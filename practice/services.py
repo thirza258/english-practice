@@ -815,9 +815,7 @@ def _writing_blueprints(count: int, level: str = "all") -> list[WritingPromptBlu
         level=normalized_level if normalized_level != "all" else None,
     )
     if not sampled:
-        sampled = WritingPromptBankQuestion.random_sample(count)
-    if not sampled:
-        raise ValueError("No writing prompts are available in the bank.")
+        raise ValueError("No writing prompts are available in the bank for the selected level.")
 
     return [entry.to_blueprint() for entry in sampled]
 
