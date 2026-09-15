@@ -1,10 +1,10 @@
 {% extends "practice/base.html" %}
 {% load static %}
 
-{% block title %}English Grammar, Paragraph & IELTS Writing Practice{% endblock %}
-{% block meta_description %}Practice English with sentence diagnostics, multi-blank paragraph cloze exercises, and IELTS writing tasks scored for vocabulary range, paragraph structure, cohesion, and grammatical accuracy.{% endblock %}
-{% block og_title %}English Grammar, Paragraph & IELTS Writing Practice{% endblock %}
-{% block og_description %}Start a hidden-topic grammar diagnostic, a paragraph cloze exercise, or an IELTS writing task with an estimated band score.{% endblock %}
+{% block title %}English Courses & Practice | Grammar, Writing & Storytelling{% endblock %}
+{% block meta_description %}Learn English participles, improve your writing, and tell better stories with guided courses. Practise grammar, paragraphs, and IELTS writing with instant feedback.{% endblock %}
+{% block og_title %}English Courses & Practice | Grammar, Writing & Storytelling{% endblock %}
+{% block og_description %}Guided courses on participles, clear writing, and storytelling, plus grammar and IELTS writing practice.{% endblock %}
 {% block body_class %}landing-body{% endblock %}
 {% block head_extra %}
 <script type="application/ld+json">
@@ -12,7 +12,7 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "English Practice Diagnostic",
-    "description": "An interactive English practice app with sentence diagnostics, multi-blank paragraph builder exercises, and IELTS writing tasks scored against the four band descriptors.",
+    "description": "Guided English courses on participles, writing, and storytelling, with sentence diagnostics, paragraph exercises, and IELTS writing practice.",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Web",
     "url": "{{ canonical_url }}"
@@ -40,13 +40,14 @@
     </div>
 
     <div class="masthead-main">
-      <h1 class="book-title" data-i18n="mainTitle">Grammar and paragraph practice.</h1>
+      <h1 class="book-title" data-i18n="mainTitle">Learn English. Write with confidence.</h1>
       <p class="book-subtitle" data-i18n="subtitle">
-        Short diagnostic tests, fill-the-blank paragraphs, and IELTS writing with instant feedback. Every answer comes with the rule explained — from beginner (A1) to IELTS band 9.
+        Learn participles such as running and written, write clearer English, and tell better stories. Build your skills with guided courses and practise with instant feedback.
       </p>
 
       <div class="masthead-actions">
-        <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button" data-i18n="startParagraphBtn">Start paragraph test</a>
+        <a href="{% url 'practice:courses' %}" class="primary-button" data-i18n="browseCoursesBtn">Explore English courses</a>
+        <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="secondary-button" data-i18n="startParagraphBtn">Start paragraph test</a>
         <a href="{% url 'practice:test' %}?mode=writing&level=all" class="secondary-button" data-i18n="startWritingBtn">IELTS Writing</a>
         <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button" data-i18n="startSentenceBtn">Start sentence test</a>
       </div>
@@ -54,7 +55,35 @@
   </header>
 
   <main class="landing-layout">
-    <section class="book-card practice-modes-section" aria-label="Practice Modes">
+    <section class="book-card landing-courses" aria-labelledby="courses-title">
+      <div class="section-heading">
+        <p class="academic-eyebrow" data-i18n="coursesEyebrow">Learn at your own pace</p>
+        <h2 id="courses-title" data-i18n="coursesTitle">Three courses. Skills you can use.</h2>
+        <p data-i18n="coursesIntro">Short lessons in English, worked examples, and hands-on exercises. Save your progress as you learn.</p>
+      </div>
+      <div class="course-grid">
+        <article class="course-card course-accent-participles">
+          <p class="course-note" data-i18n="participlesMeta">Grammar · 4 lessons</p>
+          <h3 data-i18n="participlesTitle">English participles</h3>
+          <p data-i18n="participlesDesc">Use forms like running and written in verb phrases, descriptions, and clauses. Learn to make every subject clear.</p>
+          <a class="secondary-button" href="{% url 'practice:course-detail' 'participles' %}" data-i18n="participlesBtn">Learn participles →</a>
+        </article>
+        <article class="course-card course-accent-better-writing">
+          <p class="course-note" data-i18n="writingCourseMeta">Writing · 4 lessons</p>
+          <h3 data-i18n="writingCourseTitle">Write better English</h3>
+          <p data-i18n="writingCourseDesc">Create clear sentences, develop your paragraphs, connect ideas, and revise a piece you can be proud of.</p>
+          <a class="secondary-button" href="{% url 'practice:course-detail' 'better-writing' %}" data-i18n="writingCourseBtn">Improve your writing →</a>
+        </article>
+        <article class="course-card course-accent-storytelling">
+          <p class="course-note" data-i18n="storyMeta">Storytelling · 4 lessons</p>
+          <h3 data-i18n="storyTitle">Tell a better story</h3>
+          <p data-i18n="storyDesc">Build a character, shape a plot, write vivid scenes, and bring your own short story to a satisfying ending.</p>
+          <a class="secondary-button" href="{% url 'practice:course-detail' 'storytelling' %}" data-i18n="storyBtn">Start storytelling →</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="practice-modes" class="book-card practice-modes-section" aria-label="Practice Modes">
       <div class="section-heading">
         <h2 data-i18n="section1Title">Three practice modes</h2>
       </div>
@@ -264,13 +293,30 @@
   (() => {
     const TRANSLATIONS = {
       en: {
-        pageTitle: "English Grammar & Paragraph Practice",
-        metaDescription: "Practice English grammar with fill-the-blank paragraphs and sentence tests, with instant feedback for every answer.",
+        pageTitle: "English Courses & Practice | Grammar, Writing & Storytelling",
+        metaDescription: "Learn English participles, improve your writing, and tell better stories with guided courses and practice tests.",
         siteName: "English Practice",
         footerHome: "Home",
         langLabel: "Language / Bahasa:",
-        mainTitle: "Grammar and paragraph practice.",
-        subtitle: "Short diagnostic tests and fill-the-blank paragraphs with instant feedback. Every answer comes with the rule explained — from beginner (A1) to IELTS band 9.",
+        mainTitle: "Learn English. Write with confidence.",
+        subtitle: "Learn participles such as running and written, write clearer English, and tell better stories. Build your skills with guided courses and practise with instant feedback.",
+        coursesNav: "English courses",
+        browseCoursesBtn: "Explore English courses",
+        coursesEyebrow: "Learn at your own pace",
+        coursesTitle: "Three courses. Skills you can use.",
+        coursesIntro: "Short lessons in English, worked examples, and hands-on exercises. Save your progress as you learn.",
+        participlesMeta: "Grammar · 4 lessons",
+        participlesTitle: "English participles",
+        participlesDesc: "Use forms like running and written in verb phrases, descriptions, and clauses. Learn to make every subject clear.",
+        participlesBtn: "Learn participles →",
+        writingCourseMeta: "Writing · 4 lessons",
+        writingCourseTitle: "Write better English",
+        writingCourseDesc: "Create clear sentences, develop your paragraphs, connect ideas, and revise a piece you can be proud of.",
+        writingCourseBtn: "Improve your writing →",
+        storyMeta: "Storytelling · 4 lessons",
+        storyTitle: "Tell a better story",
+        storyDesc: "Build a character, shape a plot, write vivid scenes, and bring your own short story to a satisfying ending.",
+        storyBtn: "Start storytelling →",
         startParagraphBtn: "Start paragraph test",
         startWritingBtn: "IELTS Writing",
         startSentenceBtn: "Start sentence test",
@@ -351,16 +397,33 @@
         step3Title: "Submit and learn",
         step3Desc: "Get color-coded feedback for every blank, the grammar rule behind each answer, and a cohesion summary.",
 
-        footerText: "English practice — grammar and paragraph exercises with instant feedback."
+        footerText: "English courses and practice — learn, write, and tell your story."
       },
       id: {
-        pageTitle: "Latihan Tata Bahasa & Paragraf Bahasa Inggris",
-        metaDescription: "Latihan tata bahasa Inggris dengan paragraf rumpang dan tes kalimat, disertai umpan balik langsung untuk setiap jawaban.",
+        pageTitle: "Kursus & Latihan Bahasa Inggris | Tata Bahasa, Menulis & Bercerita",
+        metaDescription: "Pelajari partisip bahasa Inggris, tingkatkan tulisan, dan buat cerita yang lebih baik melalui kursus dan latihan.",
         siteName: "Latihan Bahasa Inggris",
         footerHome: "Beranda",
         langLabel: "Bahasa / Language:",
-        mainTitle: "Latihan tata bahasa dan paragraf bahasa Inggris.",
-        subtitle: "Tes diagnostik singkat dan paragraf rumpang dengan umpan balik langsung. Setiap jawaban disertai penjelasan kaidahnya — dari pemula (A1) hingga IELTS band 9.",
+        mainTitle: "Belajar bahasa Inggris. Menulis dengan percaya diri.",
+        subtitle: "Pelajari partisip seperti running dan written, tulis bahasa Inggris dengan lebih jelas, dan buat cerita yang lebih menarik. Asah kemampuan melalui kursus terpandu dan latihan dengan umpan balik langsung.",
+        coursesNav: "Kursus bahasa Inggris",
+        browseCoursesBtn: "Jelajahi kursus bahasa Inggris",
+        coursesEyebrow: "Belajar sesuai ritme Anda",
+        coursesTitle: "Tiga kursus. Keterampilan yang bisa digunakan.",
+        coursesIntro: "Pelajaran singkat dalam bahasa Inggris, contoh yang dijelaskan, dan latihan langsung. Simpan progres sambil belajar.",
+        participlesMeta: "Tata bahasa · 4 pelajaran",
+        participlesTitle: "Partisip bahasa Inggris",
+        participlesDesc: "Gunakan bentuk seperti running dan written dalam frasa kata kerja, deskripsi, dan klausa. Pelajari cara memperjelas subjeknya.",
+        participlesBtn: "Pelajari partisip →",
+        writingCourseMeta: "Menulis · 4 pelajaran",
+        writingCourseTitle: "Menulis bahasa Inggris lebih baik",
+        writingCourseDesc: "Buat kalimat yang jelas, kembangkan paragraf, hubungkan gagasan, dan revisi tulisan yang bisa Anda banggakan.",
+        writingCourseBtn: "Tingkatkan tulisan Anda →",
+        storyMeta: "Bercerita · 4 pelajaran",
+        storyTitle: "Buat cerita yang lebih menarik",
+        storyDesc: "Bangun karakter, susun alur, tulis adegan yang hidup, dan selesaikan cerita pendek Anda dengan akhir yang memuaskan.",
+        storyBtn: "Mulai bercerita →",
         startParagraphBtn: "Mulai tes paragraf",
         startWritingBtn: "Latihan Menulis IELTS",
         startSentenceBtn: "Mulai tes kalimat",
@@ -441,7 +504,7 @@
         step3Title: "Kirim dan pelajari",
         step3Desc: "Dapatkan umpan balik berkode warna untuk setiap rumpang, kaidah di balik setiap jawaban, dan ringkasan kohesi.",
 
-        footerText: "Latihan bahasa Inggris — tes tata bahasa dan paragraf dengan umpan balik langsung."
+        footerText: "Kursus dan latihan bahasa Inggris — belajar, menulis, dan ceritakan kisah Anda."
       }
     };
 

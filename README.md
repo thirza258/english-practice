@@ -1,6 +1,33 @@
 # English Practice Diagnostic
 
-A Django app with three practice modes:
+A Django app with guided English courses and three practice modes:
+
+## English courses
+
+Open `/courses/` or choose **Explore English courses** on the home page.
+
+| Course | URL | Lessons |
+| --- | --- | --- |
+| English participles | `/courses/participles/` | Present and past forms, continuous/perfect/passive constructions, adjectives, and participle clauses |
+| Write better English | `/courses/better-writing/` | Clear sentences, developed paragraphs, connections, and revision |
+| Tell a better story | `/courses/storytelling/` | Character goals, plot, scenes and dialogue, and endings |
+
+Each course contains four lessons with original explanations, worked examples, two multiple-choice
+questions, a writing assignment, a review checklist, and a sample response. Writing and storytelling
+lessons build towards a final piece. Lessons can also be opened directly and revisited in any order.
+
+**Check answers & save** stores a submitted draft and its answers in the existing Django database
+session, separately from diagnostic tests. A lesson is complete after both answers are correct,
+the writing minimum is met, and the learner confirms the self-review. These completion checks do
+not grade the quality or relevance of free writing. Already completed lessons remain complete
+when revisited. Progress belongs to the browser session and expires with it; there is no account sync.
+
+Draft text also autosaves on the current device using local storage when available. With JavaScript
+or local storage disabled, submitting the form still saves work. Course content and exercises work
+without an API key and require no additional migrations or dependencies. Edit `practice/courses.py`
+to maintain the curriculum, keeping course and lesson slugs stable so saved progress still matches.
+
+## Practice modes
 
 | Mode | URL | What it does |
 | --- | --- | --- |
@@ -93,7 +120,7 @@ python manage.py runserver 0.0.0.0:5170
 
 Open `http://localhost:5170/`.
 
-The landing page is at `/`, and the practice modes live at `/test/`.
+The landing page is at `/`, guided courses are at `/courses/`, and practice modes live at `/test/`.
 
 ## Tests
 

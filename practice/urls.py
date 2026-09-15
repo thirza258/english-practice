@@ -1,12 +1,15 @@
 from django.urls import path
 
-from . import views
+from . import course_views, views
 
 
 app_name = "practice"
 
 urlpatterns = [
     path("", views.landing, name="landing"),
+    path("courses/", course_views.course_list, name="courses"),
+    path("courses/<slug:course_slug>/", course_views.course_detail, name="course-detail"),
+    path("courses/<slug:course_slug>/<slug:lesson_slug>/", course_views.course_lesson, name="course-lesson"),
     path("test/", views.test_page, name="test"),
     path("robots.txt", views.robots_txt, name="robots-txt"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap-xml"),

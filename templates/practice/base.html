@@ -19,6 +19,7 @@
     <meta property="og:url" content="{{ canonical_url }}">
     <meta name="twitter:card" content="summary">
     <link rel="stylesheet" href="{% static 'practice/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'practice/courses.css' %}">
     {% block head_extra %}{% endblock %}
   </head>
   <body class="{% block body_class %}{% endblock %}">
@@ -28,10 +29,11 @@
       <div class="site-footer-inner">
         <div class="site-footer-brand">
           <span class="site-footer-name" data-i18n="siteName">English Practice</span>
-          <p class="footer-text" data-i18n="footerText">English practice — grammar and paragraph exercises with instant feedback.</p>
+          <p class="footer-text" data-i18n="footerText">English courses and practice — learn, write, and tell your story.</p>
         </div>
         <nav class="site-footer-links" aria-label="Footer">
           <a href="{% url 'practice:landing' %}" data-i18n="footerHome">Home</a>
+          <a href="{% url 'practice:courses' %}" data-i18n="coursesNav">English courses</a>
           <a href="{% url 'practice:test' %}?mode=paragraph&level=all" data-i18n="startParagraphBtn">Start paragraph test</a>
           <a href="{% url 'practice:test' %}?mode=sentence&level=all" data-i18n="startSentenceBtn">Start sentence test</a>
           <a href="https://nevatal.id">Nevatal</a>

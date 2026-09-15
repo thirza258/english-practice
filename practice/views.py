@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
+from .courses import COURSES
 from .services import (
     build_results,
     current_question_payload,
@@ -36,6 +37,17 @@ def robots_txt(request: HttpRequest) -> HttpResponse:
 
 
 def sitemap_xml(request: HttpRequest) -> HttpResponse:
+    course_paths = [reverse("practice:courses")]
+    for course in COURSES:
+        course_paths.append(reverse("practice:course-detail", args=[course.slug]))
+        course_paths.extend(
+            reverse("practice:course-lesson", args=[course.slug, lesson.slug])
+            for lesson in course.lessons
+        )
+    course_urls = "\n".join(
+        f"  <url><loc>{CANONICAL_HOST}{path}</loc><changefreq>monthly</changefreq></url>"
+        for path in course_paths
+    )
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -48,6 +60,7 @@ def sitemap_xml(request: HttpRequest) -> HttpResponse:
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+{course_urls}
 </urlset>
 """
     return HttpResponse(xml.strip(), content_type="application/xml; charset=utf-8")

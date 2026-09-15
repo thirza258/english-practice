@@ -1,0 +1,22 @@
+<header class="academic-masthead course-masthead">
+  <div class="running-head-row">
+    <a class="running-head-text" href="{% url 'practice:landing' %}">English Practice</a>
+    <nav class="course-nav" aria-label="Main navigation">
+      <a href="{% url 'practice:courses' %}"{% if not course %} aria-current="page"{% endif %}>Courses</a>
+      <a href="{% url 'practice:landing' %}#practice-modes">Practice tests</a>
+    </nav>
+  </div>
+  {% if course %}
+  <nav class="course-breadcrumbs" aria-label="Breadcrumb">
+    <a href="{% url 'practice:courses' %}">Courses</a>
+    <span aria-hidden="true">/</span>
+    {% if lesson %}
+      <a href="{% url 'practice:course-detail' course.slug %}">{{ course.title }}</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Lesson {{ lesson_number }}</span>
+    {% else %}
+      <span aria-current="page">{{ course.title }}</span>
+    {% endif %}
+  </nav>
+  {% endif %}
+</header>

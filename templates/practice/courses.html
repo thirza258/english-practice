@@ -1,0 +1,52 @@
+{% extends "practice/base.html" %}
+
+{% block title %}English Courses | Participles, Writing & Storytelling{% endblock %}
+{% block meta_description %}Learn English participles, write clearer paragraphs, and create better stories with guided lessons, examples, and practical exercises.{% endblock %}
+{% block og_title %}English Courses | Participles, Writing & Storytelling{% endblock %}
+{% block og_description %}Three guided English courses with worked examples, practice exercises, and saved progress.{% endblock %}
+
+{% block content %}
+<div class="page-shell course-page">
+  {% include "practice/course_header.html" %}
+  <main id="main-content">
+    <div class="course-intro">
+      <p class="academic-eyebrow">Learn, practise, create</p>
+      <h1 class="book-title">Small lessons. Stronger English.</h1>
+      <p class="book-subtitle">Understand how English works, put your ideas into words, and tell stories worth reading. Choose a course and learn at your own pace.</p>
+      <p class="course-note">3 courses · 12 lessons · Written in English</p>
+    </div>
+
+    <div class="course-grid">
+      {% for item in courses %}
+      <article class="book-card course-card course-accent-{{ item.course.slug }}">
+        <div class="mode-badge-row">
+          <span class="academic-badge">{{ item.course.category }}</span>
+          <span class="mode-meta">{{ item.course.lessons|length }} lessons · {{ item.course.minutes }} min</span>
+        </div>
+        <h2><a href="{% url 'practice:course-detail' item.course.slug %}">{{ item.course.title }}</a></h2>
+        <p class="course-level">{{ item.course.level }}</p>
+        <p>{{ item.course.description }}</p>
+        <ul class="course-outcomes">
+          {% for outcome in item.course.outcomes %}<li>{{ outcome }}</li>{% endfor %}
+        </ul>
+        <div class="course-card-bottom">
+          <label for="progress-{{ item.course.slug }}">{{ item.completed_count }} of {{ item.course.lessons|length }} lessons complete</label>
+          <progress id="progress-{{ item.course.slug }}" value="{{ item.completed_count }}" max="{{ item.course.lessons|length }}">{{ item.percent }}%</progress>
+          <a class="primary-button" href="{% url 'practice:course-detail' item.course.slug %}">{% if item.is_complete %}Review course{% elif item.completed_count %}Continue course{% else %}Explore course{% endif %} <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <section class="book-card course-how" aria-labelledby="course-how-title">
+      <h2 id="course-how-title">A little reading. A lot of doing.</h2>
+      <ol>
+        <li><strong>Learn a skill.</strong> Read a short explanation and compare a worked example.</li>
+        <li><strong>Check your understanding.</strong> Answer two questions and learn from the explanations.</li>
+        <li><strong>Make it your own.</strong> Write a response, review the checklist, and save your lesson.</li>
+      </ol>
+      <p class="course-note">Your submitted work and progress are saved in this browser session. You can revisit any lesson at any time.</p>
+    </section>
+  </main>
+</div>
+{% endblock %}
