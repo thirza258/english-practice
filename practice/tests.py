@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import xml.etree.ElementTree as ET
 from dataclasses import replace
 from unittest import mock
 
@@ -94,8 +95,25 @@ class PracticePageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("application/xml", response["Content-Type"])
         self.assertContains(response, "https://english.nevatal.id/")
+        self.assertContains(response, "https://english.nevatal.id/courses/")
         self.assertContains(response, "https://english.nevatal.id/test/")
+        self.assertContains(response, "https://english.nevatal.id/test/?mode=paragraph")
+        self.assertContains(response, "https://english.nevatal.id/test/?mode=sentence")
+        self.assertContains(response, "https://english.nevatal.id/test/?mode=writing")
+        self.assertContains(response, "https://english.nevatal.id/test/?mode=paragraph&amp;level=all")
+        self.assertContains(response, "https://english.nevatal.id/test/?mode=writing&amp;level=ielts_8_9")
         self.assertContains(response, "<urlset")
+
+        # Verify XML structure and well-formedness
+        root = ET.fromstring(response.content)
+        ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        urls = root.findall("s:url", ns)
+        self.assertGreaterEqual(len(urls), 36)
+        for url in urls:
+            self.assertIsNotNone(url.find("s:loc", ns))
+            self.assertIsNotNone(url.find("s:lastmod", ns))
+            self.assertIsNotNone(url.find("s:changefreq", ns))
+            self.assertIsNotNone(url.find("s:priority", ns))
 
 
 class LevelAndModeServiceTests(TestCase):

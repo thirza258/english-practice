@@ -1,16 +1,20 @@
 from __future__ import annotations
 
+import html
 import json
 from typing import Any
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .courses import COURSES
 from .services import (
+    SUPPORTED_LEVELS,
+    SUPPORTED_MODES,
     build_results,
     current_question_payload,
     initialise_session_state,
@@ -37,32 +41,48 @@ def robots_txt(request: HttpRequest) -> HttpResponse:
 
 
 def sitemap_xml(request: HttpRequest) -> HttpResponse:
-    course_paths = [reverse("practice:courses")]
+    today = timezone.now().strftime("%Y-%m-%d")
+
+    # High-level primary routes
+    entries: list[tuple[str, str, str]] = [
+        (reverse("practice:landing"), "daily", "1.0"),
+        (reverse("practice:courses"), "weekly", "0.9"),
+        (reverse("practice:test"), "daily", "0.8"),
+    ]
+
+    # Course catalog details and lessons
     for course in COURSES:
-        course_paths.append(reverse("practice:course-detail", args=[course.slug]))
-        course_paths.extend(
-            reverse("practice:course-lesson", args=[course.slug, lesson.slug])
-            for lesson in course.lessons
+        entries.append((reverse("practice:course-detail", args=[course.slug]), "weekly", "0.8"))
+        for lesson in course.lessons:
+            entries.append(
+                (reverse("practice:course-lesson", args=[course.slug, lesson.slug]), "monthly", "0.7")
+            )
+
+    # Diagnostic practice test modes
+    for mode in SUPPORTED_MODES:
+        entries.append((f"{reverse('practice:test')}?mode={mode}", "weekly", "0.8"))
+        for level in SUPPORTED_LEVELS:
+            entries.append((f"{reverse('practice:test')}?mode={mode}&level={level}", "weekly", "0.7"))
+
+    url_blocks = []
+    for path, changefreq, priority in entries:
+        loc = f"{CANONICAL_HOST}{path}"
+        escaped_loc = html.escape(loc, quote=True)
+        url_blocks.append(
+            f"  <url>\n"
+            f"    <loc>{escaped_loc}</loc>\n"
+            f"    <lastmod>{today}</lastmod>\n"
+            f"    <changefreq>{changefreq}</changefreq>\n"
+            f"    <priority>{priority}</priority>\n"
+            f"  </url>"
         )
-    course_urls = "\n".join(
-        f"  <url><loc>{CANONICAL_HOST}{path}</loc><changefreq>monthly</changefreq></url>"
-        for path in course_paths
+
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(url_blocks)
+        + "\n</urlset>\n"
     )
-    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>{CANONICAL_HOST}/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>{CANONICAL_HOST}/test/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-{course_urls}
-</urlset>
-"""
     return HttpResponse(xml.strip(), content_type="application/xml; charset=utf-8")
 
 
