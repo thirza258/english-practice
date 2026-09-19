@@ -1,9 +1,9 @@
 {% extends "practice/base.html" %}
 
-{% block title %}English Courses | Participles, Writing & Storytelling{% endblock %}
-{% block meta_description %}Learn English participles, write clearer paragraphs, and create better stories with guided lessons, examples, and practical exercises.{% endblock %}
-{% block og_title %}English Courses | Participles, Writing & Storytelling{% endblock %}
-{% block og_description %}Three guided English courses with worked examples, practice exercises, and saved progress.{% endblock %}
+{% block title %}English & IELTS Courses | Beginner to Band 8 Preparation{% endblock %}
+{% block meta_description %}Build listening, reading, speaking, and writing from beginner to IELTS Band 8 preparation. Explore grammar and storytelling courses, earn XP, and save your progress.{% endblock %}
+{% block og_title %}English & IELTS Courses | Beginner to Band 8 Preparation{% endblock %}
+{% block og_description %}Guided English and IELTS courses with worked examples, practical exercises, and saved progress.{% endblock %}
 
 {% block content %}
 <div class="page-shell course-page">
@@ -12,9 +12,11 @@
     <div class="course-intro">
       <p class="academic-eyebrow">Learn, practise, create</p>
       <h1 class="book-title">Small lessons. Stronger English.</h1>
-      <p class="book-subtitle">Understand how English works, put your ideas into words, and tell stories worth reading. Choose a course and learn at your own pace.</p>
-      <p class="course-note">3 courses · 12 lessons · Written in English</p>
+      <p class="book-subtitle">Build everyday English or work towards IELTS Band 8. Listen, read, speak, and write with guided lessons, then turn your practice into a habit.</p>
+      <p class="course-note">{{ course_count }} courses · {{ lesson_count }} lessons · Written in English</p>
     </div>
+
+    {% include "practice/learning_progress.html" %}
 
     <div class="course-grid">
       {% for item in courses %}
@@ -43,7 +45,7 @@
       <ol>
         <li><strong>Learn a skill.</strong> Read a short explanation and compare a worked example.</li>
         <li><strong>Check your understanding.</strong> Answer two questions and learn from the explanations.</li>
-        <li><strong>Make it your own.</strong> Write a response, review the checklist, and save your lesson.</li>
+        <li><strong>Make it your own.</strong> Listen, read, speak, or write. Review your work and complete a lesson to earn 40 XP.</li>
       </ol>
       <p class="course-note">Your submitted work and progress are saved in this browser session. You can revisit any lesson at any time.</p>
     </section>

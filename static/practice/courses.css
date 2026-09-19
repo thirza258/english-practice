@@ -111,6 +111,92 @@
 .landing-courses .course-card { box-shadow: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
+/* IELTS paths, a daily vocabulary ritual, and session learning milestones. */
+.course-accent-ielts-beginner { border-top-color: #36755b; }
+.course-accent-ielts-intermediate { border-top-color: var(--academic-blue); }
+.course-accent-ielts-band-8 { border-top-color: var(--academic-gold); }
+.ielts-skill-list { font-size: .81rem; font-weight: 650; }
+.landing-courses .ielts-note { margin: 24px 0 0; }
+.ielts-course-note { border-left: 3px solid var(--academic-blue); padding: 16px 20px; background: #f1f5fa; margin-bottom: 28px; font-size: .93rem; }
+.ielts-course-note p { margin-bottom: 8px; }
+.learning-progress { background: var(--bg-sheet-alt); }
+.course-page .learning-progress { margin-bottom: 28px; }
+.learning-overview { display: grid; grid-template-columns: 1.1fr 1fr 1fr; align-items: center; gap: 32px; }
+.learning-overview > div { min-width: 0; }
+.learning-progress h2 { font-family: var(--font-serif); font-size: 1.7rem; line-height: 1.3; margin: 4px 0 10px; }
+.learning-progress .academic-eyebrow { margin: 0 0 8px; font-size: .68rem; }
+.xp-total { display: inline-block; margin-left: 10px; color: var(--academic-gold); font-family: var(--font-sans); font-size: 1rem; }
+.learning-progress progress { display: block; width: 100%; height: 7px; margin-top: 10px; border: 0; border-radius: 8px; overflow: hidden; background: var(--line-subtle); accent-color: var(--academic-gold); }
+.learning-progress progress::-webkit-progress-bar { background: var(--line-subtle); }
+.learning-progress progress::-webkit-progress-value { background: var(--academic-gold); }
+.learning-progress progress::-moz-progress-bar { background: var(--academic-gold); }
+.learning-streak, .learning-totals { display: flex; flex-direction: column; gap: 5px; }
+.learning-streak > strong, .learning-totals > strong { font-size: 1rem; }
+.learning-totals .course-inline-link, .learning-today { font-size: .84rem; margin-top: 7px; }
+.learning-today { color: var(--ink-correct); }
+.learning-week { display: flex; list-style: none; gap: 6px; padding: 0; margin: 8px 0 0; }
+.learning-week li { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--line-card); border-radius: 50%; font-size: .7rem; color: var(--ink-muted); }
+.learning-week li.is-active { color: #fff; background: var(--academic-blue); border-color: var(--academic-blue); }
+.learning-week li.is-today { outline: 2px solid var(--academic-gold); outline-offset: 2px; }
+.learning-achievements { margin-top: 22px; border-top: 1px solid var(--line-card); padding-top: 16px; }
+.learning-achievements summary { cursor: pointer; font-size: .85rem; color: var(--ink-secondary); font-weight: 600; }
+.learning-badges { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 20px 0; }
+.learning-badges li { display: flex; flex-direction: column; gap: 7px; padding: 16px; border: 1px dashed var(--line-card); color: var(--ink-muted); font-size: .83rem; line-height: 1.6; }
+.learning-badges li.is-earned { background: #f4f0df; border: 1px solid #b8a161; color: var(--ink-primary); }
+.badge-state { font-weight: 600; margin-top: auto; padding-top: 5px; }
+.learning-achievements .course-note { margin: 12px 0 0; }
+.daily-challenge { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; border-top: 3px solid var(--academic-gold); scroll-margin-top: 24px; }
+.daily-word { padding-right: 30px; border-right: 1px solid var(--line-card); }
+.daily-challenge h2 { font-family: var(--font-serif); font-size: 1.75rem; line-height: 1.3; margin: 0 0 10px; }
+.daily-challenge h3 { font-family: var(--font-serif); font-size: 1.5rem; line-height: 1.35; margin: 0 0 12px; }
+.daily-challenge p { line-height: 1.7; }
+.daily-challenge .academic-eyebrow { margin: 0 0 12px; }
+.daily-date { color: var(--ink-muted); font-size: .76rem; margin: 0 0 24px; }
+.daily-vocabulary { font-family: var(--font-serif); font-size: clamp(2rem, 3vw, 2.65rem); color: var(--academic-blue); margin: 10px 0 4px; }
+.daily-vocabulary span { display: inline-block; font-family: var(--font-sans); font-style: italic; font-size: .85rem; color: var(--ink-muted); margin-left: 8px; }
+.daily-meaning { margin: 0 0 14px; }
+.daily-challenge blockquote { margin: 16px 0 0; padding: 10px 16px; border-left: 3px solid var(--academic-gold); background: #fbf9f1; font-family: var(--font-serif); font-size: 1.08rem; line-height: 1.7; }
+.daily-action > p:not(.academic-eyebrow) { color: var(--ink-secondary); margin: 0 0 22px; }
+.daily-question > summary { width: fit-content; display: list-item; list-style-position: inside; cursor: pointer; line-height: 1.6; }
+.daily-question[open] > summary { margin-bottom: 20px; }
+.daily-question .lesson-question { margin-top: 20px; font-size: .94rem; }
+.daily-question .lesson-question[disabled] { opacity: .85; }
+.daily-question .secondary-button { margin-top: 8px; }
+.daily-feedback { padding: 16px; border-left: 3px solid var(--academic-gold); background: #fbf8ed; font-size: .9rem; line-height: 1.7; }
+.daily-feedback.is-complete { background: var(--bg-correct); border-color: var(--line-correct); }
+.daily-feedback p { margin: 10px 0 0; }
+.daily-challenge :focus-visible, .learning-progress :focus-visible { outline: 3px solid var(--academic-blue); outline-offset: 4px; }
+.lesson-reward { color: var(--ink-correct); font-weight: 600; }
+.lesson-activity { border-top: 3px solid var(--academic-blue); }
+.activity-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin: 20px 0 14px; }
+.activity-controls select { max-width: 100%; background: var(--bg-sheet); border: 1px solid var(--line-card); border-radius: var(--radius-xs); padding: 10px; color: var(--ink-primary); font-size: .95rem; }
+.practice-passage { padding: 20px; background: var(--bg-sheet-alt); border-left: 3px solid var(--line-card); font-family: var(--font-serif); font-size: 1.1rem; line-height: 1.9; }
+.practice-passage p:last-child { margin-bottom: 0; }
+.speaking-timer { background: #f1f5fa; border: 1px solid #d0dbea; padding: 20px; margin: 20px 0; }
+.speaking-timer > div:first-child { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; color: var(--academic-blue); font-weight: 600; }
+#timer-display { font-size: 2.5rem; font-variant-numeric: tabular-nums; font-weight: 500; }
+.course-review-check + .course-review-check { margin-top: 14px; }
+[hidden] { display: none !important; }
+
+@media (max-width: 960px) {
+  .learning-overview { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .learning-totals { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+  .learning-totals .course-inline-link, .learning-today { margin-top: 0; }
+  .learning-badges { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .daily-challenge { gap: 24px; }
+  .daily-word { padding-right: 20px; }
+}
+
+@media (max-width: 640px) {
+  .daily-challenge, .learning-overview { grid-template-columns: minmax(0, 1fr); }
+  .daily-word { border-right: 0; border-bottom: 1px solid var(--line-card); padding: 0 0 24px; }
+  .daily-question > summary { width: 100%; text-align: center; }
+  .learning-totals { flex-direction: column; align-items: start; gap: 6px; }
+  .learning-badges { grid-template-columns: minmax(0, 1fr); }
+  .practice-passage, .speaking-timer { padding: 16px; }
+  .activity-controls .primary-button, .activity-controls .secondary-button { padding: 12px 14px; }
+}
+
 @media (max-width: 960px) {
   .course-grid { grid-template-columns: 1fr; }
   .course-layout { grid-template-columns: 1fr; }

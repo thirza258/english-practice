@@ -7,11 +7,11 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods
 
 from .courses import COURSES, Course, Lesson
+from .gamification import PROGRESS_KEY, learning_summary, record_activity
 from .nlp import WORD_RE
 from .views import CANONICAL_HOST
 
 
-PROGRESS_KEY = "course_progress"
 MAX_DRAFT_LENGTH = 10000
 
 
@@ -58,7 +58,7 @@ class LessonForm(forms.Form):
                 widget=forms.RadioSelect,
             )
         self.fields["draft"] = forms.CharField(
-            label="Your writing",
+            label=lesson.assignment.label,
             required=False,
             max_length=MAX_DRAFT_LENGTH,
             widget=forms.Textarea(attrs={
@@ -68,9 +68,13 @@ class LessonForm(forms.Form):
             }),
         )
         self.fields["reviewed"] = forms.BooleanField(
-            label="I have checked my writing against the checklist.",
+            label="I have checked my work against the checklist.",
             required=False,
         )
+        if lesson.activity and lesson.activity.kind == "speaking":
+            self.fields["practised_aloud"] = forms.BooleanField(
+                label="I practised the speaking prompt aloud.", required=False,
+            )
 
 
 @require_GET
@@ -78,6 +82,9 @@ def course_list(request: HttpRequest):
     progress = request.session.get(PROGRESS_KEY, {})
     return render(request, "practice/courses.html", {
         "courses": [_course_summary(course, progress) for course in COURSES],
+        "course_count": len(COURSES),
+        "lesson_count": sum(len(course.lessons) for course in COURSES),
+        "learning": learning_summary(request.session),
         "canonical_url": f"{CANONICAL_HOST}{reverse('practice:courses')}",
     })
 
@@ -87,6 +94,7 @@ def course_detail(request: HttpRequest, course_slug: str):
     course = _course(course_slug)
     return render(request, "practice/course_detail.html", {
         **_course_summary(course, request.session.get(PROGRESS_KEY, {})),
+        "learning": learning_summary(request.session),
         "canonical_url": f"{CANONICAL_HOST}{request.path}",
     })
 
@@ -111,7 +119,10 @@ def course_lesson(request: HttpRequest, course_slug: str, lesson_slug: str):
                 for i, question in enumerate(lesson.questions))
             and len(WORD_RE.findall(form.cleaned_data["draft"])) >= lesson.assignment.min_words
             and form.cleaned_data["reviewed"]
+            and ("practised_aloud" not in form.fields or form.cleaned_data["practised_aloud"])
         )
+        if attempt_complete and not attempt.get("completed"):
+            record_activity(request.session)
         attempt = {
             **form.cleaned_data,
             "checked": True,
@@ -148,5 +159,6 @@ def course_lesson(request: HttpRequest, course_slug: str, lesson_slug: str):
         "word_count": word_count,
         "writing_long_enough": word_count >= lesson.assignment.min_words,
         "lesson_completed": bool(attempt.get("completed")),
+        "learning": learning_summary(request.session),
         "canonical_url": f"{CANONICAL_HOST}{request.path}",
     }, status=400 if form.is_bound else 200)

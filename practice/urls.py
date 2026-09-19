@@ -7,6 +7,7 @@ app_name = "practice"
 
 urlpatterns = [
     path("", views.landing, name="landing"),
+    path("daily-challenge/", views.daily_challenge, name="daily-challenge"),
     path("courses/", course_views.course_list, name="courses"),
     path("courses/<slug:course_slug>/", course_views.course_detail, name="course-detail"),
     path("courses/<slug:course_slug>/<slug:lesson_slug>/", course_views.course_lesson, name="course-lesson"),

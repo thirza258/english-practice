@@ -43,7 +43,7 @@ class PracticePageTests(TestCase):
         response = self.client.get(reverse("practice:landing"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Learn English. Write with confidence.")
+        self.assertContains(response, "Better English. One day at a time.")
         self.assertContains(response, "Sentence practice")
         self.assertContains(response, "Beginner")
         self.assertContains(response, "Intermediate")

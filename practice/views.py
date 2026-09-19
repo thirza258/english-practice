@@ -4,12 +4,14 @@ import json
 from typing import Any
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .courses import COURSES
+from .daily_challenges import DAILY_ATTEMPT_KEY, challenge_for_day
+from .gamification import REWARDS_KEY, learning_day, learning_summary, record_activity
 from .services import (
     build_results,
     current_question_payload,
@@ -104,14 +106,55 @@ def _get_state_or_error(request: HttpRequest, test_id: str) -> tuple[dict[str, A
     return state, None
 
 
+def _landing_context(request: HttpRequest, today=None):
+    today = today or learning_day()
+    challenge = challenge_for_day(today)
+    attempt = request.session.get(DAILY_ATTEMPT_KEY, {})
+    checked = attempt.get("date") == today.isoformat()
+    solved = today.isoformat() in request.session.get(REWARDS_KEY, {}).get("daily_solved", [])
+    return {
+        "canonical_url": f"{CANONICAL_HOST}{reverse('practice:landing')}",
+        "ielts_courses": [course for course in COURSES if course.practice_level],
+        "learning": learning_summary(request.session, today=today),
+        "daily": challenge,
+        "daily_date": today,
+        "daily_checked": checked,
+        "daily_solved": solved,
+        "daily_selected": attempt.get("answer") if checked else None,
+        "daily_options": list(enumerate(challenge.question.options)),
+    }
+
+
+@require_GET
 def landing(request: HttpRequest):
     return render(
         request,
         "practice/landing.html",
-        {
-            "canonical_url": f"{CANONICAL_HOST}{reverse('practice:landing')}",
-        },
+        _landing_context(request),
     )
+
+
+@require_POST
+def daily_challenge(request: HttpRequest):
+    today = learning_day()
+    challenge = challenge_for_day(today)
+    error = None
+    if request.POST.get("date") != today.isoformat():
+        error = "A new daily challenge is ready. Try the current question below."
+    elif request.POST.get("answer") not in {str(i) for i in range(len(challenge.question.options))}:
+        error = "Choose one of the answers before checking today's question."
+    if error:
+        return render(request, "practice/landing.html", {
+            **_landing_context(request, today), "daily_error": error,
+        }, status=400)
+
+    already_solved = today.isoformat() in request.session.get(REWARDS_KEY, {}).get("daily_solved", [])
+    if not already_solved:
+        answer = int(request.POST["answer"])
+        request.session[DAILY_ATTEMPT_KEY] = {"date": today.isoformat(), "answer": answer}
+        if answer == challenge.question.correct:
+            record_activity(request.session, daily=True, today=today)
+    return redirect(f"{reverse('practice:landing')}#daily-challenge")
 
 
 def test_page(request: HttpRequest):

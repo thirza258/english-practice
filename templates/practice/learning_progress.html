@@ -1,0 +1,41 @@
+<section class="book-card learning-progress" aria-label="Your learning progress">
+  <div class="learning-overview">
+    <div>
+      <p class="academic-eyebrow" data-i18n="progressEyebrow">Every little practice counts</p>
+      <h2><span data-i18n="progressLevel">Level</span> {{ learning.level }} <span class="xp-total">{{ learning.xp }} XP</span></h2>
+      <label class="course-note" for="learning-level-progress">{{ learning.xp_to_next_level }} <span data-i18n="progressNext">XP to your next level</span></label>
+      <progress id="learning-level-progress" value="{{ learning.level_progress }}" max="{{ learning.level_max }}">{{ learning.level_progress }} / {{ learning.level_max }} XP</progress>
+    </div>
+    <div class="learning-streak">
+      <strong>{{ learning.streak }} <span data-i18n="progressStreak">day streak</span></strong>
+      <span class="course-note"><span data-i18n="progressBest">Best:</span> {{ learning.best_streak }} <span data-i18n="{% if learning.best_streak == 1 %}progressDay{% else %}progressDays{% endif %}">day{{ learning.best_streak|pluralize }}</span></span>
+      <ol class="learning-week" aria-label="Practice in the last seven UTC days">
+        {% for day in learning.week %}
+        <li class="{% if day.active %}is-active{% endif %}{% if day.today %} is-today{% endif %}" title="{{ day.date|date:'Y-m-d' }} UTC: {% if day.active %}practice completed{% else %}no completion{% endif %}">
+          <span aria-hidden="true">{{ day.date|date:'D'|slice:':1' }}</span>
+          <span class="sr-only">{{ day.date|date:'D, M j' }}: {% if day.active %}practice completed{% else %}no completion{% endif %}</span>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+    <div class="learning-totals">
+      <strong>{{ learning.completed_lessons }} <span data-i18n="{% if learning.completed_lessons == 1 %}progressLesson{% else %}progressLessons{% endif %}">lesson{{ learning.completed_lessons|pluralize }} complete</span></strong>
+      <span class="course-note">{{ learning.daily_count }} <span data-i18n="{% if learning.daily_count == 1 %}progressChallenge{% else %}progressChallenges{% endif %}">daily challenge{{ learning.daily_count|pluralize }} solved</span></span>
+      {% if not learning.active_today %}<a class="course-inline-link" href="{% url 'practice:landing' %}#daily-challenge" data-i18n="progressCta">Make today count →</a>{% else %}<span class="learning-today" data-i18n="progressToday">✓ You practised today</span>{% endif %}
+    </div>
+  </div>
+  <details class="learning-achievements">
+    <summary data-i18n="progressBadges">Your badges &amp; how to earn XP</summary>
+    <ul class="learning-badges">
+      {% for badge in learning.badges %}
+      <li class="{% if badge.earned %}is-earned{% endif %}">
+        <strong>{% if badge.earned %}✓{% else %}○{% endif %} <span data-i18n="badge{{ forloop.counter }}Title">{{ badge.name }}</span></strong>
+        <span data-i18n="badge{{ forloop.counter }}Desc">{{ badge.description }}</span>
+        <span class="badge-state" data-i18n="{% if badge.earned %}badgeEarned{% else %}badgeLocked{% endif %}">{% if badge.earned %}Earned{% else %}Keep going{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="course-note" data-i18n="progressRules">Earn 40 XP for each new lesson, 100 bonus XP for finishing a course, and 15 XP for solving the daily question. Finish a new lesson or daily question to build your streak. Days reset at 00:00 UTC. XP levels track practice, not IELTS bands.</p>
+    <p class="course-note" data-i18n="progressStorage">Progress belongs to this browser session and expires with it. Keep using the same browser to continue your journey.</p>
+  </details>
+</section>
