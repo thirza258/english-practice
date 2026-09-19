@@ -42,6 +42,7 @@ class Activity:
     text: str
     seconds: int = 0
     preparation_seconds: int = 0
+    map_rows: tuple[tuple[str, str, str], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -56,6 +57,8 @@ class Lesson:
     assignment: Assignment
     skill: str = ""
     activity: Activity | None = None
+    level: str = ""
+    technique: str = ""
 
 
 @dataclass(frozen=True)
@@ -70,6 +73,12 @@ class Course:
     lessons: tuple[Lesson, ...]
     resources: tuple[tuple[str, str], ...]
     practice_level: str = ""
+    skill: str = ""
+    strategy: tuple[Section, ...] = ()
+
+    @property
+    def is_ielts(self) -> bool:
+        return bool(self.skill or self.practice_level)
 
     @property
     def minutes(self) -> int:

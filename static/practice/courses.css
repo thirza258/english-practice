@@ -112,9 +112,28 @@
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 /* IELTS paths, a daily vocabulary ritual, and session learning milestones. */
-.course-accent-ielts-beginner { border-top-color: #36755b; }
-.course-accent-ielts-intermediate { border-top-color: var(--academic-blue); }
-.course-accent-ielts-band-8 { border-top-color: var(--academic-gold); }
+.course-accent-ielts-speaking { border-top-color: #36755b; }
+.course-accent-ielts-reading { border-top-color: var(--academic-blue); }
+.course-accent-ielts-writing { border-top-color: var(--academic-gold); }
+.course-accent-ielts-listening { border-top-color: var(--academic-burgundy); }
+.ielts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.supporting-courses { margin-top: 40px; }
+.course-strategy { margin-bottom: 28px; }
+.course-strategy ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 36px; margin: 0; padding-left: 24px; }
+.course-strategy h3 { margin: 0 0 8px; }
+.course-strategy p { margin: 0; font-size: .95rem; }
+.course-stage-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.course-stage-links .secondary-button { font-size: .85rem; padding: 10px 14px; }
+.course-stage { margin-top: 28px; scroll-margin-top: 24px; }
+.course-stage > h3 { padding-bottom: 12px; border-bottom: 2px solid var(--academic-blue); }
+.course-stage .course-lesson-list { margin-top: 0; }
+.lesson-technique { border-left: 3px solid var(--academic-gold); background: #fbf9f1; padding: 18px; margin-bottom: 30px; }
+.lesson-technique h2 { font-size: 1.15rem; }
+.lesson-technique p { margin-bottom: 0; }
+.listening-map { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 20px 0; font-size: .9rem; text-align: center; }
+.listening-map caption { text-align: left; margin-bottom: 10px; color: var(--ink-secondary); line-height: 1.6; }
+.listening-map th, .listening-map td { padding: 14px 10px; border: 1px solid var(--line-card); overflow-wrap: anywhere; }
+.listening-map td:nth-child(2) { background: #f1f5fa; }
 .ielts-skill-list { font-size: .81rem; font-weight: 650; }
 .landing-courses .ielts-note { margin: 24px 0 0; }
 .ielts-course-note { border-left: 3px solid var(--academic-blue); padding: 16px 20px; background: #f1f5fa; margin-bottom: 28px; font-size: .93rem; }
@@ -179,6 +198,7 @@
 [hidden] { display: none !important; }
 
 @media (max-width: 960px) {
+  .ielts-grid { grid-template-columns: 1fr; }
   .learning-overview { grid-template-columns: 1fr 1fr; gap: 24px; }
   .learning-totals { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
   .learning-totals .course-inline-link, .learning-today { margin-top: 0; }
@@ -188,6 +208,7 @@
 }
 
 @media (max-width: 640px) {
+  .course-strategy ol { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .daily-challenge, .learning-overview { grid-template-columns: minmax(0, 1fr); }
   .daily-word { border-right: 0; border-bottom: 1px solid var(--line-card); padding: 0 0 24px; }
   .daily-question > summary { width: 100%; text-align: center; }

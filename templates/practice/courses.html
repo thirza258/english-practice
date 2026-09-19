@@ -1,6 +1,6 @@
 {% extends "practice/base.html" %}
 
-{% block title %}English & IELTS Courses | Beginner to Band 8 Preparation{% endblock %}
+{% block title %}How to Ace IELTS Speaking, Reading, Writing & Listening{% endblock %}
 {% block meta_description %}Build listening, reading, speaking, and writing from beginner to IELTS Band 8 preparation. Explore grammar and storytelling courses, earn XP, and save your progress.{% endblock %}
 {% block og_title %}English & IELTS Courses | Beginner to Band 8 Preparation{% endblock %}
 {% block og_description %}Guided English and IELTS courses with worked examples, practical exercises, and saved progress.{% endblock %}
@@ -10,41 +10,34 @@
   {% include "practice/course_header.html" %}
   <main id="main-content">
     <div class="course-intro">
-      <p class="academic-eyebrow">Learn, practise, create</p>
-      <h1 class="book-title">Small lessons. Stronger English.</h1>
-      <p class="book-subtitle">Build everyday English or work towards IELTS Band 8. Listen, read, speak, and write with guided lessons, then turn your practice into a habit.</p>
+      <p class="academic-eyebrow">Learn the technique. Put it into practice.</p>
+      <h1 class="book-title">Learn how to ace IELTS.</h1>
+      <p class="book-subtitle">Four courses for speaking, reading, writing, and listening. Learn how to approach each task, avoid common mistakes, and build towards Band 8 with beginner, intermediate, and advanced lessons.</p>
       <p class="course-note">{{ course_count }} courses · {{ lesson_count }} lessons · Written in English</p>
     </div>
 
     {% include "practice/learning_progress.html" %}
 
-    <div class="course-grid">
-      {% for item in courses %}
-      <article class="book-card course-card course-accent-{{ item.course.slug }}">
-        <div class="mode-badge-row">
-          <span class="academic-badge">{{ item.course.category }}</span>
-          <span class="mode-meta">{{ item.course.lessons|length }} lessons · {{ item.course.minutes }} min</span>
-        </div>
-        <h2><a href="{% url 'practice:course-detail' item.course.slug %}">{{ item.course.title }}</a></h2>
-        <p class="course-level">{{ item.course.level }}</p>
-        <p>{{ item.course.description }}</p>
-        <ul class="course-outcomes">
-          {% for outcome in item.course.outcomes %}<li>{{ outcome }}</li>{% endfor %}
-        </ul>
-        <div class="course-card-bottom">
-          <label for="progress-{{ item.course.slug }}">{{ item.completed_count }} of {{ item.course.lessons|length }} lessons complete</label>
-          <progress id="progress-{{ item.course.slug }}" value="{{ item.completed_count }}" max="{{ item.course.lessons|length }}">{{ item.percent }}%</progress>
-          <a class="primary-button" href="{% url 'practice:course-detail' item.course.slug %}">{% if item.is_complete %}Review course{% elif item.completed_count %}Continue course{% else %}Explore course{% endif %} <span aria-hidden="true">→</span></a>
-        </div>
-      </article>
-      {% endfor %}
-    </div>
+    <section id="ielts-courses" aria-labelledby="ielts-course-title">
+      <h2 id="ielts-course-title">Choose the skill you want to master</h2>
+      <div class="course-grid ielts-grid">
+        {% for item in ielts_courses %}{% include "practice/course_card.html" %}{% endfor %}
+      </div>
+    </section>
+
+    <section class="supporting-courses" aria-labelledby="supporting-course-title">
+      <h2 id="supporting-course-title">Build your English foundations</h2>
+      <p class="course-note">Additional courses in grammar, clear writing, and storytelling.</p>
+      <div class="course-grid">
+        {% for item in other_courses %}{% include "practice/course_card.html" %}{% endfor %}
+      </div>
+    </section>
 
     <section class="book-card course-how" aria-labelledby="course-how-title">
-      <h2 id="course-how-title">A little reading. A lot of doing.</h2>
+      <h2 id="course-how-title">Learn a method you can use in the test.</h2>
       <ol>
-        <li><strong>Learn a skill.</strong> Read a short explanation and compare a worked example.</li>
-        <li><strong>Check your understanding.</strong> Answer two questions and learn from the explanations.</li>
+        <li><strong>Learn the technique.</strong> Follow a step-by-step method and see why it works in an example.</li>
+        <li><strong>Spot the traps.</strong> Recognise common mistakes, answer the questions, and review the evidence.</li>
         <li><strong>Make it your own.</strong> Listen, read, speak, or write. Review your work and complete a lesson to earn 40 XP.</li>
       </ol>
       <p class="course-note">Your submitted work and progress are saved in this browser session. You can revisit any lesson at any time.</p>

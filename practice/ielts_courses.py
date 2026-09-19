@@ -1,6 +1,7 @@
-"""Original IELTS Academic preparation, from foundations to a Band 8 target.
+"""Original lesson bank and the former level-based IELTS course definitions.
 
-Short drills teach individual skills; course completion is not a band assessment.
+The active skill courses are assembled in ielts_skill_courses.py. Keep these
+definitions and slugs for old bookmarks, drafts, and completion records.
 Format and assessment references were checked against IELTS.org in September 2026.
 """
 
@@ -415,4 +416,4 @@ BAND8_COURSE = Course(
 )
 
 
-IELTS_COURSES = (BEGINNER_COURSE, INTERMEDIATE_COURSE, BAND8_COURSE)
+LEGACY_IELTS_COURSES = (BEGINNER_COURSE, INTERMEDIATE_COURSE, BAND8_COURSE)

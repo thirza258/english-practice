@@ -4,7 +4,9 @@ from datetime import date, timedelta
 
 from django.utils import timezone
 
-from .courses import COURSES
+from .courses import ARCHIVED_COURSES, COURSES
+from .course_progress import resolved_progress
+from .ielts_skill_courses import LESSON_REDIRECTS
 
 
 PROGRESS_KEY = "course_progress"
@@ -36,16 +38,17 @@ def record_activity(session, *, daily=False, today=None):
 
 def learning_summary(session, *, today=None):
     today = today or learning_day()
-    progress = session.get(PROGRESS_KEY, {})
+    progress = resolved_progress(session.get(PROGRESS_KEY, {}))
     rewards = session.get(REWARDS_KEY, {})
-    completed_lessons = completed_courses = 0
+    completed_lessons = set()
+    completed_courses = 0
     ielts_skills = set()
-    for course in COURSES:
+    for course in (*COURSES, *ARCHIVED_COURSES):
         saved = progress.get(course.slug, {})
         finished = [lesson for lesson in course.lessons if saved.get(lesson.slug, {}).get("completed")]
-        completed_lessons += len(finished)
+        completed_lessons.update(LESSON_REDIRECTS.get((course.slug, lesson.slug), (course.slug, lesson.slug)) for lesson in finished)
         completed_courses += len(finished) == len(course.lessons)
-        if course.practice_level:
+        if course.is_ielts:
             ielts_skills.update(lesson.skill for lesson in finished)
 
     active_days = {date.fromisoformat(day) for day in rewards.get("active_days", [])}
@@ -63,9 +66,10 @@ def learning_summary(session, *, today=None):
         best_streak = max(best_streak, run)
         previous = day
 
-    xp = completed_lessons * LESSON_XP + completed_courses * COURSE_XP + daily_count * DAILY_XP
+    completed_count = len(completed_lessons)
+    xp = completed_count * LESSON_XP + completed_courses * COURSE_XP + daily_count * DAILY_XP
     badge_definitions = (
-        ("First step", "Complete your first lesson or daily challenge.", completed_lessons + daily_count >= 1),
+        ("First step", "Complete your first lesson or daily challenge.", completed_count + daily_count >= 1),
         ("Week in motion", "Practise on seven consecutive UTC days.", best_streak >= 7),
         ("Course finisher", "Complete every lesson in any course.", completed_courses >= 1),
         ("Four-skill explorer", "Complete an IELTS lesson in listening, reading, speaking, and writing.", {"Listening", "Reading", "Speaking", "Writing"} <= ielts_skills),
@@ -79,7 +83,7 @@ def learning_summary(session, *, today=None):
         "streak": streak,
         "best_streak": best_streak,
         "active_today": today in active_days,
-        "completed_lessons": completed_lessons,
+        "completed_lessons": completed_count,
         "completed_courses": completed_courses,
         "daily_count": daily_count,
         "badges": [{"name": name, "description": description, "earned": earned} for name, description, earned in badge_definitions],

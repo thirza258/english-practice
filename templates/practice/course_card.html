@@ -1,0 +1,17 @@
+<article class="book-card course-card course-accent-{{ item.course.slug }}">
+  <div class="mode-badge-row">
+    <span class="academic-badge">{% if item.course.skill %}{{ item.course.skill }}{% else %}{{ item.course.category }}{% endif %}</span>
+    <span class="mode-meta">{{ item.course.lessons|length }} lessons · {{ item.course.minutes }} min</span>
+  </div>
+  <h2><a href="{% url 'practice:course-detail' item.course.slug %}">{{ item.course.title }}</a></h2>
+  <p class="course-level">{{ item.course.level }}</p>
+  <p>{{ item.course.description }}</p>
+  <ul class="course-outcomes">
+    {% for outcome in item.course.outcomes %}<li>{{ outcome }}</li>{% endfor %}
+  </ul>
+  <div class="course-card-bottom">
+    <label for="progress-{{ item.course.slug }}">{{ item.completed_count }} of {{ item.course.lessons|length }} lessons complete</label>
+    <progress id="progress-{{ item.course.slug }}" value="{{ item.completed_count }}" max="{{ item.course.lessons|length }}">{{ item.percent }}%</progress>
+    <a class="primary-button" href="{% url 'practice:course-detail' item.course.slug %}">{% if item.is_complete %}Review course{% elif item.completed_count %}Continue course{% else %}Explore course{% endif %} <span aria-hidden="true">→</span></a>
+  </div>
+</article>

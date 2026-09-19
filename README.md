@@ -11,12 +11,13 @@ Open `/courses/` or choose **Explore English courses** on the home page.
 | English participles | `/courses/participles/` | Present and past forms, continuous/perfect/passive constructions, adjectives, and participle clauses |
 | Write better English | `/courses/better-writing/` | Clear sentences, developed paragraphs, connections, and revision |
 | Tell a better story | `/courses/storytelling/` | Character goals, plot, scenes and dialogue, and endings |
-| IELTS foundations | `/courses/ielts-beginner/` | Beginner study planning, listening for details, reading for evidence, spoken answers, and short Task 1 / Task 2 drills |
-| IELTS skill builder | `/courses/ielts-intermediate/` | Intermediate error review, listening decisions, reading paraphrases, Speaking Part 2, a full report, and a full essay |
-| IELTS Band 8 preparation | `/courses/ielts-band-8/` | Advanced study planning, qualified claims, argument analysis, Speaking Part 3, precise reports, and nuanced essays |
+| How to ace IELTS Speaking | `/courses/ielts-speaking/` | Answer development, Parts 1–3, fluency, pronunciation, paraphrasing, and follow-up questions |
+| How to ace IELTS Reading | `/courses/ielts-reading/` | Evidence, paraphrases, True/False/Not Given, headings, completion tasks, and timed accuracy |
+| How to ace IELTS Writing | `/courses/ielts-writing/` | Task analysis, Task 1 overviews and comparisons, Task 2 arguments, and precise revision |
+| How to ace IELTS Listening | `/courses/ielts-listening/` | Prediction, corrections, distractors, map directions, lecture structure, and recovery |
 
-The three general English courses contain four lessons each; the three IELTS paths contain six
-lessons each, for **six courses and thirty lessons**. Each lesson has original explanations,
+The three general English courses contain four lessons each; the four IELTS skill courses contain
+six lessons each, for **seven courses and thirty-six lessons**. Each lesson has original explanations,
 worked examples, two multiple-choice questions, a practical assignment, a review checklist,
 and a sample response. Writing and storytelling
 lessons build towards a final piece. Lessons can also be opened directly and revisited in any order.
@@ -31,18 +32,26 @@ when revisited. Progress belongs to the browser session and expires with it; the
 Draft text also autosaves on the current device using local storage when available. With JavaScript
 or local storage disabled, submitting the form still saves work. Course content and exercises work
 without an API key and require no additional migrations or dependencies. Edit `practice/courses.py`
-to maintain general English content and `practice/ielts_courses.py` for IELTS content. Shared types
+to maintain general English content. `practice/ielts_skill_courses.py` assembles the four IELTS
+courses, using the existing lesson bank in `practice/ielts_courses.py` and the additional technique
+lessons in `practice/ielts_techniques.py`. Shared types
 are in `practice/course_types.py`. Keep course and lesson slugs stable so saved progress still matches.
 
 ### IELTS preparation
 
-All three IELTS paths cover listening, reading, speaking, and **Academic** Writing, with a lesson on
-study planning and separate Task 1 and Task 2 lessons. Beginner writing drills are deliberately
-shorter than exam tasks; intermediate and Band 8 reports require at least 150 words and essays at
-least 250. Course pages link to the existing writing practice mode at the matching level.
+The landing page and catalogue lead with **four dedicated courses on how to ace Speaking, Reading,
+Writing, and Listening**. Each has two beginner lessons, two intermediate lessons, and two lessons
+for a Band 8 target. A course overview teaches a reusable four-step method; each lesson explains
+an exam technique, demonstrates it, identifies common mistakes, and then provides practice.
+
+Reading and Writing focus on **IELTS Academic**. Speaking and Listening also apply to General
+Training. Beginner writing drills are deliberately shorter than exam tasks; intermediate and
+Band 8 reports require at least 150 words and essays at least 250. The Writing course links to
+additional writing practice at all three levels.
 
 Listening drills include original scripts, browser speech synthesis with a speed selector, and
-transcripts for review. An English browser voice is required for playback. Without it or without
+transcripts for review. The directions lesson includes a labelled campus map. An English browser
+voice is required for playback. Without it or without
 JavaScript, learners can ask a partner to read the transcript or follow the official IELTS audio
 links. Speaking prompts include a pauseable timer, with preparation time for the long turn. The
 timer uses elapsed time so background-tab throttling does not extend a turn; an ordinary clock
@@ -50,6 +59,12 @@ works as a fallback. Audio is not recorded and speaking is self-reviewed.
 
 These are focused practice courses, not full mock tests. Completion and XP do not assess or certify
 an IELTS band. Format and assessment guidance is linked to official IELTS resources in each course.
+
+Previous level-based course URLs redirect to the skill-course catalogue, and their skill lessons
+redirect to the corresponding new lesson. Existing study-plan lessons remain accessible by their
+old URLs. `practice/course_progress.py` carries saved answers and completion into the new layout,
+while local draft storage keeps the original key. Lesson XP is deduplicated across old and new
+URLs, and previously earned course bonuses and study-plan XP are retained. No migration is required.
 
 ### Daily challenge and gamification
 

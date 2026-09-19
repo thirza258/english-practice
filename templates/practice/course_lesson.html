@@ -11,7 +11,7 @@
   {% include "practice/course_header.html" %}
   <main id="main-content">
     <div class="course-intro">
-      <p class="academic-eyebrow">Lesson {{ lesson_number }} of {{ course.lessons|length }} · {% if lesson.skill %}{{ lesson.skill }} · {% endif %}{{ lesson.minutes }} min{% if lesson_completed %} · Completed{% else %} · +40 XP{% endif %}</p>
+      <p class="academic-eyebrow">Lesson {{ lesson_number }} of {{ course.lessons|length }} · {% if lesson.level %}{{ lesson.level }} · {% endif %}{% if lesson.skill %}{{ lesson.skill }} · {% endif %}{{ lesson.minutes }} min{% if lesson_completed %} · Completed{% else %} · +40 XP{% endif %}</p>
       <h1 class="book-title">{{ lesson.title }}</h1>
       <p class="book-subtitle">{{ lesson.goal }}</p>
     </div>
@@ -20,6 +20,7 @@
     <div class="course-layout">
       <div class="course-lesson-content">
         <article class="book-card lesson-reading" aria-label="Lesson explanation">
+          {% if lesson.technique %}<div class="lesson-technique"><h2>Your exam technique</h2><p>{{ lesson.technique }}</p></div>{% endif %}
           {% for section in lesson.sections %}
           <section>
             <h2>{{ section.title }}</h2>
@@ -42,7 +43,7 @@
 
         {% if lesson.activity %}{% include "practice/lesson_activity.html" %}{% endif %}
 
-        <form method="post" class="book-card lesson-form" id="lesson-form" data-draft-key="english-course:{{ course.slug }}:{{ lesson.slug }}" data-min-words="{{ lesson.assignment.min_words }}">
+        <form method="post" class="book-card lesson-form" id="lesson-form" data-draft-key="{{ draft_key }}" data-min-words="{{ lesson.assignment.min_words }}">
           {% csrf_token %}
           <p id="practice-edits" class="course-note" hidden>You have unsubmitted changes. Check and save again to update your feedback.</p>
           {% if form.errors %}

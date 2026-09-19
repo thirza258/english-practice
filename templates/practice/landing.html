@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}English & IELTS Practice | Beginner to Band 8{% endblock %}
-{% block meta_description %}Learn listening, reading, speaking, and writing with beginner, intermediate, and IELTS Band 8 courses. Build a streak, earn XP, and try the word of the day.{% endblock %}
+{% block meta_description %}Learn how to ace IELTS Speaking, Reading, Writing, and Listening. Four courses teach techniques and practice from beginner to Band 8, with XP and a daily challenge.{% endblock %}
 {% block og_title %}English & IELTS Practice | Beginner to Band 8{% endblock %}
 {% block og_description %}IELTS preparation for all four skills, guided English courses, and a daily vocabulary challenge. Turn small steps into a learning habit.{% endblock %}
 {% block body_class %}landing-body{% endblock %}
@@ -60,17 +60,17 @@
     <section id="ielts-courses" class="book-card landing-courses landing-ielts" aria-labelledby="ielts-title">
       <div class="section-heading">
         <p class="academic-eyebrow" data-i18n="ieltsEyebrow">Your next chapter</p>
-        <h2 id="ielts-title" data-i18n="ieltsTitle">Your path towards IELTS Band 8.</h2>
-        <p data-i18n="ieltsIntro">Choose your starting point. Each path covers listening, reading, speaking, and Academic Writing, with a study plan and six practical lessons.</p>
+        <h2 id="ielts-title" data-i18n="ieltsTitle">How to ace each IELTS skill.</h2>
+        <p data-i18n="ieltsIntro">Choose speaking, reading, writing, or listening. Learn the techniques, avoid common mistakes, and practise at beginner, intermediate, and Band 8 levels within each course.</p>
       </div>
-      <div class="course-grid">
+      <div class="course-grid ielts-grid">
         {% for course in ielts_courses %}
         <article class="course-card course-accent-{{ course.slug }}">
-          <div class="mode-badge-row"><span class="academic-badge" data-i18n="{{ course.slug }}-level">{{ course.level }}</span><span class="mode-meta">{{ course.lessons|length }} <span data-i18n="lessonsLabel">lessons</span></span></div>
+          <div class="mode-badge-row"><span class="academic-badge" data-i18n="{{ course.slug }}-skill">{{ course.skill }}</span><span class="mode-meta">{{ course.lessons|length }} <span data-i18n="lessonsLabel">lessons</span></span></div>
           <h3 data-i18n="{{ course.slug }}-title">{{ course.title }}</h3>
           <p data-i18n="{{ course.slug }}-desc">{{ course.description }}</p>
-          <p class="ielts-skill-list" data-i18n="ieltsSkills">Listening · Reading · Speaking · Writing</p>
-          <a class="secondary-button" href="{% url 'practice:course-detail' course.slug %}" data-i18n="{{ course.slug }}-cta">Explore this path →</a>
+          <p class="ielts-skill-list" data-i18n="ieltsLevels">Beginner → Intermediate → Band 8 target</p>
+          <a class="secondary-button" href="{% url 'practice:course-detail' course.slug %}" data-i18n="{{ course.slug }}-cta">Learn how to ace {{ course.skill }} →</a>
         </article>
         {% endfor %}
       </div>
@@ -532,16 +532,17 @@
 
     Object.assign(TRANSLATIONS.en, {
       dailyHeroCta: "Try today's challenge · 15 XP", practiceTestsCta: "Explore practice tests",
-      ieltsEyebrow: "Your next chapter", ieltsTitle: "Your path towards IELTS Band 8.",
-      ieltsIntro: "Choose your starting point. Each path covers listening, reading, speaking, and Academic Writing, with a study plan and six practical lessons.",
-      ieltsSkills: "Listening · Reading · Speaking · Writing", lessonsLabel: "lessons",
+      ieltsEyebrow: "Your next chapter", ieltsTitle: "How to ace each IELTS skill.",
+      ieltsIntro: "Choose speaking, reading, writing, or listening. Learn the techniques, avoid common mistakes, and practise at beginner, intermediate, and Band 8 levels within each course.",
+      ieltsLevels: "Beginner → Intermediate → Band 8 target", lessonsLabel: "lessons",
       ieltsNote: "Original IELTS Academic preparation in English. Short drills build skills; course completion and XP do not certify an IELTS band.",
-      "ielts-beginner-level": "Beginner", "ielts-intermediate-level": "Intermediate", "ielts-band-8-level": "Advanced · Target Band 8",
-      "ielts-beginner-title": "IELTS foundations", "ielts-intermediate-title": "IELTS skill builder", "ielts-band-8-title": "IELTS Band 8 preparation",
-      "ielts-beginner-desc": "Start your IELTS journey with everyday English, manageable practice, and a study habit across listening, reading, speaking, and writing.",
-      "ielts-intermediate-desc": "Turn a foundation in English into confident IELTS practice. Follow arguments, recognise paraphrases, develop a long speaking turn, and write complete reports and essays.",
-      "ielts-band-8-desc": "Work towards Band 8 with precise comprehension, nuanced arguments, flexible speaking, and deliberate revision. Build consistency across all four skills.",
-      "ielts-beginner-cta": "Start with the foundations →", "ielts-intermediate-cta": "Build your IELTS skills →", "ielts-band-8-cta": "Work towards Band 8 →",
+      "ielts-speaking-skill": "Speaking", "ielts-reading-skill": "Reading", "ielts-writing-skill": "Writing", "ielts-listening-skill": "Listening",
+      "ielts-speaking-title": "How to ace IELTS Speaking", "ielts-reading-title": "How to ace IELTS Reading", "ielts-writing-title": "How to ace IELTS Writing", "ielts-listening-title": "How to ace IELTS Listening",
+      "ielts-speaking-desc": "Learn how to give developed answers, speak clearly, handle all three parts, and respond naturally to follow-up questions.",
+      "ielts-reading-desc": "Learn how to locate evidence, recognise paraphrases, choose headings, handle True/False/Not Given, and protect accuracy under time pressure.",
+      "ielts-writing-desc": "Learn how to plan Task 1 reports and Task 2 essays, select key features, develop arguments, and revise against the writing criteria.",
+      "ielts-listening-desc": "Learn how to predict answers, follow corrections and maps, reject distractors, and keep up with lectures without losing your place.",
+      "ielts-speaking-cta": "Learn how to ace Speaking →", "ielts-reading-cta": "Learn how to ace Reading →", "ielts-writing-cta": "Learn how to ace Writing →", "ielts-listening-cta": "Learn how to ace Listening →",
       dailyEyebrow: "A small win for today", dailyTitle: "Your word of the day", dailyReset: "New question at 00:00 UTC",
       dailyQuestionEyebrow: "One question · 15 XP", dailyActionTitle: "Learn it. Try it. Keep your streak.",
       dailyIntro: "Put today's word into practice with a quick question. A small step now adds up to stronger English.",
@@ -563,16 +564,17 @@
     });
     Object.assign(TRANSLATIONS.id, {
       dailyHeroCta: "Coba tantangan hari ini · 15 XP", practiceTestsCta: "Jelajahi tes latihan",
-      ieltsEyebrow: "Langkah Anda berikutnya", ieltsTitle: "Jalan Anda menuju IELTS Band 8.",
-      ieltsIntro: "Pilih titik awal Anda. Setiap jalur mencakup menyimak, membaca, berbicara, dan menulis akademis, dengan rencana belajar dan enam pelajaran praktis.",
-      ieltsSkills: "Menyimak · Membaca · Berbicara · Menulis", lessonsLabel: "pelajaran",
+      ieltsEyebrow: "Langkah Anda berikutnya", ieltsTitle: "Cara meraih hasil terbaik di setiap keterampilan IELTS.",
+      ieltsIntro: "Pilih berbicara, membaca, menulis, atau menyimak. Pelajari teknik, hindari kesalahan umum, dan berlatih dari pemula, menengah, hingga target Band 8 di setiap kursus.",
+      ieltsLevels: "Pemula → Menengah → Target Band 8", lessonsLabel: "pelajaran",
       ieltsNote: "Materi persiapan IELTS Academic orisinal dalam bahasa Inggris. Latihan singkat membangun kemampuan; penyelesaian kursus dan XP bukan sertifikasi band IELTS.",
-      "ielts-beginner-level": "Pemula", "ielts-intermediate-level": "Menengah", "ielts-band-8-level": "Lanjutan · Target Band 8",
-      "ielts-beginner-title": "Dasar-dasar IELTS", "ielts-intermediate-title": "Pengembangan keterampilan IELTS", "ielts-band-8-title": "Persiapan IELTS Band 8",
-      "ielts-beginner-desc": "Mulai perjalanan IELTS dengan bahasa Inggris sehari-hari, latihan bertahap, dan kebiasaan belajar menyimak, membaca, berbicara, dan menulis.",
-      "ielts-intermediate-desc": "Ubah dasar bahasa Inggris menjadi latihan IELTS yang percaya diri. Ikuti argumen, kenali parafrasa, kembangkan jawaban lisan, serta tulis laporan dan esai lengkap.",
-      "ielts-band-8-desc": "Kejar Band 8 dengan pemahaman tepat, argumen bernuansa, berbicara yang fleksibel, dan revisi terarah. Bangun konsistensi di keempat keterampilan.",
-      "ielts-beginner-cta": "Mulai dari dasar →", "ielts-intermediate-cta": "Kembangkan keterampilan IELTS →", "ielts-band-8-cta": "Persiapkan Band 8 →",
+      "ielts-speaking-skill": "Berbicara", "ielts-reading-skill": "Membaca", "ielts-writing-skill": "Menulis", "ielts-listening-skill": "Menyimak",
+      "ielts-speaking-title": "Cara unggul dalam IELTS Speaking", "ielts-reading-title": "Cara unggul dalam IELTS Reading", "ielts-writing-title": "Cara unggul dalam IELTS Writing", "ielts-listening-title": "Cara unggul dalam IELTS Listening",
+      "ielts-speaking-desc": "Pelajari cara mengembangkan jawaban, berbicara jelas, menghadapi ketiga bagian tes, dan menjawab pertanyaan lanjutan secara alami.",
+      "ielts-reading-desc": "Pelajari cara menemukan bukti, mengenali parafrasa, memilih judul, menjawab True/False/Not Given, dan menjaga akurasi saat waktu terbatas.",
+      "ielts-writing-desc": "Pelajari cara merencanakan laporan Task 1 dan esai Task 2, memilih fitur utama, mengembangkan argumen, dan merevisi sesuai kriteria penilaian.",
+      "ielts-listening-desc": "Pelajari cara memprediksi jawaban, mengikuti koreksi dan peta, menghindari pengecoh, serta mengikuti kuliah tanpa kehilangan alur.",
+      "ielts-speaking-cta": "Pelajari teknik Speaking →", "ielts-reading-cta": "Pelajari teknik Reading →", "ielts-writing-cta": "Pelajari teknik Writing →", "ielts-listening-cta": "Pelajari teknik Listening →",
       dailyEyebrow: "Pencapaian kecil hari ini", dailyTitle: "Kosakata hari ini", dailyReset: "Soal baru pukul 00.00 UTC",
       dailyQuestionEyebrow: "Satu soal · 15 XP", dailyActionTitle: "Pelajari. Coba. Jaga streak Anda.",
       dailyIntro: "Gunakan kosakata hari ini dalam soal singkat. Langkah kecil sekarang membangun bahasa Inggris yang lebih baik.",

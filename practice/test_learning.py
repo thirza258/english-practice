@@ -7,30 +7,47 @@ from django.urls import reverse
 from .courses import COURSES
 from .daily_challenges import challenge_for_day
 from .gamification import PROGRESS_KEY, REWARDS_KEY, learning_summary, record_activity
-from .ielts_courses import IELTS_COURSES
+from .ielts_courses import BEGINNER_COURSE, LEGACY_IELTS_COURSES
+from .ielts_skill_courses import IELTS_COURSES, LESSON_REDIRECTS
 from .services import TEST_SESSION_KEY
 from . import test_courses
 
 
 class IeltsCourseTests(TestCase):
-    def test_three_paths_cover_all_skills_and_link_to_matching_writing_practice(self):
-        self.assertEqual({course.practice_level for course in IELTS_COURSES}, {"beginner", "intermediate", "ielts_8_9"})
+    def test_four_skill_courses_each_teach_three_levels(self):
+        self.assertEqual(len(IELTS_COURSES), 4)
+        self.assertEqual({course.skill for course in IELTS_COURSES}, {"Speaking", "Reading", "Writing", "Listening"})
         for course in IELTS_COURSES:
             with self.subTest(course=course.slug):
-                self.assertTrue({"Listening", "Reading", "Speaking", "Writing"} <= {lesson.skill for lesson in course.lessons})
+                self.assertEqual({lesson.skill for lesson in course.lessons}, {course.skill})
+                self.assertEqual({lesson.level for lesson in course.lessons}, {"Beginner", "Intermediate", "Band 8 target"})
                 response = self.client.get(reverse("practice:course-detail", args=[course.slug]))
-                self.assertContains(response, f"?mode=writing&amp;level={course.practice_level}")
-                for kind in ("listening", "speaking", "reading"):
-                    lesson = next(item for item in course.lessons if item.activity and item.activity.kind == kind)
+                self.assertContains(response, f"How to approach IELTS {course.skill}")
+                for stage in response.context["stages"]:
+                    self.assertEqual(len(stage["lessons"]), 2)
+                    self.assertContains(response, f'id="{stage["slug"]}"')
+                for lesson in course.lessons:
                     page = self.client.get(reverse("practice:course-lesson", args=[course.slug, lesson.slug]))
-                    if kind == "listening":
+                    self.assertContains(page, "Your exam technique")
+                    self.assertTrue(lesson.technique)
+                    if lesson.activity and lesson.activity.kind == "listening":
                         self.assertContains(page, 'id="listening-text"')
                         self.assertContains(page, "Open the transcript")
-                    elif kind == "speaking":
+                    elif lesson.activity and lesson.activity.kind == "speaking":
                         self.assertContains(page, 'id="speaking-timer"')
                         self.assertContains(page, 'name="practised_aloud"')
-                    else:
+                    elif lesson.activity:
                         self.assertContains(page, 'class="practice-passage"')
+                if course.skill == "Writing":
+                    for level in ("beginner", "intermediate", "ielts_8_9"):
+                        self.assertContains(response, f"?mode=writing&amp;level={level}")
+
+    def test_listening_map_supplies_the_reference_needed_for_the_route(self):
+        page = self.client.get(reverse("practice:course-lesson", args=["ielts-listening", "listening-follow-a-map"]))
+        self.assertContains(page, "Campus map")
+        self.assertContains(page, "South gate")
+        self.assertContains(page, '<th scope="col">West</th>', html=True)
+        self.assertContains(page, '<th scope="col">East</th>', html=True)
 
     def test_speaking_completion_requires_aloud_confirmation(self):
         course = IELTS_COURSES[0]
@@ -54,13 +71,70 @@ class IeltsCourseTests(TestCase):
         self.assertEqual(summary["xp"], 6 * 40 + 100)
         self.assertEqual(summary["level"], 2)
         earned = {badge["name"] for badge in summary["badges"] if badge["earned"]}
-        self.assertEqual(earned, {"First step", "Course finisher", "Four-skill explorer"})
+        self.assertEqual(earned, {"First step", "Course finisher"})
 
         # Repeated success and a later unfinished revision keep, but do not multiply, XP.
         self.client.post(url, test_courses.CourseTests.response_for(lesson))
         self.client.post(url, {"draft": "A revision I will finish later."})
         self.assertEqual(learning_summary(self.client.session)["xp"], summary["xp"])
         self.assertEqual(len(self.client.session[REWARDS_KEY]["active_days"]), 1)
+
+    def test_four_skill_badge_requires_completions_across_the_four_courses(self):
+        for index, course in enumerate(IELTS_COURSES):
+            lesson = course.lessons[0]
+            self.client.post(reverse("practice:course-lesson", args=[course.slug, lesson.slug]), test_courses.CourseTests.response_for(lesson))
+            summary = learning_summary(self.client.session)
+            badge = next(b for b in summary["badges"] if b["name"] == "Four-skill explorer")
+            self.assertEqual(badge["earned"], index == 3)
+        self.assertEqual(summary["xp"], 160)
+
+    def test_moved_lessons_restore_saved_work_and_keep_their_local_draft_key(self):
+        old_key = (BEGINNER_COURSE.slug, "reading-for-evidence")
+        new_key = LESSON_REDIRECTS[old_key]
+        lesson = next(item for item in BEGINNER_COURSE.lessons if item.slug == old_key[1])
+        attempt = {**test_courses.CourseTests.response_for(lesson), "completed": True, "checked": True}
+        original = {old_key[0]: {old_key[1]: attempt}}
+        session = self.client.session
+        session[PROGRESS_KEY] = original
+        session.save()
+        old_url = reverse("practice:course-lesson", args=old_key)
+        new_url = reverse("practice:course-lesson", args=new_key)
+        response = self.client.get(old_url, follow=True)
+        self.assertRedirects(response, new_url, status_code=301)
+        self.assertEqual(response.context["form"]["draft"].value(), attempt["draft"])
+        self.assertTrue(response.context["lesson_completed"])
+        self.assertEqual(response.context["learning"]["xp"], 40)
+        self.assertContains(response, 'data-draft-key="english-course:ielts-beginner:reading-for-evidence"')
+        self.assertEqual(self.client.session[PROGRESS_KEY], original)
+
+        # An old form still open can submit to its original URL, without duplicate XP.
+        payload = {**test_courses.CourseTests.response_for(lesson), "draft": attempt["draft"] + " I have reviewed the evidence again."}
+        response = self.client.post(old_url, payload, follow=True)
+        self.assertRedirects(response, f"{new_url}#lesson-feedback")
+        self.assertEqual(response.context["form"]["draft"].value(), payload["draft"])
+        self.assertEqual(response.context["learning"]["xp"], 40)
+        self.assertNotIn(REWARDS_KEY, self.client.session)
+        self.assertEqual(self.client.session[PROGRESS_KEY][new_key[0]][new_key[1]]["draft"], payload["draft"])
+
+    def test_all_old_skill_bookmarks_resolve_and_old_course_overviews_link_to_catalog(self):
+        for old_key, new_key in LESSON_REDIRECTS.items():
+            with self.subTest(old_key=old_key):
+                response = self.client.get(reverse("practice:course-lesson", args=old_key))
+                self.assertRedirects(response, reverse("practice:course-lesson", args=new_key), status_code=301)
+        for course in LEGACY_IELTS_COURSES:
+            response = self.client.get(reverse("practice:course-detail", args=[course.slug]))
+            self.assertRedirects(response, f"{reverse('practice:courses')}#ielts-courses", status_code=301)
+            # Prior study-plan exercises remain available for their saved work.
+            page = self.client.get(reverse("practice:course-lesson", args=[course.slug, course.lessons[0].slug]))
+            self.assertEqual(page.status_code, 200)
+
+    def test_old_course_bonus_survives_reorganisation_without_duplicate_lesson_xp(self):
+        progress = {BEGINNER_COURSE.slug: {lesson.slug: {"completed": True} for lesson in BEGINNER_COURSE.lessons}}
+        summary = learning_summary({PROGRESS_KEY: progress})
+        self.assertEqual(summary["completed_lessons"], 6)
+        self.assertEqual(summary["completed_courses"], 1)
+        self.assertEqual(summary["xp"], 340)
+        self.assertEqual(summary["streak"], 0)
 
     def test_existing_completion_gets_xp_without_inventing_streak_history(self):
         course = COURSES[0]

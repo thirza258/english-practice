@@ -1,6 +1,13 @@
 <section class="book-card lesson-activity" aria-labelledby="activity-title">
   <p class="academic-eyebrow">{{ lesson.skill }} practice</p>
   <h2 id="activity-title">{{ lesson.activity.title }}</h2>
+  {% if lesson.activity.map_rows %}
+  <table class="listening-map">
+    <caption>Campus map · North is at the top. Start at the south gate.</caption>
+    <thead><tr><th scope="col">West</th><th scope="col">Path</th><th scope="col">East</th></tr></thead>
+    <tbody>{% for west, path, east in lesson.activity.map_rows %}<tr><td>{{ west }}</td><td>{{ path }}</td><td>{{ east }}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% endif %}
   {% if lesson.activity.kind == 'listening' %}
     <p>Read the questions below, then listen once before checking the transcript. Replay afterwards to review a detail you missed.</p>
     <div class="activity-controls" id="listening-controls" hidden>

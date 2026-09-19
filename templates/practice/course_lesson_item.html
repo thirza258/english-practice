@@ -1,0 +1,11 @@
+<li>
+  <a href="{% url 'practice:course-lesson' course.slug item.lesson.slug %}">
+    <span class="lesson-number" aria-hidden="true">{% if item.completed %}✓{% else %}{{ item.number }}{% endif %}</span>
+    <span>
+      <strong>{{ item.lesson.title }}</strong>
+      <span class="lesson-description">{{ item.lesson.goal }}</span>
+      <span class="course-note">{{ item.lesson.minutes }} min{% if item.completed %} · Completed{% else %} · 40 XP{% endif %}</span>
+    </span>
+    <span aria-hidden="true">→</span>
+  </a>
+</li>

@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from .course_types import Assignment, Course, Example, Lesson, Question, Section
-from .ielts_courses import IELTS_COURSES
+from .ielts_courses import LEGACY_IELTS_COURSES
+from .ielts_skill_courses import IELTS_COURSES
 
 
 PARTICIPLES_COURSE = Course(
@@ -480,3 +481,4 @@ STORY_COURSE = Course(
 
 
 COURSES = (PARTICIPLES_COURSE, WRITING_COURSE, STORY_COURSE, *IELTS_COURSES)
+ARCHIVED_COURSES = LEGACY_IELTS_COURSES
