@@ -19,7 +19,91 @@
     <meta property="og:url" content="{{ canonical_url }}">
     <meta name="twitter:card" content="summary">
     <link rel="stylesheet" href="{% static 'practice/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'practice/courses.css' %}">
+    <link rel="ai-catalog" href="/.well-known/ai-catalog.json">
+    <script id="webmcp-tools">
+    (function() {
+        const webMcpTools = [
+            {
+                name: "start_diagnostic_test",
+                description: "Start a sentence or paragraph English grammar diagnostic test",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        mode: { type: "string", enum: ["paragraph", "sentence"], description: "Test mode" },
+                        level: { type: "string", description: "Target CEFR level or 'all'" }
+                    }
+                },
+                execute: async function(args) {
+                    const res = await fetch("/api/tests/start/", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(args || {})
+                    });
+                    return await res.json();
+                }
+            },
+            {
+                name: "lookup_vocabulary",
+                description: "Lookup English vocabulary words and definitions from sample bank",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        word: { type: "string", description: "Vocabulary word to search" }
+                    }
+                },
+                execute: async function(args) {
+                    const res = await fetch("/api/vocabulary/sample/");
+                    return await res.json();
+                }
+            },
+            {
+                name: "get_courses",
+                description: "List available English courses and lessons",
+                inputSchema: {
+                    type: "object",
+                    properties: {}
+                },
+                execute: async function() {
+                    return { status: "success", url: "/courses/" };
+                }
+            }
+        ];
+
+        function registerTools() {
+            if (typeof navigator !== "undefined" && navigator.modelContext) {
+                if (typeof navigator.modelContext.provideContext === "function") {
+                    try { navigator.modelContext.provideContext({ tools: webMcpTools }); } catch(e) {}
+                }
+                if (typeof navigator.modelContext.registerTool === "function") {
+                    webMcpTools.forEach(tool => {
+                        try { navigator.modelContext.registerTool(tool); } catch(e) {}
+                    });
+                }
+            }
+            if (typeof document !== "undefined" && document.modelContext) {
+                if (typeof document.modelContext.provideContext === "function") {
+                    try { document.modelContext.provideContext({ tools: webMcpTools }); } catch(e) {}
+                }
+                if (typeof document.modelContext.registerTool === "function") {
+                    webMcpTools.forEach(tool => {
+                        try { document.modelContext.registerTool(tool); } catch(e) {}
+                    });
+                }
+            }
+        }
+
+        registerTools();
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", registerTools);
+        }
+        window.addEventListener("load", registerTools);
+        let count = 0;
+        const interval = setInterval(function() {
+            registerTools();
+            if (++count > 20) clearInterval(interval);
+        }, 250);
+    })();
+    </script>
     {% block head_extra %}{% endblock %}
   </head>
   <body class="{% block body_class %}{% endblock %}">

@@ -9,7 +9,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from .courses import COURSES
 from .daily_challenges import DAILY_ATTEMPT_KEY, challenge_for_day
@@ -34,10 +34,12 @@ CANONICAL_HOST = "https://english.nevatal.id"
 def robots_txt(request: HttpRequest) -> HttpResponse:
     lines = [
         "User-agent: *",
+        "Content-Signal: ai-train=yes, search=yes, ai-input=yes",
         "Allow: /",
         "Disallow: /api/",
         "",
         f"Sitemap: {CANONICAL_HOST}/sitemap.xml",
+        f"Agentmap: {CANONICAL_HOST}/.well-known/ai-catalog.json",
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain; charset=utf-8")
 
@@ -145,13 +147,28 @@ def _landing_context(request: HttpRequest, today=None):
     }
 
 
-@require_GET
+@require_http_methods(["GET", "HEAD"])
 def landing(request: HttpRequest):
-    return render(
+    if "text/markdown" in request.headers.get("Accept", ""):
+        content = _llms_markdown()
+        tokens = round(len(content.split()) / 0.75)
+        response = HttpResponse(content, content_type="text/markdown; charset=utf-8")
+        response["X-Markdown-Tokens"] = str(tokens)
+        response["Link"] = '</.well-known/api-catalog>; rel="api-catalog", </auth.md>; rel="describedby"; type="text/markdown"'
+        return response
+
+    response = render(
         request,
         "practice/landing.html",
         _landing_context(request),
     )
+    response["Link"] = (
+        '</.well-known/api-catalog>; rel="api-catalog", '
+        '</auth.md>; rel="describedby"; type="text/markdown", '
+        '</api/vocabulary/sample/>; rel="service-desc"; type="application/json", '
+        '</.well-known/ai-catalog.json>; rel="ai-catalog"'
+    )
+    return response
 
 
 @require_POST
@@ -387,3 +404,345 @@ def vocabulary_lookup(request: HttpRequest) -> JsonResponse:
         return _error("Query parameter 'q' is required.")
     data = vocabulary_repo.lookup_word(query)
     return JsonResponse({"ok": True, **data})
+
+
+def api_catalog(request: HttpRequest) -> HttpResponse:
+    data = {
+        "linkset": [
+            {
+                "anchor": f"{CANONICAL_HOST}/api",
+                "service-desc": [
+                    {
+                        "href": f"{CANONICAL_HOST}/api/vocabulary/sample/",
+                        "type": "application/json",
+                    }
+                ],
+                "service-doc": [
+                    {
+                        "href": f"{CANONICAL_HOST}/auth.md",
+                        "type": "text/markdown",
+                    }
+                ],
+                "status": [
+                    {
+                        "href": f"{CANONICAL_HOST}/api/vocabulary/sample/",
+                        "type": "application/json",
+                    }
+                ],
+            }
+        ]
+    }
+    return HttpResponse(
+        json.dumps(data, indent=2),
+        content_type="application/linkset+json; charset=utf-8",
+    )
+
+
+def oauth_protected_resource(request: HttpRequest) -> HttpResponse:
+    data = {
+        "resource": CANONICAL_HOST,
+        "authorization_servers": [CANONICAL_HOST],
+        "scopes_supported": ["read", "write"],
+        "bearer_methods_supported": ["header"],
+        "resource_documentation": f"{CANONICAL_HOST}/auth.md",
+        "agent_auth": {
+            "skill": f"{CANONICAL_HOST}/auth.md",
+            "register_uri": f"{CANONICAL_HOST}/api/agent/register",
+        },
+    }
+    return HttpResponse(
+        json.dumps(data, indent=2),
+        content_type="application/json; charset=utf-8",
+    )
+
+
+def oauth_authorization_server(request: HttpRequest) -> HttpResponse:
+    data = {
+        "issuer": CANONICAL_HOST,
+        "authorization_endpoint": f"{CANONICAL_HOST}/oauth/authorize",
+        "token_endpoint": f"{CANONICAL_HOST}/oauth/token",
+        "registration_endpoint": f"{CANONICAL_HOST}/api/agent/register",
+        "jwks_uri": f"{CANONICAL_HOST}/.well-known/jwks.json",
+        "response_types_supported": ["code", "token"],
+        "grant_types_supported": [
+            "authorization_code",
+            "client_credentials",
+            "urn:ietf:params:oauth:grant-type:token-exchange",
+        ],
+        "scopes_supported": ["read", "write", "openid", "profile", "email"],
+        "token_endpoint_auth_methods_supported": [
+            "client_secret_basic",
+            "client_secret_post",
+        ],
+        "agent_auth": {
+            "skill": f"{CANONICAL_HOST}/auth.md",
+            "register_uri": f"{CANONICAL_HOST}/api/agent/register",
+            "identity_types_supported": [
+                "identity_assertion",
+                "anonymous",
+            ],
+            "identity_assertion": {
+                "assertion_types_supported": [
+                    "urn:ietf:params:oauth:token-type:id-jag",
+                    "verified_email",
+                ],
+                "credential_types_supported": [
+                    "bearer_token",
+                    "api_key",
+                ],
+            },
+            "anonymous": {
+                "credential_types_supported": [
+                    "bearer_token",
+                    "api_key",
+                ],
+            },
+            "credential_types_supported": [
+                "bearer_token",
+                "api_key",
+            ],
+            "claim_uri": f"{CANONICAL_HOST}/api/agent/claim",
+            "revocation_uri": f"{CANONICAL_HOST}/api/agent/revoke",
+            "events_supported": [
+                "revocation",
+            ],
+        },
+    }
+    return HttpResponse(
+        json.dumps(data, indent=2),
+        content_type="application/json; charset=utf-8",
+    )
+
+
+def openid_configuration(request: HttpRequest) -> HttpResponse:
+    data = {
+        "issuer": CANONICAL_HOST,
+        "authorization_endpoint": f"{CANONICAL_HOST}/oauth/authorize",
+        "token_endpoint": f"{CANONICAL_HOST}/oauth/token",
+        "jwks_uri": f"{CANONICAL_HOST}/.well-known/jwks.json",
+        "response_types_supported": ["code", "token", "id_token"],
+        "grant_types_supported": [
+            "authorization_code",
+            "client_credentials",
+            "urn:ietf:params:oauth:grant-type:token-exchange",
+        ],
+        "scopes_supported": ["openid", "profile", "email", "read", "write"],
+    }
+    return HttpResponse(
+        json.dumps(data, indent=2),
+        content_type="application/json; charset=utf-8",
+    )
+
+
+def jwks_json(request: HttpRequest) -> HttpResponse:
+    return HttpResponse(
+        json.dumps({"keys": []}),
+        content_type="application/json; charset=utf-8",
+    )
+
+
+def auth_md(request: HttpRequest) -> HttpResponse:
+    content = f"""# auth.md
+
+## Overview
+
+Welcome to the English Practice Agent Authentication and Registration Guide.
+This document outlines the authentication procedures, registration endpoints, and supported credential mechanisms for autonomous AI agents interacting with English Practice services.
+
+## Audience
+
+This guide is intended for AI agents, automated systems, and client integrations connecting to English Practice APIs.
+
+## Metadata & Discovery Endpoints
+
+- OAuth Protected Resource Metadata: {CANONICAL_HOST}/.well-known/oauth-protected-resource
+- OAuth 2.0 Authorization Server Metadata: {CANONICAL_HOST}/.well-known/oauth-authorization-server
+- OpenID Connect Discovery: {CANONICAL_HOST}/.well-known/openid-configuration
+- API Catalog: {CANONICAL_HOST}/.well-known/api-catalog
+
+## Registration Flow
+
+Agents can register dynamically or provision access via the registration endpoints:
+- Registration URI: {CANONICAL_HOST}/api/agent/register
+- Claim URI: {CANONICAL_HOST}/api/agent/claim
+- Revocation URI: {CANONICAL_HOST}/api/agent/revoke
+
+### Step 1: Agent Registration Request
+
+To register an agent, submit a POST request to the registration endpoint:
+
+```http
+POST /api/agent/register HTTP/1.1
+Host: english.nevatal.id
+Content-Type: application/json
+
+{{
+  "client_name": "ExampleAgent",
+  "identity_type": "anonymous"
+}}
+```
+
+### Step 2: Response with Credentials
+
+The server returns client credentials and token:
+
+```http
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{{
+  "client_id": "agent-client-id-xyz",
+  "token_type": "Bearer",
+  "access_token": "sample_agent_token"
+}}
+```
+
+## Supported Authentication Methods
+
+1. Anonymous Agent Access:
+   - Identity Types: anonymous
+   - Credential Types: api_key, bearer_token
+   - Claim URI: {CANONICAL_HOST}/api/agent/claim
+
+2. Verified Email Identity:
+   - Assertion Types: verified_email
+   - Credential Types: api_key, bearer_token
+   - Claim URI: {CANONICAL_HOST}/api/agent/claim
+
+3. ID-JAG (Identity Assertion):
+   - Assertion Type: urn:ietf:params:oauth:token-type:id-jag
+   - Identity Types: identity_assertion
+   - Credential Types: bearer_token
+   - Revocation Event: revocation
+   - Revocation URI: {CANONICAL_HOST}/api/agent/revoke
+
+## Credential Use
+
+To access protected endpoints, include the issued token in the Authorization HTTP request header:
+
+```http
+Authorization: Bearer <your-token>
+```
+"""
+    return HttpResponse(content.strip(), content_type="text/markdown; charset=utf-8")
+
+
+def _llms_markdown() -> str:
+    return f"""# English Practice
+
+> Interactive English language diagnostics, vocabulary mastery, CEFR assessment, and IELTS preparation.
+
+## Overview
+English Practice provides automated CEFR diagnostics (A1-C2), IELTS academic writing evaluations, paragraph completion tests, vocabulary domain exploration, and daily language challenges.
+
+## Endpoints
+- Homepage: {CANONICAL_HOST}/
+- Courses Catalog: {CANONICAL_HOST}/courses/
+- Diagnostic Test: {CANONICAL_HOST}/test/
+- Vocabulary Sample API: {CANONICAL_HOST}/api/vocabulary/sample/
+- API Catalog: {CANONICAL_HOST}/.well-known/api-catalog
+- Authentication Guide: {CANONICAL_HOST}/auth.md
+- Sitemap: {CANONICAL_HOST}/sitemap.xml
+"""
+
+
+def llms_txt(request: HttpRequest) -> HttpResponse:
+    return HttpResponse(_llms_markdown().strip(), content_type="text/markdown; charset=utf-8")
+
+
+def mcp_server_card(request: HttpRequest) -> HttpResponse:
+    data = {
+        "serverInfo": {
+            "name": "english-practice-mcp",
+            "version": "1.0.0",
+        },
+        "endpoint": f"{CANONICAL_HOST}/mcp",
+        "capabilities": {
+            "tools": {"listChanged": False},
+            "resources": {"subscribe": False, "listChanged": False},
+            "prompts": {"listChanged": False},
+        },
+    }
+    resp = HttpResponse(
+        json.dumps(data, indent=2),
+        content_type="application/json; charset=utf-8",
+    )
+    resp["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+
+def agent_skills_index(request: HttpRequest) -> HttpResponse:
+    data = {
+        "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+        "skills": [
+            {
+                "name": "english-practice",
+                "type": "skill-md",
+                "description": "English grammar and vocabulary diagnostic practice and courses",
+                "url": f"{CANONICAL_HOST}/.well-known/agent-skills/english-practice/SKILL.md",
+                "digest": "sha256:6cf8fb43cd0d33b9801d564be93e8b51090c4b988de245966926a8cb077c9535",
+            }
+        ],
+    }
+    resp = HttpResponse(
+        json.dumps(data, indent=2),
+        content_type="application/json; charset=utf-8",
+    )
+    resp["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+
+def agent_skill_file(request: HttpRequest) -> HttpResponse:
+    content = """---
+name: english-practice
+description: English grammar and vocabulary diagnostic practice and courses
+---
+
+# English Practice Skill
+
+Allows AI agents to discover English grammar tests, diagnostic challenges, and course lessons on English Practice.
+"""
+    resp = HttpResponse(content, content_type="text/markdown; charset=utf-8")
+    resp["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+
+def ai_catalog(request: HttpRequest) -> HttpResponse:
+    data = {
+        "specVersion": "1.0",
+        "host": {
+            "displayName": "English Practice Diagnostic",
+            "identifier": "did:web:english.nevatal.id",
+        },
+        "entries": [
+            {
+                "identifier": "urn:air:english.nevatal.id:server:mcp",
+                "displayName": "English Practice MCP Server",
+                "type": "application/mcp-server-card+json",
+                "url": f"{CANONICAL_HOST}/.well-known/mcp/server-card.json",
+                "representativeQueries": [
+                    "take english diagnostic test",
+                    "practice english grammar",
+                    "learn vocabulary courses",
+                ],
+            },
+            {
+                "identifier": "urn:air:english.nevatal.id:api:vocabulary",
+                "displayName": "English Practice Vocabulary API",
+                "type": "application/json",
+                "url": f"{CANONICAL_HOST}/api/vocabulary/sample/",
+                "representativeQueries": [
+                    "sample vocabulary questions",
+                    "lookup vocabulary word definition",
+                ],
+            },
+        ],
+    }
+    resp = HttpResponse(
+        json.dumps(data, indent=2),
+        content_type="application/json; charset=utf-8",
+    )
+    resp["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+
