@@ -24,21 +24,39 @@
 <div class="page-shell landing-page">
   <header class="academic-masthead">
     <div class="running-head-row">
-      <span class="running-head-text" data-i18n="siteName">English Practice</span>
-      <div class="academic-lang-switcher" aria-label="Language Selector">
-        <span class="lang-label" data-i18n="langLabel">Language / Bahasa:</span>
-        <div class="lang-toggle-pill" role="group" aria-label="Choose Language">
-          <button type="button" class="lang-btn is-active" data-lang="en" id="langBtnEn" aria-pressed="true">
-            English
-          </button>
-          <span class="lang-divider">|</span>
-          <button type="button" class="lang-btn" data-lang="id" id="langBtnId" aria-pressed="false">
-            Bahasa Indonesia
-          </button>
+      <div class="running-head-brand-group">
+        <a href="{% url 'practice:landing' %}" class="running-head-logo" aria-label="English Practice Home">
+          <span class="running-head-text" data-i18n="siteName">English Practice</span>
+        </a>
+      </div>
+
+      <nav class="running-head-nav" aria-label="Quick Navigation">
+        <a href="{% url 'practice:courses' %}" class="nav-link" data-i18n="navCourses">Courses</a>
+        <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="nav-link" data-i18n="navParagraph">Paragraphs</a>
+        <a href="{% url 'practice:test' %}?mode=writing&level=all" class="nav-link" data-i18n="navWriting">IELTS Writing</a>
+        <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="nav-link" data-i18n="navSentence">Sentences</a>
+      </nav>
+
+      <div class="running-head-right">
+        <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="header-cta-btn">
+          <span data-i18n="headerQuickCta">Start Diagnostic →</span>
+        </a>
+        <div class="academic-lang-switcher" aria-label="Language Selector">
+          <span class="lang-label" data-i18n="langLabel">Language / Bahasa:</span>
+          <div class="lang-toggle-pill" role="group" aria-label="Choose Language">
+            <button type="button" class="lang-btn is-active" data-lang="en" id="langBtnEn" aria-pressed="true">
+              English
+            </button>
+            <span class="lang-divider">|</span>
+            <button type="button" class="lang-btn" data-lang="id" id="langBtnId" aria-pressed="false">
+              Bahasa Indonesia
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
+<<<<<<< HEAD
     <div class="masthead-main">
       <h1 class="book-title" data-i18n="mainTitle">Better English. One day at a time.</h1>
       <p class="book-subtitle" data-i18n="subtitle">
@@ -49,11 +67,126 @@
         <a href="{% url 'practice:courses' %}" class="primary-button" data-i18n="browseCoursesBtn">Explore English courses</a>
         <a href="#daily-challenge" class="secondary-button" data-i18n="dailyHeroCta">Try today's challenge · 15 XP</a>
         <a href="#practice-modes" class="secondary-button" data-i18n="practiceTestsCta">Explore practice tests</a>
+=======
+    <div class="masthead-main hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge-pill">
+          <span class="hero-badge-dot"></span>
+          <span data-i18n="heroPill">Free English Diagnostic &amp; Guided Courses · No Sign-up</span>
+        </div>
+
+        <h1 class="book-title" data-i18n="mainTitle">Learn English. Write with confidence.</h1>
+        <p class="book-subtitle" data-i18n="subtitle">
+          Learn participles such as running and written, write clearer English, and tell better stories. Build your skills with guided courses and practise with instant feedback.
+        </p>
+
+        <div class="masthead-actions hero-actions">
+          <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button hero-primary-btn">
+            <span data-i18n="heroStartDiagnosticBtn">Start Free Diagnostic</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
+          </a>
+          <a href="{% url 'practice:courses' %}" class="secondary-button hero-secondary-btn" data-i18n="browseCoursesBtn">Explore English courses</a>
+        </div>
+
+        <div class="hero-quick-modes">
+          <span class="quick-modes-label" data-i18n="quickStartLabel">Quick Practice:</span>
+          <div class="quick-modes-chips">
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="quick-mode-chip" data-i18n="startParagraphBtn">Start paragraph test</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=all" class="quick-mode-chip is-writing" data-i18n="startWritingBtn">IELTS Writing</a>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="quick-mode-chip" data-i18n="startSentenceBtn">Start sentence test</a>
+          </div>
+        </div>
+
+        <div class="hero-trust-bar">
+          <div class="trust-item">
+            <svg class="trust-icon" viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            <span data-i18n="trustRuleFeedback">Instant rule explanations</span>
+          </div>
+          <div class="trust-item">
+            <svg class="trust-icon" viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            <span data-i18n="trustLevels">A1–C2 &amp; IELTS 8–9</span>
+          </div>
+          <div class="trust-item">
+            <svg class="trust-icon" viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            <span data-i18n="trustFree">100% Free &amp; Open</span>
+          </div>
+        </div>
+>>>>>>> origin/main
       </div>
+
+      <!-- Live Interactive Demo Widget -->
+      <aside class="hero-preview-box" aria-label="Interactive Diagnostic Demo">
+        <div class="preview-card-header">
+          <div class="preview-badge-group">
+            <span class="preview-tag" data-i18n="previewBadge">Interactive Preview</span>
+          </div>
+          <span class="preview-status" data-i18n="previewTryPrompt">Try it now — click an option:</span>
+        </div>
+
+        <p class="preview-prompt">
+          <span data-i18n="demoSentencePre">Although the experimental data was preliminary, the researchers </span>
+          <span class="preview-blank-target" id="demoBlankTarget">_____</span>
+          <span data-i18n="demoSentencePost"> their hypothesis with confidence before the faculty board.</span>
+        </p>
+
+        <div class="preview-options-grid" id="demoOptionsContainer">
+          <button type="button" class="preview-opt-btn" data-choice="A">
+            <span class="preview-opt-letter">A</span>
+            <span class="preview-opt-text">defended</span>
+          </button>
+          <button type="button" class="preview-opt-btn" data-choice="B">
+            <span class="preview-opt-letter">B</span>
+            <span class="preview-opt-text">defending</span>
+          </button>
+          <button type="button" class="preview-opt-btn" data-choice="C">
+            <span class="preview-opt-letter">C</span>
+            <span class="preview-opt-text">defends</span>
+          </button>
+          <button type="button" class="preview-opt-btn" data-choice="D">
+            <span class="preview-opt-letter">D</span>
+            <span class="preview-opt-text">defense</span>
+          </button>
+        </div>
+
+        <div class="preview-feedback-box" id="demoFeedbackBox">
+          <span id="demoFeedbackText" data-i18n="demoFeedbackInitial">Pick an option above to see instant feedback and grammar reasoning in action!</span>
+        </div>
+
+        <div class="preview-cta-action" id="demoCtaBox">
+          <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="primary-button">
+            <span data-i18n="previewCtaBtn">Take 10-Question Diagnostic →</span>
+          </a>
+        </div>
+      </aside>
     </div>
   </header>
 
+  <!-- Metric / Capability Ribbon -->
+  <section class="stats-ribbon" aria-label="Learning Features">
+    <div class="stat-item">
+      <span class="stat-number">3</span>
+      <span class="stat-label" data-i18n="statModes">Practice Modes</span>
+      <span class="stat-sub" data-i18n="statModesSub">Paragraph, sentence &amp; writing</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">3</span>
+      <span class="stat-label" data-i18n="statCourses">Guided Courses</span>
+      <span class="stat-sub" data-i18n="statCoursesSub">Participles, writing, storytelling</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">5</span>
+      <span class="stat-label" data-i18n="statLevels">Proficiency Levels</span>
+      <span class="stat-sub" data-i18n="statLevelsSub">CEFR A1 to IELTS Band 9</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">Instant</span>
+      <span class="stat-label" data-i18n="statFeedback">Linguistic Analysis</span>
+      <span class="stat-sub" data-i18n="statFeedbackSub">NLTK, spaCy &amp; detailed rules</span>
+    </div>
+  </section>
+
   <main class="landing-layout">
+<<<<<<< HEAD
     {% include "practice/daily_challenge.html" %}
     {% include "practice/learning_progress.html" %}
 
@@ -77,6 +210,9 @@
       <p class="course-note ielts-note" data-i18n="ieltsNote">Original IELTS Academic preparation in English. Short drills build skills; course completion and XP do not certify an IELTS band.</p>
     </section>
 
+=======
+    <!-- Courses Section -->
+>>>>>>> origin/main
     <section class="book-card landing-courses" aria-labelledby="courses-title">
       <div class="section-heading">
         <p class="academic-eyebrow" data-i18n="coursesEyebrow">Learn at your own pace</p>
@@ -88,23 +224,51 @@
           <p class="course-note" data-i18n="participlesMeta">Grammar · 4 lessons</p>
           <h3 data-i18n="participlesTitle">English participles</h3>
           <p data-i18n="participlesDesc">Use forms like running and written in verb phrases, descriptions, and clauses. Learn to make every subject clear.</p>
+          <ul class="course-card-highlights">
+            <li>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+              <span data-i18n="courseHighlightsParticiples">Present &amp; past forms · Participle clauses · Dangling modifiers</span>
+            </li>
+          </ul>
           <a class="secondary-button" href="{% url 'practice:course-detail' 'participles' %}" data-i18n="participlesBtn">Learn participles →</a>
         </article>
+
         <article class="course-card course-accent-better-writing">
           <p class="course-note" data-i18n="writingCourseMeta">Writing · 4 lessons</p>
           <h3 data-i18n="writingCourseTitle">Write better English</h3>
           <p data-i18n="writingCourseDesc">Create clear sentences, develop your paragraphs, connect ideas, and revise a piece you can be proud of.</p>
+          <ul class="course-card-highlights">
+            <li>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+              <span data-i18n="courseHighlightsWriting">Topic sentences · Cohesion &amp; transitions · Sentence variety</span>
+            </li>
+          </ul>
           <a class="secondary-button" href="{% url 'practice:course-detail' 'better-writing' %}" data-i18n="writingCourseBtn">Improve your writing →</a>
         </article>
+
         <article class="course-card course-accent-storytelling">
           <p class="course-note" data-i18n="storyMeta">Storytelling · 4 lessons</p>
           <h3 data-i18n="storyTitle">Tell a better story</h3>
           <p data-i18n="storyDesc">Build a character, shape a plot, write vivid scenes, and bring your own short story to a satisfying ending.</p>
+          <ul class="course-card-highlights">
+            <li>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+              <span data-i18n="courseHighlightsStory">Character building · Vivid scenes · Narrative pacing</span>
+            </li>
+          </ul>
           <a class="secondary-button" href="{% url 'practice:course-detail' 'storytelling' %}" data-i18n="storyBtn">Start storytelling →</a>
         </article>
       </div>
+
+      <div class="course-section-footer-cta">
+        <span class="course-footer-text" data-i18n="courseFooterPrompt">Want to see complete syllabi, worked examples, and lesson previews?</span>
+        <a href="{% url 'practice:courses' %}" class="primary-button">
+          <span data-i18n="courseFooterBtn">Explore all course lessons →</span>
+        </a>
+      </div>
     </section>
 
+    <!-- Practice Modes Section -->
     <section id="practice-modes" class="book-card practice-modes-section" aria-label="Practice Modes">
       <div class="section-heading">
         <h2 data-i18n="section1Title">Three practice modes</h2>
@@ -115,6 +279,7 @@
           <div class="mode-badge-row">
             <span class="academic-badge" data-i18n="mode1Badge">Paragraph mode</span>
             <span class="mode-meta" data-i18n="mode1Meta">Fill the blanks</span>
+            <span class="mode-time-tag" data-i18n="modeEstimatedTime1">⏱ 3–5 mins</span>
           </div>
           <h3 data-i18n="mode1Title">Paragraph practice</h3>
           <p class="mode-desc" data-i18n="mode1Desc">
@@ -128,12 +293,23 @@
           <div class="mode-cta-row">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button" data-i18n="mode1Btn">Start paragraph test</a>
           </div>
+          <div class="mode-quick-levels">
+            <span class="mode-quick-label" data-i18n="modeRecommendedLabel">Quick Level Jump:</span>
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=beginner" class="mode-level-link">Beginner</a>
+            <span>·</span>
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=intermediate" class="mode-level-link">Intermediate</a>
+            <span>·</span>
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=advanced" class="mode-level-link">Advanced</a>
+            <span>·</span>
+            <a href="{% url 'practice:test' %}?mode=paragraph&level=ielts_8_9" class="mode-level-link">IELTS 8–9</a>
+          </div>
         </article>
 
         <article class="mode-card is-writing">
           <div class="mode-badge-row">
             <span class="mode-badge writing-mode-badge">IELTS Writing</span>
             <span class="mode-meta">Scored Response</span>
+            <span class="mode-time-tag" data-i18n="modeEstimatedTimeWriting">⏱ 15–20 mins</span>
           </div>
           <h3>Writing Practice &amp; Band Score</h3>
           <p class="mode-desc">
@@ -149,12 +325,21 @@
           <div class="mode-cta-row">
             <a href="{% url 'practice:test' %}?mode=writing&level=all" class="primary-button">Start Writing Task</a>
           </div>
+          <div class="mode-quick-levels">
+            <span class="mode-quick-label" data-i18n="modeRecommendedLabel">Quick Level Jump:</span>
+            <a href="{% url 'practice:test' %}?mode=writing&level=intermediate" class="mode-level-link">Intermediate</a>
+            <span>·</span>
+            <a href="{% url 'practice:test' %}?mode=writing&level=advanced" class="mode-level-link">Advanced</a>
+            <span>·</span>
+            <a href="{% url 'practice:test' %}?mode=writing&level=ielts_8_9" class="mode-level-link">IELTS 8–9</a>
+          </div>
         </article>
 
         <article class="mode-card">
           <div class="mode-badge-row">
             <span class="academic-badge" data-i18n="mode2Badge">Sentence mode</span>
             <span class="mode-meta" data-i18n="mode2Meta">10 questions</span>
+            <span class="mode-time-tag" data-i18n="modeEstimatedTime2">⏱ ~2 mins</span>
           </div>
           <h3 data-i18n="mode2Title">Sentence practice</h3>
           <p class="mode-desc" data-i18n="mode2Desc">
@@ -168,10 +353,49 @@
           <div class="mode-cta-row">
             <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button" data-i18n="mode2Btn">Start sentence test</a>
           </div>
+          <div class="mode-quick-levels">
+            <span class="mode-quick-label" data-i18n="modeRecommendedLabel">Quick Level Jump:</span>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=beginner" class="mode-level-link">Beginner</a>
+            <span>·</span>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=intermediate" class="mode-level-link">Intermediate</a>
+            <span>·</span>
+            <a href="{% url 'practice:test' %}?mode=sentence&level=advanced" class="mode-level-link">Advanced</a>
+          </div>
         </article>
       </div>
     </section>
 
+    <!-- Quick Level Guide & Goal Finder -->
+    <section class="quick-level-guide" aria-label="Level Guide">
+      <div class="quick-level-guide-head">
+        <span class="quick-guide-title" data-i18n="quickGuideTitle">Need a recommendation? Choose your goal:</span>
+        <span class="quick-guide-hint" data-i18n="quickGuideHint">Click a goal to highlight your recommended level</span>
+      </div>
+      <div class="quick-level-pills">
+        <a href="#level-beginner" class="level-picker-pill" data-target-level="beginner">
+          <span data-i18n="goalFoundation">Building Foundations</span>
+          <span class="pill-tag">(A1–A2)</span>
+        </a>
+        <a href="#level-intermediate" class="level-picker-pill" data-target-level="intermediate">
+          <span data-i18n="goalConnectors">Flow &amp; Connectors</span>
+          <span class="pill-tag">(B1–B2)</span>
+        </a>
+        <a href="#level-advanced" class="level-picker-pill" data-target-level="advanced">
+          <span data-i18n="goalAcademic">Academic &amp; Nuance</span>
+          <span class="pill-tag">(C1–C2)</span>
+        </a>
+        <a href="#level-ielts" class="level-picker-pill" data-target-level="ielts_8_9">
+          <span data-i18n="goalIelts">IELTS Band 8–9</span>
+          <span class="pill-tag">(Academic)</span>
+        </a>
+        <a href="#level-all" class="level-picker-pill" data-target-level="all">
+          <span data-i18n="goalDiagnostic">Full Diagnostic</span>
+          <span class="pill-tag">(All Levels)</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Level Selection Section -->
     <section class="book-card level-section" aria-label="Select English Level">
       <div class="section-heading">
         <h2 data-i18n="section2Title">Choose your level</h2>
@@ -179,8 +403,10 @@
       </div>
 
       <div class="level-grid">
-        <article class="level-card" data-level="beginner">
-          <div class="level-badge beginner-badge">CEFR A1–A2</div>
+        <article class="level-card" id="level-beginner" data-level="beginner">
+          <div class="level-badge-row">
+            <div class="level-badge beginner-badge">CEFR A1–A2</div>
+          </div>
           <h3 data-i18n="levelBeginnerTitle">Beginner</h3>
           <p class="level-desc" data-i18n="levelBeginnerDesc">Simple tenses, subject pronouns, basic conjunctions (and, but, because, so), and simple sentence structures.</p>
           <ul class="level-features">
@@ -190,13 +416,17 @@
           </ul>
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=beginner" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
-            <a href="{% url 'practice:test' %}?mode=writing&level=beginner" class="secondary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
-            <a href="{% url 'practice:test' %}?mode=sentence&level=beginner" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
+            <div class="level-secondary-row">
+              <a href="{% url 'practice:test' %}?mode=writing&level=beginner" class="secondary-button level-btn is-writing-btn level-sub-btn" data-i18n="writingPracticeBtn">Writing practice</a>
+              <a href="{% url 'practice:test' %}?mode=sentence&level=beginner" class="secondary-button level-btn level-sub-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
+            </div>
           </div>
         </article>
 
-        <article class="level-card" data-level="intermediate">
-          <div class="level-badge intermediate-badge">CEFR B1–B2</div>
+        <article class="level-card" id="level-intermediate" data-level="intermediate">
+          <div class="level-badge-row">
+            <div class="level-badge intermediate-badge">CEFR B1–B2</div>
+          </div>
           <h3 data-i18n="levelInterTitle">Intermediate</h3>
           <p class="level-desc" data-i18n="levelInterDesc">Connectors (however, therefore, nonetheless), relative and adverb clauses, gerunds, participles, and conditionals.</p>
           <ul class="level-features">
@@ -206,13 +436,17 @@
           </ul>
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=intermediate" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
-            <a href="{% url 'practice:test' %}?mode=writing&level=intermediate" class="secondary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
-            <a href="{% url 'practice:test' %}?mode=sentence&level=intermediate" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
+            <div class="level-secondary-row">
+              <a href="{% url 'practice:test' %}?mode=writing&level=intermediate" class="secondary-button level-btn is-writing-btn level-sub-btn" data-i18n="writingPracticeBtn">Writing practice</a>
+              <a href="{% url 'practice:test' %}?mode=sentence&level=intermediate" class="secondary-button level-btn level-sub-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
+            </div>
           </div>
         </article>
 
-        <article class="level-card" data-level="advanced">
-          <div class="level-badge advanced-badge">CEFR C1–C2</div>
+        <article class="level-card" id="level-advanced" data-level="advanced">
+          <div class="level-badge-row">
+            <div class="level-badge advanced-badge">CEFR C1–C2</div>
+          </div>
           <h3 data-i18n="levelAdvTitle">Advanced</h3>
           <p class="level-desc" data-i18n="levelAdvDesc">Subjunctive mood, inversion, causative structures, elliptical clauses, and academic syntax.</p>
           <ul class="level-features">
@@ -222,13 +456,17 @@
           </ul>
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=advanced" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
-            <a href="{% url 'practice:test' %}?mode=writing&level=advanced" class="secondary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
-            <a href="{% url 'practice:test' %}?mode=sentence&level=advanced" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
+            <div class="level-secondary-row">
+              <a href="{% url 'practice:test' %}?mode=writing&level=advanced" class="secondary-button level-btn is-writing-btn level-sub-btn" data-i18n="writingPracticeBtn">Writing practice</a>
+              <a href="{% url 'practice:test' %}?mode=sentence&level=advanced" class="secondary-button level-btn level-sub-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
+            </div>
           </div>
         </article>
 
-        <article class="level-card ielts-card" data-level="ielts_8_9">
-          <div class="level-badge ielts-badge">IELTS 8.0–9.0</div>
+        <article class="level-card ielts-card" id="level-ielts" data-level="ielts_8_9">
+          <div class="level-badge-row">
+            <div class="level-badge ielts-badge">IELTS 8.0–9.0</div>
+          </div>
           <h3 data-i18n="levelIeltsTitle">IELTS 8–9</h3>
           <p class="level-desc" data-i18n="levelIeltsDesc">Rare academic vocabulary and collocations of the kind used in high-band IELTS writing.</p>
           <ul class="level-features">
@@ -237,14 +475,19 @@
             <li data-i18n="levelIeltsBullet3">Advanced inversion and subjunctive</li>
           </ul>
           <div class="level-actions-stack">
-            <a href="{% url 'practice:test' %}?mode=paragraph&level=ielts_8_9" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
-            <a href="{% url 'practice:test' %}?mode=writing&level=ielts_8_9" class="secondary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
-            <a href="{% url 'practice:test' %}?mode=sentence&level=ielts_8_9" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
+            <a href="{% url 'practice:test' %}?mode=writing&level=ielts_8_9" class="primary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
+            <div class="level-secondary-row">
+              <a href="{% url 'practice:test' %}?mode=paragraph&level=ielts_8_9" class="secondary-button level-btn level-sub-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
+              <a href="{% url 'practice:test' %}?mode=sentence&level=ielts_8_9" class="secondary-button level-btn level-sub-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
+            </div>
           </div>
         </article>
 
-        <article class="level-card is-featured" data-level="all">
-          <div class="level-badge all-badge">All levels</div>
+        <article class="level-card is-featured" id="level-all" data-level="all">
+          <div class="level-badge-row">
+            <div class="level-badge all-badge">All levels</div>
+            <span class="level-popular-badge" data-i18n="levelRecommendedBadge">Recommended Diagnostic</span>
+          </div>
           <h3 data-i18n="levelAllTitle">All levels</h3>
           <p class="level-desc" data-i18n="levelAllDesc">A balanced mix from beginner to IELTS 8–9. A full diagnostic of your grammar.</p>
           <ul class="level-features">
@@ -254,13 +497,16 @@
           </ul>
           <div class="level-actions-stack">
             <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button level-btn" data-i18n="paragraphPracticeBtn">Paragraph practice</a>
-            <a href="{% url 'practice:test' %}?mode=writing&level=all" class="secondary-button level-btn is-writing-btn" data-i18n="writingPracticeBtn">Writing practice</a>
-            <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button level-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
+            <div class="level-secondary-row">
+              <a href="{% url 'practice:test' %}?mode=writing&level=all" class="secondary-button level-btn is-writing-btn level-sub-btn" data-i18n="writingPracticeBtn">Writing practice</a>
+              <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button level-btn level-sub-btn" data-i18n="sentencePracticeBtn">Sentence practice</a>
+            </div>
           </div>
         </article>
       </div>
     </section>
 
+    <!-- Pedagogical Pillars -->
     <section class="feature-grid" aria-label="Why use this site">
       <article class="book-card feature-card">
         <h3 data-i18n="feat1Title">Paragraphs build cohesion</h3>
@@ -278,6 +524,14 @@
       </article>
     </section>
 
+    <div class="feature-cta-card">
+      <span class="feature-cta-title" data-i18n="pillarsCtaTitle">Experience the hidden-topic diagnostic method</span>
+      <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="secondary-button">
+        <span data-i18n="pillarsCtaBtn">Try a diagnostic test now →</span>
+      </a>
+    </div>
+
+    <!-- How It Works & Global Closing CTA -->
     <section class="book-card steps-card">
       <div class="section-heading">
         <h2 data-i18n="section4Title">How it works</h2>
@@ -305,8 +559,44 @@
           </div>
         </li>
       </ol>
+
+      <!-- High-Conversion Bottom Banner -->
+      <div class="conversion-banner">
+        <div class="conversion-banner-content">
+          <h2 data-i18n="closingTitle">Ready to improve your English today?</h2>
+          <p data-i18n="closingSubtitle">
+            Choose a practice mode or start with a full diagnostic test in seconds. No login required.
+          </p>
+        </div>
+        <div class="conversion-actions">
+          <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="conversion-btn-primary">
+            <span data-i18n="closingBtnDiagnostic">Start Free Diagnostic (All levels) →</span>
+          </a>
+          <a href="{% url 'practice:courses' %}" class="conversion-btn-secondary">
+            <span data-i18n="closingBtnCourses">Explore English Courses</span>
+          </a>
+          <a href="{% url 'practice:test' %}?mode=writing&level=all" class="conversion-btn-secondary">
+            <span data-i18n="closingBtnWriting">Start IELTS Writing Task</span>
+          </a>
+        </div>
+        <div class="conversion-guarantee">
+          <span data-i18n="closingTrust1">✓ Instant feedback</span>
+          <span data-i18n="closingTrust2">✓ CEFR &amp; IELTS aligned</span>
+          <span data-i18n="closingTrust3">✓ 100% Free</span>
+        </div>
+      </div>
     </section>
   </main>
+</div>
+
+<!-- Floating Sticky Quick-Action Bar -->
+<div class="sticky-cta-bar" id="stickyCtaBar" aria-label="Quick Action Floating Bar">
+  <span class="sticky-bar-brand" data-i18n="stickyBrand">English Practice Diagnostic</span>
+  <div class="sticky-bar-actions">
+    <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="sticky-btn-primary" data-i18n="stickyCta">Start Diagnostic →</a>
+    <a href="{% url 'practice:courses' %}" class="sticky-btn-secondary" data-i18n="stickyCourses">Courses</a>
+    <button type="button" class="sticky-close-btn" id="dismissStickyBtn" aria-label="Dismiss Bar">✕</button>
+  </div>
 </div>
 {% endblock %}
 
@@ -343,15 +633,54 @@
         startWritingBtn: "IELTS Writing",
         startSentenceBtn: "Start sentence test",
 
+        navCourses: "Courses",
+        navParagraph: "Paragraphs",
+        navWriting: "IELTS Writing",
+        navSentence: "Sentences",
+        headerQuickCta: "Start Diagnostic →",
+        heroPill: "Free English Diagnostic & Guided Courses · No Sign-up",
+        heroStartDiagnosticBtn: "Start Free Diagnostic",
+        quickStartLabel: "Quick Practice:",
+        trustRuleFeedback: "Instant rule explanations",
+        trustLevels: "A1–C2 & IELTS 8–9",
+        trustFree: "100% Free & Open",
+
+        previewBadge: "Interactive Preview",
+        previewTryPrompt: "Try it now — click an option:",
+        demoSentencePre: "Although the experimental data was preliminary, the researchers ",
+        demoSentencePost: " their hypothesis with confidence before the faculty board.",
+        demoFeedbackInitial: "Pick an option above to see instant feedback and grammar reasoning in action!",
+        previewCtaBtn: "Take 10-Question Diagnostic →",
+
+        statModes: "Practice Modes",
+        statModesSub: "Paragraph, sentence & writing",
+        statCourses: "Guided Courses",
+        statCoursesSub: "Participles, writing, storytelling",
+        statLevels: "Proficiency Levels",
+        statLevelsSub: "CEFR A1 to IELTS Band 9",
+        statFeedback: "Linguistic Analysis",
+        statFeedbackSub: "NLTK, spaCy & detailed rules",
+
+        courseHighlightsParticiples: "Present & past forms · Participle clauses · Dangling modifiers",
+        courseHighlightsWriting: "Topic sentences · Cohesion & transitions · Sentence variety",
+        courseHighlightsStory: "Character building · Vivid scenes · Narrative pacing",
+        courseFooterPrompt: "Want to see complete syllabi, worked examples, and lesson previews?",
+        courseFooterBtn: "Explore all course lessons →",
+
         section1Title: "Three practice modes",
         mode1Badge: "Paragraph mode",
         mode1Meta: "Fill the blanks",
+        modeEstimatedTime1: "⏱ 3–5 mins",
         mode1Title: "Paragraph practice",
         mode1Desc: "Read a short paragraph with numbered blanks and choose the best option for each one.",
         mode1Bullet1: "Multiple blanks per paragraph",
         mode1Bullet2: "Live preview as you pick answers",
         mode1Bullet3: "Every blank explained after you submit",
         mode1Btn: "Start paragraph test",
+
+        modeEstimatedTimeWriting: "⏱ 15–20 mins",
+        modeEstimatedTime2: "⏱ ~2 mins",
+        modeRecommendedLabel: "Quick Level Jump:",
 
         mode2Badge: "Sentence mode",
         mode2Meta: "10 questions",
@@ -362,8 +691,17 @@
         mode2Bullet3: "Accuracy summary by grammar topic",
         mode2Btn: "Start sentence test",
 
+        quickGuideTitle: "Need a recommendation? Choose your goal:",
+        quickGuideHint: "Click a goal to highlight your recommended level",
+        goalFoundation: "Building Foundations",
+        goalConnectors: "Flow & Connectors",
+        goalAcademic: "Academic & Nuance",
+        goalIelts: "IELTS Band 8–9",
+        goalDiagnostic: "Full Diagnostic",
+
         section2Title: "Choose your level",
         section2Intro: "Every level works across all modes. Choose “All levels” for a mixed diagnostic.",
+        levelRecommendedBadge: "Recommended Diagnostic",
 
         levelBeginnerTitle: "Beginner",
         levelBeginnerDesc: "Simple tenses, subject pronouns, basic conjunctions (and, but, because, so), and simple sentence structures.",
@@ -408,6 +746,9 @@
         feat3Title: "Every answer is explained",
         feat3Desc: "After you submit, each question shows why the correct option fits and why the others do not.",
 
+        pillarsCtaTitle: "Experience the hidden-topic diagnostic method",
+        pillarsCtaBtn: "Try a diagnostic test now →",
+
         section4Title: "How it works",
 
         step1Title: "Read the passage",
@@ -418,6 +759,19 @@
 
         step3Title: "Submit and learn",
         step3Desc: "Get color-coded feedback for every blank, the grammar rule behind each answer, and a cohesion summary.",
+
+        closingTitle: "Ready to improve your English today?",
+        closingSubtitle: "Choose a practice mode or start with a full diagnostic test in seconds. No login required.",
+        closingBtnDiagnostic: "Start Free Diagnostic (All levels) →",
+        closingBtnCourses: "Explore English Courses",
+        closingBtnWriting: "Start IELTS Writing Task",
+        closingTrust1: "✓ Instant feedback",
+        closingTrust2: "✓ CEFR & IELTS aligned",
+        closingTrust3: "✓ 100% Free",
+
+        stickyBrand: "English Practice Diagnostic",
+        stickyCta: "Start Diagnostic →",
+        stickyCourses: "Courses",
 
         footerText: "English courses and practice — learn, write, and tell your story."
       },
@@ -450,15 +804,54 @@
         startWritingBtn: "Latihan Menulis IELTS",
         startSentenceBtn: "Mulai tes kalimat",
 
+        navCourses: "Kursus",
+        navParagraph: "Paragraf",
+        navWriting: "Menulis IELTS",
+        navSentence: "Kalimat",
+        headerQuickCta: "Mulai Diagnostik →",
+        heroPill: "Diagnostik Gratis & Kursus Terpandu • Tanpa Daftar",
+        heroStartDiagnosticBtn: "Mulai Diagnostik Gratis",
+        quickStartLabel: "Mulai Cepat:",
+        trustRuleFeedback: "Penjelasan kaidah instan",
+        trustLevels: "CEFR A1–C2 & IELTS 8–9",
+        trustFree: "100% Gratis & Terbuka",
+
+        previewBadge: "Pratinjau Interaktif",
+        previewTryPrompt: "Coba sekarang — klik salah satu opsi:",
+        demoSentencePre: "Meskipun data eksperimen masih awal, para peneliti ",
+        demoSentencePost: " hipotesis mereka dengan percaya diri di hadapan dewan fakultas.",
+        demoFeedbackInitial: "Pilih salah satu opsi di atas untuk melihat umpan balik langsung dan penalaran kaidah!",
+        previewCtaBtn: "Ambil Tes Diagnostik 10 Soal →",
+
+        statModes: "Mode Latihan",
+        statModesSub: "Paragraf, kalimat & esai",
+        statCourses: "Kursus Terpandu",
+        statCoursesSub: "Partisip, menulis, cerita",
+        statLevels: "Tingkat Kemahiran",
+        statLevelsSub: "CEFR A1 hingga IELTS Band 9",
+        statFeedback: "Analisis Linguistik",
+        statFeedbackSub: "NLTK, spaCy & kaidah detail",
+
+        courseHighlightsParticiples: "Bentuk present & past · Klausa partisip · Modifikasi menggantung",
+        courseHighlightsWriting: "Kalimat topik · Kohesi & transisi · Variasi kalimat",
+        courseHighlightsStory: "Pembangunan karakter · Adegan hidup · Ritme narasi",
+        courseFooterPrompt: "Ingin melihat silabus lengkap, contoh analisis, dan pratinjau pelajaran?",
+        courseFooterBtn: "Jelajahi semua pelajaran kursus →",
+
         section1Title: "Tiga mode latihan",
         mode1Badge: "Mode paragraf",
         mode1Meta: "Isi bagian rumpang",
+        modeEstimatedTime1: "⏱ 3–5 menit",
         mode1Title: "Latihan paragraf",
         mode1Desc: "Baca paragraf singkat dengan bagian rumpang bernomor, lalu pilih jawaban terbaik untuk setiap rumpang.",
         mode1Bullet1: "Beberapa rumpang per paragraf",
         mode1Bullet2: "Pratinjau langsung saat memilih jawaban",
         mode1Bullet3: "Setiap rumpang dijelaskan setelah dikirim",
         mode1Btn: "Mulai tes paragraf",
+
+        modeEstimatedTimeWriting: "⏱ 15–20 menit",
+        modeEstimatedTime2: "⏱ ~2 menit",
+        modeRecommendedLabel: "Pintas Tingkat:",
 
         mode2Badge: "Mode kalimat",
         mode2Meta: "10 soal",
@@ -469,8 +862,17 @@
         mode2Bullet3: "Rangkuman akurasi per topik tata bahasa",
         mode2Btn: "Mulai tes kalimat",
 
+        quickGuideTitle: "Butuh rekomendasi? Pilih tujuan Anda:",
+        quickGuideHint: "Klik tujuan untuk melihat tingkat yang disarankan",
+        goalFoundation: "Membangun Dasar",
+        goalConnectors: "Alur & Kata Hubung",
+        goalAcademic: "Akademis & Nuansa",
+        goalIelts: "IELTS Band 8–9",
+        goalDiagnostic: "Diagnostik Lengkap",
+
         section2Title: "Pilih tingkat Anda",
         section2Intro: "Setiap tingkat tersedia di semua mode. Pilih “Semua tingkat” untuk diagnostik campuran.",
+        levelRecommendedBadge: "Diagnostik Disarankan",
 
         levelBeginnerTitle: "Pemula",
         levelBeginnerDesc: "Tenses sederhana, kata ganti subjek, kata hubung dasar (and, but, because, so), dan struktur kalimat sederhana.",
@@ -515,6 +917,9 @@
         feat3Title: "Setiap jawaban dijelaskan",
         feat3Desc: "Setelah dikirim, setiap soal menunjukkan mengapa opsi yang benar cocok dan mengapa opsi lain tidak.",
 
+        pillarsCtaTitle: "Rasakan metode diagnostik topik tersembunyi",
+        pillarsCtaBtn: "Coba tes diagnostik sekarang →",
+
         section4Title: "Cara kerjanya",
 
         step1Title: "Baca teks",
@@ -526,10 +931,24 @@
         step3Title: "Kirim dan pelajari",
         step3Desc: "Dapatkan umpan balik berkode warna untuk setiap rumpang, kaidah di balik setiap jawaban, dan ringkasan kohesi.",
 
+        closingTitle: "Siap meningkatkan bahasa Inggris Anda hari ini?",
+        closingSubtitle: "Pilih mode latihan atau mulai dengan tes diagnostik lengkap dalam hitungan detik. Tanpa perlu mendaftar.",
+        closingBtnDiagnostic: "Mulai Diagnostik Gratis (Semua tingkat) →",
+        closingBtnCourses: "Jelajahi Kursus Bahasa Inggris",
+        closingBtnWriting: "Mulai Latihan Menulis IELTS",
+        closingTrust1: "✓ Umpan balik instan",
+        closingTrust2: "✓ Sesuai standar CEFR & IELTS",
+        closingTrust3: "✓ 100% Gratis",
+
+        stickyBrand: "Diagnostik Latihan Bahasa Inggris",
+        stickyCta: "Mulai Diagnostik →",
+        stickyCourses: "Kursus",
+
         footerText: "Kursus dan latihan bahasa Inggris — belajar, menulis, dan ceritakan kisah Anda."
       }
     };
 
+<<<<<<< HEAD
     Object.assign(TRANSLATIONS.en, {
       dailyHeroCta: "Try today's challenge · 15 XP", practiceTestsCta: "Explore practice tests",
       ieltsEyebrow: "Your next chapter", ieltsTitle: "How to ace each IELTS skill.",
@@ -594,9 +1013,28 @@
       progressRules: "Dapatkan 40 XP untuk setiap pelajaran baru, bonus 100 XP setelah menuntaskan kursus, dan 15 XP untuk menjawab soal harian dengan benar. Selesaikan pelajaran baru atau soal harian untuk menjaga streak. Hari berganti pukul 00.00 UTC. Level XP menunjukkan latihan, bukan band IELTS.",
       progressStorage: "Progres tersimpan dalam sesi browser ini dan berakhir bersama sesi tersebut. Gunakan browser yang sama untuk melanjutkan."
     });
+=======
+    let currentLang = "en";
+
+    const DEMO_EXPLANATIONS = {
+      en: {
+        A: "✓ Correct! 'defended' is the past simple finite verb that correctly agrees with the past clause ('was preliminary').",
+        B: "✕ Incorrect: 'defending' is a participle/gerund form and cannot act as the main predicate without an auxiliary verb (e.g. 'were defending').",
+        C: "✕ Incorrect: 'defends' is present tense, causing a grammatical tense clash with 'was preliminary'.",
+        D: "✕ Incorrect: 'defense' is a noun; the sentence requires a finite predicate verb to complete the independent clause."
+      },
+      id: {
+        A: "✓ Benar! 'defended' adalah kata kerja bentuk lampau (past simple) yang sesuai dengan klausa lampau ('was preliminary').",
+        B: "✕ Salah: 'defending' adalah bentuk partisip dan tidak dapat berfungsi sebagai predikat utama tanpa kata bantu (mis. 'were defending').",
+        C: "✕ Salah: 'defends' adalah present tense, menimbulkan ketidaksesuaian kala waktu dengan 'was preliminary'.",
+        D: "✕ Salah: 'defense' adalah kata benda; kalimat memerlukan kata kerja predikat untuk menyempurnakan klausa."
+      }
+    };
+>>>>>>> origin/main
 
     function applyLanguage(lang) {
       const validLang = lang === "id" ? "id" : "en";
+      currentLang = validLang;
       const dict = TRANSLATIONS[validLang];
 
       document.documentElement.lang = validLang;
@@ -618,9 +1056,114 @@
         btnId.setAttribute("aria-pressed", validLang === "id" ? "true" : "false");
       }
 
+      // Update active demo explanation if choice is selected
+      const selectedBtn = document.querySelector(".preview-opt-btn.is-correct, .preview-opt-btn.is-wrong");
+      if (selectedBtn) {
+        const choice = selectedBtn.getAttribute("data-choice");
+        const fbText = document.getElementById("demoFeedbackText");
+        if (fbText && DEMO_EXPLANATIONS[validLang] && DEMO_EXPLANATIONS[validLang][choice]) {
+          fbText.textContent = DEMO_EXPLANATIONS[validLang][choice];
+        }
+      }
+
       try {
         localStorage.setItem("practice_landing_lang", validLang);
       } catch (e) {}
+    }
+
+    // Initialize Interactive Demo Widget
+    function initDemoWidget() {
+      const blankTarget = document.getElementById("demoBlankTarget");
+      const feedbackBox = document.getElementById("demoFeedbackBox");
+      const feedbackText = document.getElementById("demoFeedbackText");
+      const optButtons = document.querySelectorAll(".preview-opt-btn");
+
+      const choices = {
+        A: { word: "defended", isCorrect: true },
+        B: { word: "defending", isCorrect: false },
+        C: { word: "defends", isCorrect: false },
+        D: { word: "defense", isCorrect: false }
+      };
+
+      optButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const choice = btn.getAttribute("data-choice");
+          const info = choices[choice];
+          if (!info) return;
+
+          // Update active button state
+          optButtons.forEach((b) => {
+            b.classList.remove("is-correct", "is-wrong");
+          });
+
+          if (info.isCorrect) {
+            btn.classList.add("is-correct");
+            feedbackBox.classList.remove("is-wrong");
+            feedbackBox.classList.add("is-correct");
+          } else {
+            btn.classList.add("is-wrong");
+            feedbackBox.classList.remove("is-correct");
+            feedbackBox.classList.add("is-wrong");
+          }
+
+          // Update blank display text
+          if (blankTarget) {
+            blankTarget.textContent = info.word;
+            blankTarget.style.color = info.isCorrect ? "#1b663b" : "#a12323";
+          }
+
+          // Show explanation
+          if (feedbackText && DEMO_EXPLANATIONS[currentLang]) {
+            feedbackText.textContent = DEMO_EXPLANATIONS[currentLang][choice];
+          }
+        });
+      });
+    }
+
+    // Initialize Quick Level Picker Scroll
+    function initLevelPicker() {
+      const pills = document.querySelectorAll(".level-picker-pill");
+      pills.forEach((pill) => {
+        pill.addEventListener("click", (e) => {
+          const targetLevel = pill.getAttribute("data-target-level");
+          const targetCard = document.querySelector(`.level-card[data-level="${targetLevel}"]`);
+          if (targetCard) {
+            e.preventDefault();
+            targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+            targetCard.style.outline = "3px solid var(--academic-blue)";
+            targetCard.style.outlineOffset = "4px";
+            setTimeout(() => {
+              targetCard.style.outline = "";
+              targetCard.style.outlineOffset = "";
+            }, 1800);
+          }
+        });
+      });
+    }
+
+    // Initialize Sticky Floating Action Bar
+    function initStickyBar() {
+      const stickyBar = document.getElementById("stickyCtaBar");
+      const dismissBtn = document.getElementById("dismissStickyBtn");
+      if (!stickyBar) return;
+
+      let isDismissed = false;
+
+      if (dismissBtn) {
+        dismissBtn.addEventListener("click", () => {
+          stickyBar.classList.remove("is-visible");
+          isDismissed = true;
+        });
+      }
+
+      window.addEventListener("scroll", () => {
+        if (isDismissed) return;
+        if (window.scrollY > 380) {
+          stickyBar.classList.add("is-visible");
+        } else {
+          stickyBar.classList.remove("is-visible");
+        }
+      }, { passive: true });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -640,6 +1183,9 @@
       } catch (e) {}
 
       applyLanguage(savedLang);
+      initDemoWidget();
+      initLevelPicker();
+      initStickyBar();
     });
   })();
 </script>
