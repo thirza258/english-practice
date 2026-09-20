@@ -11,14 +11,16 @@
   {% include "practice/course_header.html" %}
   <main id="main-content">
     <div class="course-intro">
-      <p class="academic-eyebrow">Lesson {{ lesson_number }} of {{ course.lessons|length }} · {{ lesson.minutes }} min{% if lesson_completed %} · Completed{% endif %}</p>
+      <p class="academic-eyebrow">Lesson {{ lesson_number }} of {{ course.lessons|length }} · {% if lesson.level %}{{ lesson.level }} · {% endif %}{% if lesson.skill %}{{ lesson.skill }} · {% endif %}{{ lesson.minutes }} min{% if lesson_completed %} · Completed{% else %} · +40 XP{% endif %}</p>
       <h1 class="book-title">{{ lesson.title }}</h1>
       <p class="book-subtitle">{{ lesson.goal }}</p>
     </div>
 
+    {% include "practice/learning_progress.html" %}
     <div class="course-layout">
       <div class="course-lesson-content">
         <article class="book-card lesson-reading" aria-label="Lesson explanation">
+          {% if lesson.technique %}<div class="lesson-technique"><h2>Your exam technique</h2><p>{{ lesson.technique }}</p></div>{% endif %}
           {% for section in lesson.sections %}
           <section>
             <h2>{{ section.title }}</h2>
@@ -39,13 +41,15 @@
           </section>
         </article>
 
-        <form method="post" class="book-card lesson-form" id="lesson-form" data-draft-key="english-course:{{ course.slug }}:{{ lesson.slug }}" data-min-words="{{ lesson.assignment.min_words }}">
+        {% if lesson.activity %}{% include "practice/lesson_activity.html" %}{% endif %}
+
+        <form method="post" class="book-card lesson-form" id="lesson-form" data-draft-key="{{ draft_key }}" data-min-words="{{ lesson.assignment.min_words }}">
           {% csrf_token %}
           <p id="practice-edits" class="course-note" hidden>You have unsubmitted changes. Check and save again to update your feedback.</p>
           {% if form.errors %}
           <div class="lesson-feedback needs-review" role="alert">
             <h2>Check your response</h2>
-            <p>Choose one of the listed answers and keep your writing within 10,000 characters. Your response is still in the form below.</p>
+            <p>Choose one of the listed answers and keep your response within 10,000 characters. Your response is still in the form below.</p>
             {{ form.non_field_errors }}
           </div>
           {% endif %}
@@ -54,9 +58,11 @@
           <section id="lesson-feedback" class="lesson-feedback {% if lesson_completed %}is-complete{% else %}needs-review{% endif %}" tabindex="-1" aria-labelledby="feedback-title">
             <h2 id="feedback-title">{% if lesson_completed %}Lesson complete{% else %}Your practice check{% endif %}</h2>
             <p><strong>{{ correct_count }} of {{ questions|length }} answers correct.</strong> Your response has been saved.</p>
+            {% if lesson_completed %}<p class="lesson-reward">✓ 40 lesson XP earned{% if is_complete %} · 100 course bonus XP earned{% endif %}. Your total: {{ learning.xp }} XP.</p>{% endif %}
             {% if correct_count != questions|length %}<p>Review the explanations below and try the questions again.</p>{% endif %}
-            {% if not writing_long_enough %}<p>Develop your writing to at least {{ lesson.assignment.min_words }} words. Your saved draft has {{ word_count }}.</p>{% endif %}
-            {% if not form.reviewed.value %}<p>Use the writing checklist, then tick the review box before saving again.</p>{% endif %}
+            {% if not writing_long_enough %}<p>Develop your response to at least {{ lesson.assignment.min_words }} words. Your saved draft has {{ word_count }}.</p>{% endif %}
+            {% if not form.reviewed.value %}<p>Use the checklist, then tick the review box before saving again.</p>{% endif %}
+            {% if form.practised_aloud and not form.practised_aloud.value %}<p>Practise the prompt aloud, then confirm your speaking practice below.</p>{% endif %}
             {% if lesson_completed %}<a class="course-inline-link" href="{% if is_complete %}{% url 'practice:course-detail' course.slug %}{% else %}{% url 'practice:course-lesson' course.slug next_lesson.slug %}{% endif %}">{% if is_complete %}View your completed course{% else %}Continue to the next unfinished lesson{% endif %} →</a>{% endif %}
           </section>
           {% endif %}
@@ -87,7 +93,7 @@
             <p class="academic-eyebrow">02 / Put it into words</p>
             <h2 id="assignment-title">Make it your own</h2>
             <p id="assignment-prompt">{{ lesson.assignment.prompt }}</p>
-            <p class="course-note" id="draft-help">Write at least {{ lesson.assignment.min_words }} words. Use the checklist and example to review your writing; this exercise does not give an automatic writing score.</p>
+            <p class="course-note" id="draft-help">Write at least {{ lesson.assignment.min_words }} words. Use the checklist and example to review your work; this exercise does not give an automatic IELTS score.</p>
             {{ form.draft.label_tag }}
             {{ form.draft.errors }}
             {{ form.draft }}
@@ -98,6 +104,7 @@
             <div class="assignment-checklist">
               <h3>Before you finish</h3>
               <ul>{% for item in lesson.assignment.checklist %}<li>{{ item }}</li>{% endfor %}</ul>
+              {% if form.practised_aloud %}<label class="course-review-check" for="{{ form.practised_aloud.id_for_label }}">{{ form.practised_aloud }} <span>{{ form.practised_aloud.label }}</span></label>{% endif %}
               <label class="course-review-check" for="{{ form.reviewed.id_for_label }}">{{ form.reviewed }} <span>{{ form.reviewed.label }}</span></label>
             </div>
             <details class="course-sample">
@@ -109,7 +116,7 @@
 
           <div class="course-submit">
             <button type="submit" class="primary-button">Check answers &amp; save</button>
-            <p class="course-note">Complete the lesson by answering both questions correctly, reaching the writing minimum, and reviewing your draft.</p>
+            <p class="course-note">Earn 40 XP once by answering all questions correctly, reaching the response minimum,{% if form.practised_aloud %} confirming your aloud practice,{% endif %} and reviewing your work.</p>
           </div>
           <noscript><p class="course-note">Select “Check answers &amp; save” before leaving to keep your work. The lesson works without JavaScript.</p></noscript>
         </form>

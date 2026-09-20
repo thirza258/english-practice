@@ -6,17 +6,19 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods
 
-from .courses import COURSES, Course, Lesson
+from .courses import ARCHIVED_COURSES, COURSES, Course, Lesson
+from .course_progress import resolved_progress
+from .gamification import PROGRESS_KEY, learning_summary, record_activity
+from .ielts_skill_courses import LESSON_ORIGINS, LESSON_REDIRECTS, LEVELS
 from .nlp import WORD_RE
 from .views import CANONICAL_HOST
 
 
-PROGRESS_KEY = "course_progress"
 MAX_DRAFT_LENGTH = 10000
 
 
 def _course(slug: str) -> Course:
-    for course in COURSES:
+    for course in (*COURSES, *ARCHIVED_COURSES):
         if course.slug == slug:
             return course
     raise Http404("Course not found.")
@@ -44,6 +46,10 @@ def _course_summary(course: Course, progress: dict) -> dict:
         "percent": round(completed / len(lessons) * 100),
         "is_complete": completed == len(lessons),
         "next_lesson": next_lesson,
+        "stages": [
+            {"name": name, "slug": slug, "lessons": [item for item in lessons if item["lesson"].level == name]}
+            for name, slug in LEVELS if course.skill
+        ],
     }
 
 
@@ -58,7 +64,7 @@ class LessonForm(forms.Form):
                 widget=forms.RadioSelect,
             )
         self.fields["draft"] = forms.CharField(
-            label="Your writing",
+            label=lesson.assignment.label,
             required=False,
             max_length=MAX_DRAFT_LENGTH,
             widget=forms.Textarea(attrs={
@@ -68,16 +74,26 @@ class LessonForm(forms.Form):
             }),
         )
         self.fields["reviewed"] = forms.BooleanField(
-            label="I have checked my writing against the checklist.",
+            label="I have checked my work against the checklist.",
             required=False,
         )
+        if lesson.activity and lesson.activity.kind == "speaking":
+            self.fields["practised_aloud"] = forms.BooleanField(
+                label="I practised the speaking prompt aloud.", required=False,
+            )
 
 
 @require_GET
 def course_list(request: HttpRequest):
-    progress = request.session.get(PROGRESS_KEY, {})
+    progress = resolved_progress(request.session.get(PROGRESS_KEY, {}))
+    summaries = [_course_summary(course, progress) for course in COURSES]
     return render(request, "practice/courses.html", {
-        "courses": [_course_summary(course, progress) for course in COURSES],
+        "courses": summaries,
+        "ielts_courses": [item for item in summaries if item["course"].is_ielts],
+        "other_courses": [item for item in summaries if not item["course"].is_ielts],
+        "course_count": len(COURSES),
+        "lesson_count": sum(len(course.lessons) for course in COURSES),
+        "learning": learning_summary(request.session),
         "canonical_url": f"{CANONICAL_HOST}{reverse('practice:courses')}",
     })
 
@@ -85,14 +101,22 @@ def course_list(request: HttpRequest):
 @require_GET
 def course_detail(request: HttpRequest, course_slug: str):
     course = _course(course_slug)
+    if course in ARCHIVED_COURSES:
+        return redirect(f"{reverse('practice:courses')}#ielts-courses", permanent=True)
     return render(request, "practice/course_detail.html", {
-        **_course_summary(course, request.session.get(PROGRESS_KEY, {})),
+        **_course_summary(course, resolved_progress(request.session.get(PROGRESS_KEY, {}))),
+        "practice_levels": LEVELS,
+        "learning": learning_summary(request.session),
         "canonical_url": f"{CANONICAL_HOST}{request.path}",
     })
 
 
 @require_http_methods(["GET", "POST"])
 def course_lesson(request: HttpRequest, course_slug: str, lesson_slug: str):
+    course_slug, lesson_slug = LESSON_REDIRECTS.get((course_slug, lesson_slug), (course_slug, lesson_slug))
+    canonical_path = reverse("practice:course-lesson", args=[course_slug, lesson_slug])
+    if request.method == "GET" and request.path != canonical_path:
+        return redirect(canonical_path, permanent=True)
     course = _course(course_slug)
     lesson_index = next(
         (i for i, lesson in enumerate(course.lessons) if lesson.slug == lesson_slug),
@@ -101,7 +125,7 @@ def course_lesson(request: HttpRequest, course_slug: str, lesson_slug: str):
     if lesson_index is None:
         raise Http404("Lesson not found in this course.")
     lesson = course.lessons[lesson_index]
-    progress = request.session.get(PROGRESS_KEY, {})
+    progress = resolved_progress(request.session.get(PROGRESS_KEY, {}))
     attempt = progress.get(course.slug, {}).get(lesson.slug, {})
     form = LessonForm(lesson, request.POST if request.method == "POST" else None, initial=attempt)
 
@@ -111,7 +135,10 @@ def course_lesson(request: HttpRequest, course_slug: str, lesson_slug: str):
                 for i, question in enumerate(lesson.questions))
             and len(WORD_RE.findall(form.cleaned_data["draft"])) >= lesson.assignment.min_words
             and form.cleaned_data["reviewed"]
+            and ("practised_aloud" not in form.fields or form.cleaned_data["practised_aloud"])
         )
+        if attempt_complete and not attempt.get("completed"):
+            record_activity(request.session)
         attempt = {
             **form.cleaned_data,
             "checked": True,
@@ -119,7 +146,7 @@ def course_lesson(request: HttpRequest, course_slug: str, lesson_slug: str):
         }
         progress.setdefault(course.slug, {})[lesson.slug] = attempt
         request.session[PROGRESS_KEY] = progress
-        return redirect(f"{request.path}#lesson-feedback")
+        return redirect(f"{canonical_path}#lesson-feedback")
 
     checked = bool(attempt.get("checked")) and not form.is_bound
     questions = []
@@ -148,5 +175,7 @@ def course_lesson(request: HttpRequest, course_slug: str, lesson_slug: str):
         "word_count": word_count,
         "writing_long_enough": word_count >= lesson.assignment.min_words,
         "lesson_completed": bool(attempt.get("completed")),
-        "canonical_url": f"{CANONICAL_HOST}{request.path}",
+        "learning": learning_summary(request.session),
+        "canonical_url": f"{CANONICAL_HOST}{canonical_path}",
+        "draft_key": "english-course:" + ":".join(LESSON_ORIGINS.get((course.slug, lesson.slug), (course.slug, lesson.slug))),
     }, status=400 if form.is_bound else 200)

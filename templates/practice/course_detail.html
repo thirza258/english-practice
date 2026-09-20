@@ -19,26 +19,38 @@
       </div>
     </div>
 
+    {% include "practice/learning_progress.html" %}
+    {% if course.is_ielts %}
+    <div class="ielts-course-note">
+      <p>Learn how to perform well in IELTS {{ course.skill }}. Start with the foundations, develop your technique, and refine it for a Band 8 target. These original lessons support preparation; completion is not an IELTS band assessment.</p>
+      {% if course.skill == 'Writing' %}<nav class="course-stage-links" aria-label="Extra writing practice">{% for label, value in practice_levels %}<a class="course-inline-link" href="{% url 'practice:test' %}?mode=writing&amp;level={{ value }}">{{ label }} writing practice →</a>{% endfor %}</nav>{% endif %}
+    </div>
+    {% endif %}
+    {% if course.strategy %}
+    <section class="book-card course-strategy" aria-labelledby="strategy-title">
+      <p class="academic-eyebrow">Your method for success</p>
+      <h2 id="strategy-title">How to approach IELTS {{ course.skill }}</h2>
+      <ol>{% for step in course.strategy %}<li><h3>{{ step.title }}</h3><p>{{ step.text }}</p></li>{% endfor %}</ol>
+    </section>
+    {% endif %}
     <div class="course-layout">
       <section class="book-card" aria-labelledby="curriculum-title">
         <h2 id="curriculum-title">Your learning path</h2>
-        <label for="course-progress">{% if is_complete %}Course complete!{% else %}Your progress{% endif %} {{ completed_count }} of {{ course.lessons|length }} lessons</label>
+        <label for="course-progress">{% if is_complete %}Course complete!{% else %}Your progress{% endif %} {{ completed_count }} of {{ course.lessons|length }} lessons · 100 XP course bonus</label>
         <progress id="course-progress" value="{{ completed_count }}" max="{{ course.lessons|length }}">{{ percent }}%</progress>
+        {% if stages %}
+        <nav class="course-stage-links" aria-label="Choose your starting level">{% for stage in stages %}<a class="secondary-button" href="#{{ stage.slug }}">{{ stage.name }}</a>{% endfor %}</nav>
+        {% for stage in stages %}
+        <section class="course-stage" id="{{ stage.slug }}" aria-labelledby="stage-{{ stage.slug }}">
+          <h3 id="stage-{{ stage.slug }}">{{ stage.name }}</h3>
+          <ol class="course-lesson-list" start="{{ stage.lessons.0.number }}">{% for item in stage.lessons %}{% include "practice/course_lesson_item.html" %}{% endfor %}</ol>
+        </section>
+        {% endfor %}
+        {% else %}
         <ol class="course-lesson-list">
-          {% for item in lessons %}
-          <li>
-            <a href="{% url 'practice:course-lesson' course.slug item.lesson.slug %}">
-              <span class="lesson-number" aria-hidden="true">{% if item.completed %}✓{% else %}{{ item.number }}{% endif %}</span>
-              <span>
-                <strong>{{ item.lesson.title }}</strong>
-                <span class="lesson-description">{{ item.lesson.goal }}</span>
-                <span class="course-note">{{ item.lesson.minutes }} min{% if item.completed %} · Completed{% endif %}</span>
-              </span>
-              <span aria-hidden="true">→</span>
-            </a>
-          </li>
-          {% endfor %}
+          {% for item in lessons %}{% include "practice/course_lesson_item.html" %}{% endfor %}
         </ol>
+        {% endif %}
       </section>
 
       <aside class="course-sidebar">

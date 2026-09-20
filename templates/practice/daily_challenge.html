@@ -1,0 +1,39 @@
+<section id="daily-challenge" class="book-card daily-challenge" aria-labelledby="daily-title">
+  <div class="daily-word">
+    <p class="academic-eyebrow" data-i18n="dailyEyebrow">A small win for today</p>
+    <h2 id="daily-title" data-i18n="dailyTitle">Your word of the day</h2>
+    <p class="daily-date">{{ daily_date|date:'j F Y' }} · <span data-i18n="dailyReset">New question at 00:00 UTC</span></p>
+    <div lang="en">
+      <p class="daily-vocabulary">{{ daily.word }} <span>{{ daily.word_class }}</span></p>
+      <p class="daily-meaning">{{ daily.meaning }}</p>
+      <blockquote>{{ daily.example }}</blockquote>
+    </div>
+  </div>
+  <div class="daily-action">
+    <p class="academic-eyebrow" data-i18n="dailyQuestionEyebrow">One question · 15 XP</p>
+    <h3 data-i18n="dailyActionTitle">Learn it. Try it. Keep your streak.</h3>
+    <p data-i18n="dailyIntro">Put today's word into practice with a quick question. A small step now adds up to stronger English.</p>
+    <details class="daily-question"{% if daily_checked or daily_error or daily_solved %} open{% endif %}>
+      <summary class="primary-button" data-i18n="{% if daily_solved %}dailyReview{% else %}dailyCta{% endif %}">{% if daily_solved %}Review today's question{% else %}Try today's question →{% endif %}</summary>
+      {% if daily_error %}<p class="daily-feedback needs-review" role="alert">{{ daily_error }}</p>{% endif %}
+      {% if daily_checked or daily_solved %}
+      <div class="daily-feedback {% if daily_solved %}is-complete{% else %}needs-review{% endif %}" role="status">
+        <strong data-i18n="{% if daily_solved %}dailySuccess{% else %}dailyRetry{% endif %}">{% if daily_solved %}Daily challenge complete · +15 XP{% else %}Keep going — try another answer{% endif %}</strong>
+        <p lang="en">{{ daily.question.explanation }}</p>
+        {% if daily_solved %}<p data-i18n="dailyReturn">Your points are saved. Come back tomorrow for a fresh question.</p>{% endif %}
+      </div>
+      {% endif %}
+      <form method="post" action="{% url 'practice:daily-challenge' %}#daily-challenge">
+        {% csrf_token %}
+        <input type="hidden" name="date" value="{{ daily_date|date:'Y-m-d' }}">
+        <fieldset class="lesson-question" lang="en"{% if daily_solved %} disabled{% endif %}>
+          <legend>{{ daily.question.prompt }}</legend>
+          {% for value, option in daily_options %}
+          <label class="course-option" for="daily-answer-{{ value }}"><input type="radio" id="daily-answer-{{ value }}" name="answer" value="{{ value }}" required{% if daily_selected == value %} checked{% endif %}><span>{{ option }}</span></label>
+          {% endfor %}
+        </fieldset>
+        {% if not daily_solved %}<button class="secondary-button" type="submit" data-i18n="dailyCheck">Check answer &amp; earn XP</button>{% else %}<a class="course-inline-link" href="{% url 'practice:courses' %}" data-i18n="dailyContinue">Keep learning with a course →</a>{% endif %}
+      </form>
+    </details>
+  </div>
+</section>

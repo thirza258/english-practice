@@ -1,0 +1,37 @@
+<section class="book-card lesson-activity" aria-labelledby="activity-title">
+  <p class="academic-eyebrow">{{ lesson.skill }} practice</p>
+  <h2 id="activity-title">{{ lesson.activity.title }}</h2>
+  {% if lesson.activity.map_rows %}
+  <table class="listening-map">
+    <caption>Campus map · North is at the top. Start at the south gate.</caption>
+    <thead><tr><th scope="col">West</th><th scope="col">Path</th><th scope="col">East</th></tr></thead>
+    <tbody>{% for west, path, east in lesson.activity.map_rows %}<tr><td>{{ west }}</td><td>{{ path }}</td><td>{{ east }}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% endif %}
+  {% if lesson.activity.kind == 'listening' %}
+    <p>Read the questions below, then listen once before checking the transcript. Replay afterwards to review a detail you missed.</p>
+    <div class="activity-controls" id="listening-controls" hidden>
+      <button class="primary-button" type="button" id="listen-play">Play practice audio</button>
+      <button class="secondary-button" type="button" id="listen-stop" disabled>Stop</button>
+      <label for="listen-speed">Speed</label>
+      <select id="listen-speed"><option value="0.8">Slower</option><option value="1" selected>Normal</option></select>
+    </div>
+    <p class="course-note" id="listening-status" role="status">To practise without audio playback, ask a partner to read the transcript aloud while you listen without looking.</p>
+    <p class="course-note">Playback uses your browser's synthetic voice for this original drill. For natural voices and full recordings, use the <a class="course-inline-link" href="https://ielts.org/take-a-test/preparation-resources/sample-test-questions/academic-test">official IELTS listening samples</a>.</p>
+    <details class="course-sample"><summary>Open the transcript</summary><div class="sample-writing">{{ lesson.activity.text|linebreaksbr }}</div></details>
+    {{ lesson.activity.text|json_script:'listening-text' }}
+  {% elif lesson.activity.kind == 'speaking' %}
+    <p class="speaking-prompt">{{ lesson.activity.text }}</p>
+    <div id="speaking-timer" class="speaking-timer" data-seconds="{{ lesson.activity.seconds }}" data-preparation="{{ lesson.activity.preparation_seconds }}" hidden>
+      <div><span id="timer-phase">Ready to practise</span><output id="timer-display" aria-label="Time remaining" aria-live="off">0:00</output></div>
+      <div class="activity-controls">
+        <button class="primary-button" id="timer-start" type="button">Start practice timer</button>
+        <button class="secondary-button" id="timer-reset" type="button">Reset</button>
+      </div>
+      <p class="course-note" id="timer-status" role="status">{% if lesson.activity.preparation_seconds %}{{ lesson.activity.preparation_seconds }} seconds to prepare, then {% endif %}{{ lesson.activity.seconds }} seconds to speak. You can pause or repeat this practice.</p>
+    </div>
+    <p class="course-note">Speak aloud and use the checklist to review yourself. The timer does not record or grade your voice. You can also use your own clock{% if lesson.activity.preparation_seconds %}: {{ lesson.activity.preparation_seconds }} seconds to prepare, then {{ lesson.activity.seconds }} seconds to speak{% else %}: {{ lesson.activity.seconds }} seconds to speak{% endif %}.</p>
+  {% else %}
+    <div class="practice-passage">{{ lesson.activity.text|linebreaks }}</div>
+  {% endif %}
+</section>

@@ -11,21 +11,88 @@ Open `/courses/` or choose **Explore English courses** on the home page.
 | English participles | `/courses/participles/` | Present and past forms, continuous/perfect/passive constructions, adjectives, and participle clauses |
 | Write better English | `/courses/better-writing/` | Clear sentences, developed paragraphs, connections, and revision |
 | Tell a better story | `/courses/storytelling/` | Character goals, plot, scenes and dialogue, and endings |
+| How to ace IELTS Speaking | `/courses/ielts-speaking/` | Answer development, Parts 1–3, fluency, pronunciation, paraphrasing, and follow-up questions |
+| How to ace IELTS Reading | `/courses/ielts-reading/` | Evidence, paraphrases, True/False/Not Given, headings, completion tasks, and timed accuracy |
+| How to ace IELTS Writing | `/courses/ielts-writing/` | Task analysis, Task 1 overviews and comparisons, Task 2 arguments, and precise revision |
+| How to ace IELTS Listening | `/courses/ielts-listening/` | Prediction, corrections, distractors, map directions, lecture structure, and recovery |
 
-Each course contains four lessons with original explanations, worked examples, two multiple-choice
-questions, a writing assignment, a review checklist, and a sample response. Writing and storytelling
+The three general English courses contain four lessons each; the four IELTS skill courses contain
+six lessons each, for **seven courses and thirty-six lessons**. Each lesson has original explanations,
+worked examples, two multiple-choice questions, a practical assignment, a review checklist,
+and a sample response. Writing and storytelling
 lessons build towards a final piece. Lessons can also be opened directly and revisited in any order.
 
 **Check answers & save** stores a submitted draft and its answers in the existing Django database
 session, separately from diagnostic tests. A lesson is complete after both answers are correct,
-the writing minimum is met, and the learner confirms the self-review. These completion checks do
-not grade the quality or relevance of free writing. Already completed lessons remain complete
+the response minimum is met, and the learner confirms the self-review. Speaking lessons also require
+confirmation that the prompt was practised aloud. These completion checks do not grade the quality
+or relevance of free writing. Already completed lessons remain complete
 when revisited. Progress belongs to the browser session and expires with it; there is no account sync.
 
 Draft text also autosaves on the current device using local storage when available. With JavaScript
 or local storage disabled, submitting the form still saves work. Course content and exercises work
 without an API key and require no additional migrations or dependencies. Edit `practice/courses.py`
-to maintain the curriculum, keeping course and lesson slugs stable so saved progress still matches.
+to maintain general English content. `practice/ielts_skill_courses.py` assembles the four IELTS
+courses, using the existing lesson bank in `practice/ielts_courses.py` and the additional technique
+lessons in `practice/ielts_techniques.py`. Shared types
+are in `practice/course_types.py`. Keep course and lesson slugs stable so saved progress still matches.
+
+### IELTS preparation
+
+The landing page and catalogue lead with **four dedicated courses on how to ace Speaking, Reading,
+Writing, and Listening**. Each has two beginner lessons, two intermediate lessons, and two lessons
+for a Band 8 target. A course overview teaches a reusable four-step method; each lesson explains
+an exam technique, demonstrates it, identifies common mistakes, and then provides practice.
+
+Reading and Writing focus on **IELTS Academic**. Speaking and Listening also apply to General
+Training. Beginner writing drills are deliberately shorter than exam tasks; intermediate and
+Band 8 reports require at least 150 words and essays at least 250. The Writing course links to
+additional writing practice at all three levels.
+
+Listening drills include original scripts, browser speech synthesis with a speed selector, and
+transcripts for review. The directions lesson includes a labelled campus map. An English browser
+voice is required for playback. Without it or without
+JavaScript, learners can ask a partner to read the transcript or follow the official IELTS audio
+links. Speaking prompts include a pauseable timer, with preparation time for the long turn. The
+timer uses elapsed time so background-tab throttling does not extend a turn; an ordinary clock
+works as a fallback. Audio is not recorded and speaking is self-reviewed.
+
+These are focused practice courses, not full mock tests. Completion and XP do not assess or certify
+an IELTS band. Format and assessment guidance is linked to official IELTS resources in each course.
+
+Previous level-based course URLs redirect to the skill-course catalogue, and their skill lessons
+redirect to the corresponding new lesson. Existing study-plan lessons remain accessible by their
+old URLs. `practice/course_progress.py` carries saved answers and completion into the new layout,
+while local draft storage keeps the original key. Lesson XP is deduplicated across old and new
+URLs, and previously earned course bonuses and study-plan XP are retained. No migration is required.
+
+### Daily challenge and gamification
+
+The landing page features a **word of the day** with a definition, example, and a **question of the
+day** CTA. A deterministic bank of 14 original challenges rotates at **00:00 UTC**, consistently for
+all visitors. The form works without JavaScript and validates both the selected option and the date
+on the server. A form left open across midnight is refreshed with the current challenge instead of
+awarding points for an old one. Wrong answers show feedback and can be retried.
+
+The landing page and course pages show XP levels, current and best streaks, a seven-day activity
+strip, and four unlockable badges. Rewards are:
+
+- **40 XP** per newly completed lesson.
+- **100 XP** once all lessons in a course are complete.
+- **15 XP** per correctly completed daily challenge, at most once per UTC date.
+- A new activity level every **200 XP**. These levels describe practice activity, not English proficiency.
+
+New lesson completions and daily successes count towards a streak. Multiple completions on one
+day count as one active day; a streak stays available through the following day and resets after a
+missed day. Repeating a completed lesson does not award XP or a new streak day. Course XP is derived
+from existing saved completion records, so earlier work receives credit without fabricated dates.
+Badges recognise a first completion, seven consecutive days, a complete course, and practice in all
+four IELTS skills.
+
+Rewards and daily responses use the existing database-backed browser session, separate from
+diagnostic test state. They survive reloads and server restarts while the session is valid, but do
+not sync across browsers or accounts. Curriculum and reward changes need no migrations or API keys.
+Maintain daily content in `practice/daily_challenges.py` and reward rules in `practice/gamification.py`.
 
 ## Practice modes
 

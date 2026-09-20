@@ -21,6 +21,7 @@ class CourseTests(TestCase):
             **{f"question_{i}": str(question.correct) for i, question in enumerate(lesson.questions)},
             "draft": lesson.assignment.sample,
             "reviewed": "on",
+            **({"practised_aloud": "on"} if lesson.activity and lesson.activity.kind == "speaking" else {}),
         }
 
     def test_courses_are_discoverable_and_every_lesson_renders(self):
@@ -114,7 +115,7 @@ class CourseTests(TestCase):
         self.assertEqual(response.context["form"]["draft"].value(), revised)
         self.assertEqual(response.context["completed_count"], 1)
 
-    def test_course_completion_across_all_three_courses(self):
+    def test_course_completion_across_all_courses(self):
         for course in COURSES:
             for lesson in course.lessons:
                 url = reverse("practice:course-lesson", args=[course.slug, lesson.slug])

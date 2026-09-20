@@ -1,10 +1,10 @@
 {% extends "practice/base.html" %}
 {% load static %}
 
-{% block title %}English Courses & Practice | Grammar, Writing & Storytelling{% endblock %}
-{% block meta_description %}Learn English participles, improve your writing, and tell better stories with guided courses. Practise grammar, paragraphs, and IELTS writing with instant feedback.{% endblock %}
-{% block og_title %}English Courses & Practice | Grammar, Writing & Storytelling{% endblock %}
-{% block og_description %}Guided courses on participles, clear writing, and storytelling, plus grammar and IELTS writing practice.{% endblock %}
+{% block title %}English & IELTS Practice | Beginner to Band 8{% endblock %}
+{% block meta_description %}Learn how to ace IELTS Speaking, Reading, Writing, and Listening. Four courses teach techniques and practice from beginner to Band 8, with XP and a daily challenge.{% endblock %}
+{% block og_title %}English & IELTS Practice | Beginner to Band 8{% endblock %}
+{% block og_description %}IELTS preparation for all four skills, guided English courses, and a daily vocabulary challenge. Turn small steps into a learning habit.{% endblock %}
 {% block body_class %}landing-body{% endblock %}
 {% block head_extra %}
 <script type="application/ld+json">
@@ -12,7 +12,7 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "English Practice Diagnostic",
-    "description": "Guided English courses on participles, writing, and storytelling, with sentence diagnostics, paragraph exercises, and IELTS writing practice.",
+    "description": "English and IELTS courses from beginner to Band 8 preparation, with listening, reading, speaking, writing, and daily vocabulary challenges.",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Web",
     "url": "{{ canonical_url }}"
@@ -173,11 +173,33 @@
   </section>
 
   <main class="landing-layout">
-    <!-- Courses Section -->
+    {% include "practice/daily_challenge.html" %}
+    {% include "practice/learning_progress.html" %}
+
+    <section id="ielts-courses" class="book-card landing-courses landing-ielts" aria-labelledby="ielts-title">
+      <div class="section-heading">
+        <p class="academic-eyebrow" data-i18n="ieltsEyebrow">Your next chapter</p>
+        <h2 id="ielts-title" data-i18n="ieltsTitle">How to ace each IELTS skill.</h2>
+        <p data-i18n="ieltsIntro">Choose speaking, reading, writing, or listening. Learn the techniques, avoid common mistakes, and practise at beginner, intermediate, and Band 8 levels within each course.</p>
+      </div>
+      <div class="course-grid ielts-grid">
+        {% for course in ielts_courses %}
+        <article class="course-card course-accent-{{ course.slug }}">
+          <div class="mode-badge-row"><span class="academic-badge" data-i18n="{{ course.slug }}-skill">{{ course.skill }}</span><span class="mode-meta">{{ course.lessons|length }} <span data-i18n="lessonsLabel">lessons</span></span></div>
+          <h3 data-i18n="{{ course.slug }}-title">{{ course.title }}</h3>
+          <p data-i18n="{{ course.slug }}-desc">{{ course.description }}</p>
+          <p class="ielts-skill-list" data-i18n="ieltsLevels">Beginner → Intermediate → Band 8 target</p>
+          <a class="secondary-button" href="{% url 'practice:course-detail' course.slug %}" data-i18n="{{ course.slug }}-cta">Learn how to ace {{ course.skill }} →</a>
+        </article>
+        {% endfor %}
+      </div>
+      <p class="course-note ielts-note" data-i18n="ieltsNote">Original IELTS Academic preparation in English. Short drills build skills; course completion and XP do not certify an IELTS band.</p>
+    </section>
+
     <section class="book-card landing-courses" aria-labelledby="courses-title">
       <div class="section-heading">
         <p class="academic-eyebrow" data-i18n="coursesEyebrow">Learn at your own pace</p>
-        <h2 id="courses-title" data-i18n="coursesTitle">Three courses. Skills you can use.</h2>
+        <h2 id="courses-title" data-i18n="coursesTitle">Build stronger everyday English.</h2>
         <p data-i18n="coursesIntro">Short lessons in English, worked examples, and hands-on exercises. Save your progress as you learn.</p>
       </div>
       <div class="course-grid">
@@ -566,17 +588,17 @@
   (() => {
     const TRANSLATIONS = {
       en: {
-        pageTitle: "English Courses & Practice | Grammar, Writing & Storytelling",
+        pageTitle: "English & IELTS Practice | Beginner to Band 8",
         metaDescription: "Learn English participles, improve your writing, and tell better stories with guided courses and practice tests.",
         siteName: "English Practice",
         footerHome: "Home",
         langLabel: "Language / Bahasa:",
-        mainTitle: "Learn English. Write with confidence.",
-        subtitle: "Learn participles such as running and written, write clearer English, and tell better stories. Build your skills with guided courses and practise with instant feedback.",
+        mainTitle: "Better English. One day at a time.",
+        subtitle: "From your first confident sentence to IELTS Band 8 preparation. Build listening, reading, speaking, and writing skills with guided courses and a daily practice habit.",
         coursesNav: "English courses",
         browseCoursesBtn: "Explore English courses",
         coursesEyebrow: "Learn at your own pace",
-        coursesTitle: "Three courses. Skills you can use.",
+        coursesTitle: "Build stronger everyday English.",
         coursesIntro: "Short lessons in English, worked examples, and hands-on exercises. Save your progress as you learn.",
         participlesMeta: "Grammar · 4 lessons",
         participlesTitle: "English participles",
@@ -737,17 +759,17 @@
         footerText: "English courses and practice — learn, write, and tell your story."
       },
       id: {
-        pageTitle: "Kursus & Latihan Bahasa Inggris | Tata Bahasa, Menulis & Bercerita",
+        pageTitle: "Latihan Bahasa Inggris & IELTS | Pemula hingga Band 8",
         metaDescription: "Pelajari partisip bahasa Inggris, tingkatkan tulisan, dan buat cerita yang lebih baik melalui kursus dan latihan.",
         siteName: "Latihan Bahasa Inggris",
         footerHome: "Beranda",
         langLabel: "Bahasa / Language:",
-        mainTitle: "Belajar bahasa Inggris. Menulis dengan percaya diri.",
-        subtitle: "Pelajari partisip seperti running dan written, tulis bahasa Inggris dengan lebih jelas, dan buat cerita yang lebih menarik. Asah kemampuan melalui kursus terpandu dan latihan dengan umpan balik langsung.",
+        mainTitle: "Bahasa Inggris lebih baik. Selangkah setiap hari.",
+        subtitle: "Dari kalimat pertama yang percaya diri hingga persiapan IELTS Band 8. Asah kemampuan menyimak, membaca, berbicara, dan menulis melalui kursus terpandu dan kebiasaan latihan harian.",
         coursesNav: "Kursus bahasa Inggris",
         browseCoursesBtn: "Jelajahi kursus bahasa Inggris",
         coursesEyebrow: "Belajar sesuai ritme Anda",
-        coursesTitle: "Tiga kursus. Keterampilan yang bisa digunakan.",
+        coursesTitle: "Perkuat bahasa Inggris sehari-hari.",
         coursesIntro: "Pelajaran singkat dalam bahasa Inggris, contoh yang dijelaskan, dan latihan langsung. Simpan progres sambil belajar.",
         participlesMeta: "Tata bahasa · 4 pelajaran",
         participlesTitle: "Partisip bahasa Inggris",
@@ -909,6 +931,70 @@
       }
     };
 
+    Object.assign(TRANSLATIONS.en, {
+      dailyHeroCta: "Try today's challenge · 15 XP", practiceTestsCta: "Explore practice tests",
+      ieltsEyebrow: "Your next chapter", ieltsTitle: "How to ace each IELTS skill.",
+      ieltsIntro: "Choose speaking, reading, writing, or listening. Learn the techniques, avoid common mistakes, and practise at beginner, intermediate, and Band 8 levels within each course.",
+      ieltsLevels: "Beginner → Intermediate → Band 8 target", lessonsLabel: "lessons",
+      ieltsNote: "Original IELTS Academic preparation in English. Short drills build skills; course completion and XP do not certify an IELTS band.",
+      "ielts-speaking-skill": "Speaking", "ielts-reading-skill": "Reading", "ielts-writing-skill": "Writing", "ielts-listening-skill": "Listening",
+      "ielts-speaking-title": "How to ace IELTS Speaking", "ielts-reading-title": "How to ace IELTS Reading", "ielts-writing-title": "How to ace IELTS Writing", "ielts-listening-title": "How to ace IELTS Listening",
+      "ielts-speaking-desc": "Learn how to give developed answers, speak clearly, handle all three parts, and respond naturally to follow-up questions.",
+      "ielts-reading-desc": "Learn how to locate evidence, recognise paraphrases, choose headings, handle True/False/Not Given, and protect accuracy under time pressure.",
+      "ielts-writing-desc": "Learn how to plan Task 1 reports and Task 2 essays, select key features, develop arguments, and revise against the writing criteria.",
+      "ielts-listening-desc": "Learn how to predict answers, follow corrections and maps, reject distractors, and keep up with lectures without losing your place.",
+      "ielts-speaking-cta": "Learn how to ace Speaking →", "ielts-reading-cta": "Learn how to ace Reading →", "ielts-writing-cta": "Learn how to ace Writing →", "ielts-listening-cta": "Learn how to ace Listening →",
+      dailyEyebrow: "A small win for today", dailyTitle: "Your word of the day", dailyReset: "New question at 00:00 UTC",
+      dailyQuestionEyebrow: "One question · 15 XP", dailyActionTitle: "Learn it. Try it. Keep your streak.",
+      dailyIntro: "Put today's word into practice with a quick question. A small step now adds up to stronger English.",
+      dailyCta: "Try today's question →", dailyReview: "Review today's question", dailySuccess: "Daily challenge complete · +15 XP",
+      dailyRetry: "Keep going — try another answer", dailyReturn: "Your points are saved. Come back tomorrow for a fresh question.",
+      dailyCheck: "Check answer & earn XP", dailyContinue: "Keep learning with a course →",
+      progressEyebrow: "Every little practice counts", progressLevel: "Level", progressNext: "XP to your next level",
+      progressStreak: "day streak", progressBest: "Best:", progressDays: "days", progressLessons: "lessons complete",
+      progressChallenges: "daily challenges solved", progressCta: "Make today count →", progressToday: "✓ You practised today",
+      progressDay: "day", progressLesson: "lesson complete", progressChallenge: "daily challenge solved",
+      progressBadges: "Your badges & how to earn XP",
+      badgeEarned: "Earned", badgeLocked: "Keep going",
+      badge1Title: "First step", badge1Desc: "Complete your first lesson or daily challenge.",
+      badge2Title: "Week in motion", badge2Desc: "Practise on seven consecutive UTC days.",
+      badge3Title: "Course finisher", badge3Desc: "Complete every lesson in any course.",
+      badge4Title: "Four-skill explorer", badge4Desc: "Complete an IELTS lesson in listening, reading, speaking, and writing.",
+      progressRules: "Earn 40 XP for each new lesson, 100 bonus XP for finishing a course, and 15 XP for solving the daily question. Finish a new lesson or daily question to build your streak. Days reset at 00:00 UTC. XP levels track practice, not IELTS bands.",
+      progressStorage: "Progress belongs to this browser session and expires with it. Keep using the same browser to continue your journey."
+    });
+    Object.assign(TRANSLATIONS.id, {
+      dailyHeroCta: "Coba tantangan hari ini · 15 XP", practiceTestsCta: "Jelajahi tes latihan",
+      ieltsEyebrow: "Langkah Anda berikutnya", ieltsTitle: "Cara meraih hasil terbaik di setiap keterampilan IELTS.",
+      ieltsIntro: "Pilih berbicara, membaca, menulis, atau menyimak. Pelajari teknik, hindari kesalahan umum, dan berlatih dari pemula, menengah, hingga target Band 8 di setiap kursus.",
+      ieltsLevels: "Pemula → Menengah → Target Band 8", lessonsLabel: "pelajaran",
+      ieltsNote: "Materi persiapan IELTS Academic orisinal dalam bahasa Inggris. Latihan singkat membangun kemampuan; penyelesaian kursus dan XP bukan sertifikasi band IELTS.",
+      "ielts-speaking-skill": "Berbicara", "ielts-reading-skill": "Membaca", "ielts-writing-skill": "Menulis", "ielts-listening-skill": "Menyimak",
+      "ielts-speaking-title": "Cara unggul dalam IELTS Speaking", "ielts-reading-title": "Cara unggul dalam IELTS Reading", "ielts-writing-title": "Cara unggul dalam IELTS Writing", "ielts-listening-title": "Cara unggul dalam IELTS Listening",
+      "ielts-speaking-desc": "Pelajari cara mengembangkan jawaban, berbicara jelas, menghadapi ketiga bagian tes, dan menjawab pertanyaan lanjutan secara alami.",
+      "ielts-reading-desc": "Pelajari cara menemukan bukti, mengenali parafrasa, memilih judul, menjawab True/False/Not Given, dan menjaga akurasi saat waktu terbatas.",
+      "ielts-writing-desc": "Pelajari cara merencanakan laporan Task 1 dan esai Task 2, memilih fitur utama, mengembangkan argumen, dan merevisi sesuai kriteria penilaian.",
+      "ielts-listening-desc": "Pelajari cara memprediksi jawaban, mengikuti koreksi dan peta, menghindari pengecoh, serta mengikuti kuliah tanpa kehilangan alur.",
+      "ielts-speaking-cta": "Pelajari teknik Speaking →", "ielts-reading-cta": "Pelajari teknik Reading →", "ielts-writing-cta": "Pelajari teknik Writing →", "ielts-listening-cta": "Pelajari teknik Listening →",
+      dailyEyebrow: "Pencapaian kecil hari ini", dailyTitle: "Kosakata hari ini", dailyReset: "Soal baru pukul 00.00 UTC",
+      dailyQuestionEyebrow: "Satu soal · 15 XP", dailyActionTitle: "Pelajari. Coba. Jaga streak Anda.",
+      dailyIntro: "Gunakan kosakata hari ini dalam soal singkat. Langkah kecil sekarang membangun bahasa Inggris yang lebih baik.",
+      dailyCta: "Coba soal hari ini →", dailyReview: "Tinjau soal hari ini", dailySuccess: "Tantangan harian selesai · +15 XP",
+      dailyRetry: "Terus mencoba — pilih jawaban lain", dailyReturn: "Poin Anda tersimpan. Kembali besok untuk soal baru.",
+      dailyCheck: "Periksa jawaban & dapatkan XP", dailyContinue: "Lanjutkan belajar melalui kursus →",
+      progressEyebrow: "Setiap latihan berarti", progressLevel: "Level", progressNext: "XP menuju level berikutnya",
+      progressStreak: "hari berturut-turut", progressBest: "Terbaik:", progressDays: "hari", progressLessons: "pelajaran selesai",
+      progressChallenges: "tantangan harian selesai", progressCta: "Mulai latihan hari ini →", progressToday: "✓ Anda sudah berlatih hari ini",
+      progressDay: "hari", progressLesson: "pelajaran selesai", progressChallenge: "tantangan harian selesai",
+      progressBadges: "Lencana Anda & cara mendapatkan XP",
+      badgeEarned: "Diraih", badgeLocked: "Terus belajar",
+      badge1Title: "Langkah pertama", badge1Desc: "Selesaikan pelajaran atau tantangan harian pertama Anda.",
+      badge2Title: "Seminggu aktif", badge2Desc: "Berlatih selama tujuh hari UTC berturut-turut.",
+      badge3Title: "Penuntas kursus", badge3Desc: "Selesaikan setiap pelajaran dalam satu kursus.",
+      badge4Title: "Penjelajah empat keterampilan", badge4Desc: "Selesaikan pelajaran IELTS untuk menyimak, membaca, berbicara, dan menulis.",
+      progressRules: "Dapatkan 40 XP untuk setiap pelajaran baru, bonus 100 XP setelah menuntaskan kursus, dan 15 XP untuk menjawab soal harian dengan benar. Selesaikan pelajaran baru atau soal harian untuk menjaga streak. Hari berganti pukul 00.00 UTC. Level XP menunjukkan latihan, bukan band IELTS.",
+      progressStorage: "Progres tersimpan dalam sesi browser ini dan berakhir bersama sesi tersebut. Gunakan browser yang sama untuk melanjutkan."
+    });
     let currentLang = "en";
 
     const DEMO_EXPLANATIONS = {

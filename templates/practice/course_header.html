@@ -4,6 +4,7 @@
     <nav class="course-nav" aria-label="Main navigation">
       <a href="{% url 'practice:courses' %}"{% if not course %} aria-current="page"{% endif %}>Courses</a>
       <a href="{% url 'practice:landing' %}#practice-modes">Practice tests</a>
+      <a href="{% url 'practice:landing' %}#daily-challenge">Daily challenge</a>
     </nav>
   </div>
   {% if course %}
