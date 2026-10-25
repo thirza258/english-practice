@@ -58,11 +58,11 @@ class PracticePageTests(TestCase):
         self.assertContains(response, 'href="https://english.nevatal.id/"')
         self.assertContains(response, 'content="https://english.nevatal.id/"')
 
-    def test_test_page_is_noindex_and_has_quiz_controls_and_level_pill(self) -> None:
+    def test_test_page_is_indexable_and_has_quiz_controls_and_level_pill(self) -> None:
         response = self.client.get(reverse("practice:test"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'content="noindex,nofollow"', html=False)
+        self.assertContains(response, 'content="index,follow"', html=False)
         self.assertContains(response, "Submit Answer")
         self.assertContains(response, "modePill")
         self.assertContains(response, "levelPill")
