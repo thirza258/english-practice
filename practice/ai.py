@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import random
 import time
 from typing import Any, Callable, TypeVar
 
@@ -23,6 +24,116 @@ OPENROUTER_BASE_URL = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openai/gpt-4o-mini")
 OPENROUTER_APP_TITLE = os.environ.get("OPENROUTER_APP_TITLE", "English Practice Diagnostic")
 OPENROUTER_REFERER = os.environ.get("OPENROUTER_REFERER")
+
+OPENROUTER_FREE_MODELS_ENV = os.environ.get("OPENROUTER_FREE_MODELS")
+if OPENROUTER_FREE_MODELS_ENV:
+    DEFAULT_FREE_MODELS: list[str] = [
+        m.strip() for m in OPENROUTER_FREE_MODELS_ENV.split(",") if m.strip()
+    ]
+else:
+    DEFAULT_FREE_MODELS: list[str] = [
+        "openrouter/free",
+        "google/gemma-4-26b-a4b-it:free",
+        "google/gemma-4-31b-it:free",
+        "nvidia/nemotron-3.5-lightning:free",
+        "nvidia/nemotron-3.5-super-vl:free",
+        "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "cohere/north-mini-code:free",
+        "liquid/lfm-2.5-2.6b:free",
+        "recursive/flint-v1.0:free",
+        "dots-studio/dots-3-note-preview:free",
+    ]
+
+
+def get_shuffled_free_models(exclude: str | None = None) -> list[str]:
+    """Return a randomly shuffled list of free models, excluding the given model if present."""
+    candidates = [m for m in DEFAULT_FREE_MODELS if m != exclude]
+    random.shuffle(candidates)
+    return candidates
+
+
+def is_credit_exhausted_error(exc: Exception) -> bool:
+    """Check if an error from OpenRouter indicates insufficient credits / credit limit."""
+    status_code = getattr(exc, "status_code", None)
+    if status_code == 402:
+        return True
+    response = getattr(exc, "response", None)
+    if response is not None and getattr(response, "status_code", None) == 402:
+        return True
+    body = getattr(exc, "body", None)
+    if isinstance(body, dict):
+        err = body.get("error", {})
+        if isinstance(err, dict) and err.get("code") == 402:
+            return True
+        if "credit" in str(body).lower():
+            return True
+    msg = str(exc).lower()
+    return any(
+        phrase in msg
+        for phrase in (
+            "402",
+            "insufficient credit",
+            "insufficient credits",
+            "payment required",
+            "credit limit",
+            "credits is over",
+            "credits are over",
+            "out of credits",
+            "balance is too low",
+            "exceeded your current quota",
+        )
+    )
+
+
+def _clean_json_content(content: str) -> str:
+    """Strip markdown code fences if returned by the model."""
+    cleaned = content.strip()
+    if cleaned.startswith("```"):
+        lines = cleaned.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        cleaned = "\n".join(lines).strip()
+    return cleaned
+
+
+def chat_completion_with_fallback(client: OpenAI, **kwargs: Any) -> tuple[Any, str]:
+    """Execute chat completion with fallback to shuffled free models if credits are over."""
+    primary_model = kwargs.get("model", OPENROUTER_MODEL)
+    try:
+        response = client.chat.completions.create(**kwargs)
+        return response, primary_model
+    except Exception as exc:
+        if not is_credit_exhausted_error(exc):
+            raise
+        logger.warning(
+            "OpenRouter credits exhausted for model %s (%s). Falling back to shuffled free models.",
+            primary_model,
+            exc,
+        )
+        fallback_models = get_shuffled_free_models(exclude=primary_model)
+        last_error = exc
+        for fallback_model in fallback_models:
+            try:
+                call_kwargs = dict(kwargs)
+                call_kwargs["model"] = fallback_model
+                response = client.chat.completions.create(**call_kwargs)
+                logger.info(
+                    "OpenRouter free model fallback succeeded with %s",
+                    fallback_model,
+                )
+                return response, fallback_model
+            except Exception as fb_exc:
+                logger.warning(
+                    "OpenRouter free fallback model %s failed: %s",
+                    fallback_model,
+                    fb_exc,
+                )
+                last_error = fb_exc
+                continue
+        raise last_error
 
 
 def _generate_with_retries(generate_fn: Callable[[], T], label: str) -> T:
@@ -258,14 +369,15 @@ def generate_question_blueprints(total_questions: int, level: str = "all") -> li
     def _attempt() -> list[QuestionBlueprint]:
         client = _client()
         normalized_level = level.lower() if level.lower() in VALID_LEVELS else "all"
-        response = client.chat.completions.create(
+        response, _ = chat_completion_with_fallback(
+            client,
             model=OPENROUTER_MODEL,
             messages=_prompt(total_questions, normalized_level),
             temperature=0.8,
             response_format={"type": "json_object"},
         )
 
-        content = response.choices[0].message.content or "{}"
+        content = _clean_json_content(response.choices[0].message.content or "{}")
         data = json.loads(content)
         questions = data.get("questions")
         if not isinstance(questions, list):
@@ -429,14 +541,15 @@ def generate_paragraph_blueprints(count: int, level: str = "all") -> list[Paragr
     def _attempt() -> list[ParagraphBlueprint]:
         client = _client()
         normalized_level = level.lower() if level.lower() in VALID_LEVELS else "all"
-        response = client.chat.completions.create(
+        response, _ = chat_completion_with_fallback(
+            client,
             model=OPENROUTER_MODEL,
             messages=_paragraph_prompt(count, normalized_level),
             temperature=0.8,
             response_format={"type": "json_object"},
         )
 
-        content = response.choices[0].message.content or "{}"
+        content = _clean_json_content(response.choices[0].message.content or "{}")
         data = json.loads(content)
         paragraphs = data.get("paragraphs")
         if not isinstance(paragraphs, list):
@@ -626,7 +739,8 @@ def evaluate_writing(
     """
 
     client = _client()
-    response = client.chat.completions.create(
+    response, used_model = chat_completion_with_fallback(
+        client,
         model=WRITING_MODEL,
         messages=_writing_prompt(
             essay=essay,
@@ -642,7 +756,8 @@ def evaluate_writing(
         timeout=WRITING_AI_TIMEOUT,
     )
 
-    report = _validate_writing_report(json.loads(response.choices[0].message.content or "{}"))
+    content = _clean_json_content(response.choices[0].message.content or "{}")
+    report = _validate_writing_report(json.loads(content))
 
     usage = getattr(response, "usage", None)
     report["usage"] = {
@@ -650,6 +765,6 @@ def evaluate_writing(
         "completion_tokens": getattr(usage, "completion_tokens", None),
         "total_tokens": getattr(usage, "total_tokens", None),
     }
-    report["model"] = WRITING_MODEL
+    report["model"] = used_model
     return report
 

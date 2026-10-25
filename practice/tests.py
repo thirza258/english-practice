@@ -1327,3 +1327,65 @@ class WritingExaminerMergeTests(TestCase):
         evaluator.assert_not_called()
         self.assertEqual(feedback["assessed_by"], "measured")
         self.assertTrue(any("scored locally only" in note for note in feedback["notes"]))
+
+
+class OpenRouterFallbackTests(TestCase):
+    def test_is_credit_exhausted_error(self) -> None:
+        from practice.ai import is_credit_exhausted_error
+
+        # Status code 402
+        err402 = Exception("Payment Required")
+        err402.status_code = 402  # type: ignore[attr-defined]
+        self.assertTrue(is_credit_exhausted_error(err402))
+
+        # Error message with insufficient credits
+        err_msg = RuntimeError("OpenRouter error: You have insufficient credits to run this model")
+        self.assertTrue(is_credit_exhausted_error(err_msg))
+
+        # Error message with out of credits
+        self.assertTrue(is_credit_exhausted_error(Exception("credits is over")))
+
+        # Standard unrelated error
+        self.assertFalse(is_credit_exhausted_error(RuntimeError("connection reset by peer")))
+
+    def test_chat_completion_with_fallback_on_credit_exhaustion(self) -> None:
+        from practice.ai import chat_completion_with_fallback, DEFAULT_FREE_MODELS
+
+        mock_client = mock.MagicMock()
+        primary_err = Exception("Insufficient credits")
+        primary_err.status_code = 402  # type: ignore[attr-defined]
+
+        mock_success_response = mock.MagicMock()
+        mock_success_response.choices = [mock.MagicMock()]
+        mock_success_response.choices[0].message.content = '{"ok": true}'
+
+        # Primary model fails with 402, first free model succeeds
+        mock_client.chat.completions.create.side_effect = [
+            primary_err,
+            mock_success_response,
+        ]
+
+        resp, used_model = chat_completion_with_fallback(
+            mock_client,
+            model="openai/gpt-4o-mini",
+            messages=[{"role": "user", "content": "hi"}],
+        )
+
+        self.assertEqual(resp, mock_success_response)
+        self.assertIn(used_model, DEFAULT_FREE_MODELS)
+        self.assertNotEqual(used_model, "openai/gpt-4o-mini")
+        self.assertEqual(mock_client.chat.completions.create.call_count, 2)
+
+    def test_chat_completion_propagates_non_credit_error(self) -> None:
+        from practice.ai import chat_completion_with_fallback
+
+        mock_client = mock.MagicMock()
+        mock_client.chat.completions.create.side_effect = ValueError("Invalid prompt format")
+
+        with self.assertRaises(ValueError):
+            chat_completion_with_fallback(
+                mock_client,
+                model="openai/gpt-4o-mini",
+                messages=[{"role": "user", "content": "hi"}],
+            )
+        self.assertEqual(mock_client.chat.completions.create.call_count, 1)

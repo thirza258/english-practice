@@ -44,6 +44,13 @@ def robots_txt(request: HttpRequest) -> HttpResponse:
     return HttpResponse("\n".join(lines), content_type="text/plain; charset=utf-8")
 
 
+def ads_txt(request: HttpRequest) -> HttpResponse:
+    return HttpResponse(
+        "google.com, pub-3592604467898331, DIRECT, f08c47fec0942fa0\n",
+        content_type="text/plain; charset=utf-8",
+    )
+
+
 def sitemap_xml(request: HttpRequest) -> HttpResponse:
     today = timezone.now().strftime("%Y-%m-%d")
 
