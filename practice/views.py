@@ -481,6 +481,9 @@ def oauth_authorization_server(request: HttpRequest) -> HttpResponse:
             "client_secret_basic",
             "client_secret_post",
         ],
+        "poppy_domains": [CANONICAL_HOST.split("//", 1)[-1]],
+        "revocation_endpoint": f"{CANONICAL_HOST}/api/agent/revoke",
+        "device_authorization_endpoint": f"{CANONICAL_HOST}/oauth/device_authorization",
         "agent_auth": {
             "skill": f"{CANONICAL_HOST}/auth.md",
             "register_uri": f"{CANONICAL_HOST}/api/agent/register",
@@ -753,3 +756,87 @@ def ai_catalog(request: HttpRequest) -> HttpResponse:
     return resp
 
 
+
+
+def agent_card(request: HttpRequest) -> HttpResponse:
+    data = {
+        "name": "English Practice Diagnostic Agent",
+        "description": "English grammar and vocabulary diagnostic practice, tests and courses.",
+        "url": CANONICAL_HOST,
+        "provider": {"name": "Nevatal", "url": CANONICAL_HOST},
+        "version": "1.0.0",
+        "protocolVersion": "0.3.0",
+        "preferredTransport": "JSONRPC",
+        "supportedInterfaces": [
+            {
+                "url": f"{CANONICAL_HOST}/api",
+                "protocolBinding": "JSONRPC",
+                "protocolVersion": "0.3.0",
+            }
+        ],
+        "capabilities": {"streaming": False, "pushNotifications": False},
+        "defaultInputModes": ["text/plain"],
+        "defaultOutputModes": ["text/plain"],
+        "skills": [
+            {
+                "id": "english-diagnostic",
+                "name": "English Diagnostic Test",
+                "description": "Run adaptive English grammar and vocabulary diagnostics with scored feedback.",
+                "tags": ["english", "diagnostic", "grammar", "vocabulary"],
+            },
+            {
+                "id": "english-courses",
+                "name": "English Courses",
+                "description": "Browse lessons and practice courses for English grammar and vocabulary.",
+                "tags": ["english", "courses", "learning"],
+            },
+        ],
+        "authentication": {
+            "type": "oauth2",
+            "discovery_url": f"{CANONICAL_HOST}/.well-known/oauth-authorization-server",
+        },
+    }
+    resp = HttpResponse(
+        json.dumps(data, indent=2),
+        content_type="application/json; charset=utf-8",
+    )
+    resp["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+
+def poppy_manifest(request: HttpRequest) -> HttpResponse:
+    host = CANONICAL_HOST.split("//", 1)[-1]
+    data = {
+        "protocol_version": "0.1",
+        "organization": {"name": "Nevatal", "domain": host},
+        "auth": {
+            "issuer": CANONICAL_HOST,
+            "direct": {"scopes": ["poppy:read", "poppy:write"]},
+            "device": {"scopes": ["poppy:read", "poppy:write"]},
+        },
+        "agent": {
+            "protocols": [
+                {"type": "poppy", "endpoint": f"{CANONICAL_HOST}/api/"},
+            ],
+        },
+        "apis": [
+            {
+                "type": "openapi",
+                "url": f"{CANONICAL_HOST}/api/",
+                "description": "English Practice API",
+            },
+            {
+                "type": "mcp",
+                "url": f"{CANONICAL_HOST}/mcp",
+                "description": "English Practice MCP server",
+            },
+        ],
+        "web": {"browser_session_endpoint": f"{CANONICAL_HOST}/"},
+        "extensions": {},
+    }
+    resp = HttpResponse(
+        json.dumps(data, indent=2),
+        content_type="application/json; charset=utf-8",
+    )
+    resp["Access-Control-Allow-Origin"] = "*"
+    return resp
