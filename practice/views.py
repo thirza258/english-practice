@@ -59,6 +59,8 @@ def sitemap_xml(request: HttpRequest) -> HttpResponse:
         (reverse("practice:landing"), "daily", "1.0"),
         (reverse("practice:courses"), "weekly", "0.9"),
         (reverse("practice:test"), "daily", "0.8"),
+        (reverse("practice:privacy-policy"), "monthly", "0.5"),
+        (reverse("practice:terms-of-service"), "monthly", "0.5"),
     ]
 
     # Course catalog details and lessons
