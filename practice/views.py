@@ -144,6 +144,7 @@ def _landing_context(request: HttpRequest, today=None):
     return {
         "canonical_url": f"{CANONICAL_HOST}{reverse('practice:landing')}",
         "ielts_courses": [course for course in COURSES if course.is_ielts],
+        "foundation_courses": [course for course in COURSES if not course.is_ielts],
         "learning": learning_summary(request.session, today=today),
         "daily": challenge,
         "daily_date": today,

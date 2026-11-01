@@ -31,10 +31,12 @@
       </div>
 
       <nav class="running-head-nav" aria-label="Quick Navigation">
+        <a href="#product-catalog" class="nav-link" data-i18n="navProducts">Products</a>
         <a href="{% url 'practice:courses' %}" class="nav-link" data-i18n="navCourses">Courses</a>
         <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="nav-link" data-i18n="navParagraph">Paragraphs</a>
         <a href="{% url 'practice:test' %}?mode=writing&level=all" class="nav-link" data-i18n="navWriting">IELTS Writing</a>
         <a href="{% url 'practice:test' %}?mode=sentence&level=all" class="nav-link" data-i18n="navSentence">Sentences</a>
+        <a href="#daily-challenge" class="nav-link" data-i18n="navDaily">Daily Word</a>
       </nav>
 
       <div class="running-head-right">
@@ -156,9 +158,9 @@
       <span class="stat-sub" data-i18n="statModesSub">Paragraph, sentence &amp; writing</span>
     </div>
     <div class="stat-item">
-      <span class="stat-number">3</span>
+      <span class="stat-number">7</span>
       <span class="stat-label" data-i18n="statCourses">Guided Courses</span>
-      <span class="stat-sub" data-i18n="statCoursesSub">Participles, writing, storytelling</span>
+      <span class="stat-sub" data-i18n="statCoursesSub">4 IELTS skills + 3 English foundation</span>
     </div>
     <div class="stat-item">
       <span class="stat-number">5</span>
@@ -166,15 +168,140 @@
       <span class="stat-sub" data-i18n="statLevelsSub">CEFR A1 to IELTS Band 9</span>
     </div>
     <div class="stat-item">
-      <span class="stat-number">Instant</span>
-      <span class="stat-label" data-i18n="statFeedback">Linguistic Analysis</span>
-      <span class="stat-sub" data-i18n="statFeedbackSub">NLTK, spaCy &amp; detailed rules</span>
+      <span class="stat-number">Daily</span>
+      <span class="stat-label" data-i18n="statDaily">Vocabulary &amp; Streak</span>
+      <span class="stat-sub" data-i18n="statDailySub">New challenge &amp; XP every 00:00 UTC</span>
+    </div>
+  </section>
+
+  <!-- Product Ecosystem Overview -->
+  <section id="product-catalog" class="book-card product-catalog-section" aria-label="Product Ecosystem">
+    <div class="section-heading">
+      <p class="academic-eyebrow" data-i18n="suiteEyebrow">Complete Learning Suite</p>
+      <h2 data-i18n="suiteTitle">Everything You Need to Master English &amp; IELTS</h2>
+      <p data-i18n="suiteSubtitle">From instant diagnostics to AI-scored essays, foundational courses, and daily vocabulary building. Explore all learning products in one place.</p>
+    </div>
+
+    <div class="product-suite-grid">
+      <!-- Product 1: Diagnostic Tests -->
+      <article class="product-pillar-card" id="pillar-diagnostics">
+        <div class="product-pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <div class="product-pillar-badge" data-i18n="suiteCard1Badge">Interactive Testing</div>
+        <h3 data-i18n="suiteCard1Title">Diagnostic &amp; Practice Tests</h3>
+        <p data-i18n="suiteCard1Desc">Sentence, paragraph, and diagnostic evaluations. Hidden-topic methodology reveals rules and explanations immediately after answering.</p>
+        <ul class="product-pillar-features">
+          <li data-i18n="suiteCard1F1">Sentence practice (10 rapid questions)</li>
+          <li data-i18n="suiteCard1F2">Paragraph cloze builder with live feedback</li>
+          <li data-i18n="suiteCard1F3">All levels: Beginner (A1) to Band 8–9</li>
+        </ul>
+        <div class="product-pillar-actions">
+          <a href="{% url 'practice:test' %}?mode=paragraph&level=all" class="primary-button product-btn" data-i18n="suiteCard1Cta">Try Paragraph Test →</a>
+          <a href="#practice-modes" class="secondary-button product-btn" data-i18n="suiteCard1Sub">View All Modes</a>
+        </div>
+      </article>
+
+      <!-- Product 2: IELTS Writing Scorer -->
+      <article class="product-pillar-card is-highlight" id="pillar-writing">
+        <div class="product-pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div class="product-pillar-badge is-accent" data-i18n="suiteCard2Badge">AI Assessment</div>
+        <h3 data-i18n="suiteCard2Title">IELTS Writing &amp; Band Scoring</h3>
+        <p data-i18n="suiteCard2Desc">Compose real Task 1 and Task 2 responses with live word counters, then receive detailed band scoring across 4 official criteria.</p>
+        <ul class="product-pillar-features">
+          <li data-i18n="suiteCard2F1">Measured with NLTK &amp; spaCy grammar engines</li>
+          <li data-i18n="suiteCard2F2">Task Response, Cohesion, Lexical &amp; Grammar metrics</li>
+          <li data-i18n="suiteCard2F3">Actionable suggestions and sentence upgrades</li>
+        </ul>
+        <div class="product-pillar-actions">
+          <a href="{% url 'practice:test' %}?mode=writing&level=all" class="primary-button product-btn is-writing" data-i18n="suiteCard2Cta">Start Writing Task →</a>
+          <a href="{% url 'practice:test' %}?mode=writing&level=ielts_8_9" class="secondary-button product-btn" data-i18n="suiteCard2Sub">Band 8–9 Prompts</a>
+        </div>
+      </article>
+
+      <!-- Product 3: IELTS Skill Courses -->
+      <article class="product-pillar-card" id="pillar-ielts">
+        <div class="product-pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </div>
+        <div class="product-pillar-badge" data-i18n="suiteCard3Badge">4 Complete Courses</div>
+        <h3 data-i18n="suiteCard3Title">IELTS Four Skills Mastery</h3>
+        <p data-i18n="suiteCard3Desc">Step-by-step masterclasses in Speaking, Reading, Writing, and Listening. Learn proven methods, spot traps, and practise up to Band 8.</p>
+        <ul class="product-pillar-features">
+          <li data-i18n="suiteCard3F1">Speaking, Reading, Writing, and Listening tracks</li>
+          <li data-i18n="suiteCard3F2">Authentic drills, audio transcripts &amp; model answers</li>
+          <li data-i18n="suiteCard3F3">Graduated progression: Beginner → Band 8 target</li>
+        </ul>
+        <div class="product-pillar-actions">
+          <a href="#ielts-courses" class="primary-button product-btn" data-i18n="suiteCard3Cta">Browse IELTS Courses →</a>
+          <a href="{% url 'practice:courses' %}" class="secondary-button product-btn" data-i18n="suiteCard3Sub">Course Catalog</a>
+        </div>
+      </article>
+
+      <!-- Product 4: English Foundations -->
+      <article class="product-pillar-card" id="pillar-foundations">
+        <div class="product-pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="product-pillar-badge" data-i18n="suiteCard4Badge">Core Fluency</div>
+        <h3 data-i18n="suiteCard4Title">Everyday English Foundations</h3>
+        <p data-i18n="suiteCard4Desc">Deepen your practical English with guided courses in Participles, Clear Academic Writing, and Creative Storytelling.</p>
+        <ul class="product-pillar-features">
+          <li data-i18n="suiteCard4F1">English Participles (present, past, dangling clauses)</li>
+          <li data-i18n="suiteCard4F2">Write Better English (cohesion, structure, revising)</li>
+          <li data-i18n="suiteCard4F3">Tell a Better Story (character, scenes, pacing)</li>
+        </ul>
+        <div class="product-pillar-actions">
+          <a href="#foundation-courses" class="primary-button product-btn" data-i18n="suiteCard4Cta">View Foundation Courses →</a>
+          <a href="{% url 'practice:course-detail' 'participles' %}" class="secondary-button product-btn" data-i18n="suiteCard4Sub">Learn Participles</a>
+        </div>
+      </article>
+
+      <!-- Product 5: Daily Vocabulary Challenge -->
+      <article class="product-pillar-card" id="pillar-daily">
+        <div class="product-pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="product-pillar-badge" data-i18n="suiteCard5Badge">Habit &amp; Streak</div>
+        <h3 data-i18n="suiteCard5Title">Daily Vocabulary Challenge</h3>
+        <p data-i18n="suiteCard5Desc">Learn a curated word every day, test your understanding in a 1-question drill, earn 15 XP, and maintain your streak.</p>
+        <ul class="product-pillar-features">
+          <li data-i18n="suiteCard5F1">Curated from Oxford 5000 &amp; academic lexicons</li>
+          <li data-i18n="suiteCard5F2">Daily reset at 00:00 UTC with real-time feedback</li>
+          <li data-i18n="suiteCard5F3">Build consistent English habit in under 60 seconds</li>
+        </ul>
+        <div class="product-pillar-actions">
+          <a href="#daily-challenge" class="primary-button product-btn" data-i18n="suiteCard5Cta">Try Today's Word →</a>
+        </div>
+      </article>
+
+      <!-- Product 6: Gamification & Progress System -->
+      <article class="product-pillar-card" id="pillar-gamification">
+        <div class="product-pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        </div>
+        <div class="product-pillar-badge" data-i18n="suiteCard6Badge">Rewards &amp; Badges</div>
+        <h3 data-i18n="suiteCard6Title">Gamified Progress Tracking</h3>
+        <p data-i18n="suiteCard6Desc">Earn XP for every completed lesson and daily quiz. Unlock milestone badges, maintain weekly streaks, and level up.</p>
+        <ul class="product-pillar-features">
+          <li data-i18n="suiteCard6F1">+40 XP per lesson, +100 XP per completed course</li>
+          <li data-i18n="suiteCard6F2">7-day visual streak tracker and level progression</li>
+          <li data-i18n="suiteCard6F3">Unlockable badges for key learning milestones</li>
+        </ul>
+        <div class="product-pillar-actions">
+          <a href="#learning-progress" class="primary-button product-btn" data-i18n="suiteCard6Cta">View My Progress →</a>
+        </div>
+      </article>
     </div>
   </section>
 
   <main class="landing-layout">
+    <div id="learning-progress">
+      {% include "practice/learning_progress.html" %}
+    </div>
     {% include "practice/daily_challenge.html" %}
-    {% include "practice/learning_progress.html" %}
 
     <section id="ielts-courses" class="book-card landing-courses landing-ielts" aria-labelledby="ielts-title">
       <div class="section-heading">
@@ -196,51 +323,32 @@
       <p class="course-note ielts-note" data-i18n="ieltsNote">Original IELTS Academic preparation in English. Short drills build skills; course completion and XP do not certify an IELTS band.</p>
     </section>
 
-    <section class="book-card landing-courses" aria-labelledby="courses-title">
+    <section id="foundation-courses" class="book-card landing-courses" aria-labelledby="courses-title">
       <div class="section-heading">
         <p class="academic-eyebrow" data-i18n="coursesEyebrow">Learn at your own pace</p>
         <h2 id="courses-title" data-i18n="coursesTitle">Build stronger everyday English.</h2>
         <p data-i18n="coursesIntro">Short lessons in English, worked examples, and hands-on exercises. Save your progress as you learn.</p>
       </div>
       <div class="course-grid">
-        <article class="course-card course-accent-participles">
-          <p class="course-note" data-i18n="participlesMeta">Grammar · 4 lessons</p>
-          <h3 data-i18n="participlesTitle">English participles</h3>
-          <p data-i18n="participlesDesc">Use forms like running and written in verb phrases, descriptions, and clauses. Learn to make every subject clear.</p>
+        {% for course in foundation_courses %}
+        <article class="course-card course-accent-{{ course.slug }}">
+          <div class="mode-badge-row">
+            <span class="academic-badge">{{ course.category }}</span>
+            <span class="mode-meta">{{ course.lessons|length }} <span data-i18n="lessonsLabel">lessons</span></span>
+          </div>
+          <h3 data-i18n="{{ course.slug }}-title">{{ course.title }}</h3>
+          <p data-i18n="{{ course.slug }}-desc">{{ course.description }}</p>
           <ul class="course-card-highlights">
+            {% for outcome in course.outcomes %}
             <li>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
-              <span data-i18n="courseHighlightsParticiples">Present &amp; past forms · Participle clauses · Dangling modifiers</span>
+              <span>{{ outcome }}</span>
             </li>
+            {% endfor %}
           </ul>
-          <a class="secondary-button" href="{% url 'practice:course-detail' 'participles' %}" data-i18n="participlesBtn">Learn participles →</a>
+          <a class="secondary-button" href="{% url 'practice:course-detail' course.slug %}" data-i18n="{{ course.slug }}-cta">Explore {{ course.title }} →</a>
         </article>
-
-        <article class="course-card course-accent-better-writing">
-          <p class="course-note" data-i18n="writingCourseMeta">Writing · 4 lessons</p>
-          <h3 data-i18n="writingCourseTitle">Write better English</h3>
-          <p data-i18n="writingCourseDesc">Create clear sentences, develop your paragraphs, connect ideas, and revise a piece you can be proud of.</p>
-          <ul class="course-card-highlights">
-            <li>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
-              <span data-i18n="courseHighlightsWriting">Topic sentences · Cohesion &amp; transitions · Sentence variety</span>
-            </li>
-          </ul>
-          <a class="secondary-button" href="{% url 'practice:course-detail' 'better-writing' %}" data-i18n="writingCourseBtn">Improve your writing →</a>
-        </article>
-
-        <article class="course-card course-accent-storytelling">
-          <p class="course-note" data-i18n="storyMeta">Storytelling · 4 lessons</p>
-          <h3 data-i18n="storyTitle">Tell a better story</h3>
-          <p data-i18n="storyDesc">Build a character, shape a plot, write vivid scenes, and bring your own short story to a satisfying ending.</p>
-          <ul class="course-card-highlights">
-            <li>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
-              <span data-i18n="courseHighlightsStory">Character building · Vivid scenes · Narrative pacing</span>
-            </li>
-          </ul>
-          <a class="secondary-button" href="{% url 'practice:course-detail' 'storytelling' %}" data-i18n="storyBtn">Start storytelling →</a>
-        </article>
+        {% endfor %}
       </div>
 
       <div class="course-section-footer-cta">
@@ -617,6 +725,8 @@
         startSentenceBtn: "Start sentence test",
 
         navCourses: "Courses",
+        navProducts: "Products",
+        navDaily: "Daily Word",
         navParagraph: "Paragraphs",
         navWriting: "IELTS Writing",
         navSentence: "Sentences",
@@ -638,11 +748,66 @@
         statModes: "Practice Modes",
         statModesSub: "Paragraph, sentence & writing",
         statCourses: "Guided Courses",
-        statCoursesSub: "Participles, writing, storytelling",
+        statCoursesSub: "4 IELTS skills + 3 English foundation",
         statLevels: "Proficiency Levels",
         statLevelsSub: "CEFR A1 to IELTS Band 9",
-        statFeedback: "Linguistic Analysis",
-        statFeedbackSub: "NLTK, spaCy & detailed rules",
+        statDaily: "Vocabulary & Streak",
+        statDailySub: "New challenge & XP every 00:00 UTC",
+
+        suiteEyebrow: "Complete Learning Suite",
+        suiteTitle: "Everything You Need to Master English & IELTS",
+        suiteSubtitle: "From instant diagnostics to AI-scored essays, foundational courses, and daily vocabulary building. Explore all learning products in one place.",
+        suiteCard1Badge: "Interactive Testing",
+        suiteCard1Title: "Diagnostic & Practice Tests",
+        suiteCard1Desc: "Sentence, paragraph, and diagnostic evaluations. Hidden-topic methodology reveals rules and explanations immediately after answering.",
+        suiteCard1F1: "Sentence practice (10 rapid questions)",
+        suiteCard1F2: "Paragraph cloze builder with live feedback",
+        suiteCard1F3: "All levels: Beginner (A1) to Band 8–9",
+        suiteCard1Cta: "Try Paragraph Test →",
+        suiteCard1Sub: "View All Modes",
+
+        suiteCard2Badge: "AI Assessment",
+        suiteCard2Title: "IELTS Writing & Band Scoring",
+        suiteCard2Desc: "Compose real Task 1 and Task 2 responses with live word counters, then receive detailed band scoring across 4 official criteria.",
+        suiteCard2F1: "Measured with NLTK & spaCy grammar engines",
+        suiteCard2F2: "Task Response, Cohesion, Lexical & Grammar metrics",
+        suiteCard2F3: "Actionable suggestions and sentence upgrades",
+        suiteCard2Cta: "Start Writing Task →",
+        suiteCard2Sub: "Band 8–9 Prompts",
+
+        suiteCard3Badge: "4 Complete Courses",
+        suiteCard3Title: "IELTS Four Skills Mastery",
+        suiteCard3Desc: "Step-by-step masterclasses in Speaking, Reading, Writing, and Listening. Learn proven methods, spot traps, and practise up to Band 8.",
+        suiteCard3F1: "Speaking, Reading, Writing, and Listening tracks",
+        suiteCard3F2: "Authentic drills, audio transcripts & model answers",
+        suiteCard3F3: "Graduated progression: Beginner → Band 8 target",
+        suiteCard3Cta: "Browse IELTS Courses →",
+        suiteCard3Sub: "Course Catalog",
+
+        suiteCard4Badge: "Core Fluency",
+        suiteCard4Title: "Everyday English Foundations",
+        suiteCard4Desc: "Deepen your practical English with guided courses in Participles, Clear Academic Writing, and Creative Storytelling.",
+        suiteCard4F1: "English Participles (present, past, dangling clauses)",
+        suiteCard4F2: "Write Better English (cohesion, structure, revising)",
+        suiteCard4F3: "Tell a Better Story (character, scenes, pacing)",
+        suiteCard4Cta: "View Foundation Courses →",
+        suiteCard4Sub: "Learn Participles",
+
+        suiteCard5Badge: "Habit & Streak",
+        suiteCard5Title: "Daily Vocabulary Challenge",
+        suiteCard5Desc: "Learn a curated word every day, test your understanding in a 1-question drill, earn 15 XP, and maintain your streak.",
+        suiteCard5F1: "Curated from Oxford 5000 & academic lexicons",
+        suiteCard5F2: "Daily reset at 00:00 UTC with real-time feedback",
+        suiteCard5F3: "Build consistent English habit in under 60 seconds",
+        suiteCard5Cta: "Try Today's Word →",
+
+        suiteCard6Badge: "Rewards & Badges",
+        suiteCard6Title: "Gamified Progress Tracking",
+        suiteCard6Desc: "Earn XP for every completed lesson and daily quiz. Unlock milestone badges, maintain weekly streaks, and level up.",
+        suiteCard6F1: "+40 XP per lesson, +100 XP per completed course",
+        suiteCard6F2: "7-day visual streak tracker and level progression",
+        suiteCard6F3: "Unlockable badges for key learning milestones",
+        suiteCard6Cta: "View My Progress →",
 
         courseHighlightsParticiples: "Present & past forms · Participle clauses · Dangling modifiers",
         courseHighlightsWriting: "Topic sentences · Cohesion & transitions · Sentence variety",
@@ -788,6 +953,8 @@
         startSentenceBtn: "Mulai tes kalimat",
 
         navCourses: "Kursus",
+        navProducts: "Produk",
+        navDaily: "Kosakata Harian",
         navParagraph: "Paragraf",
         navWriting: "Menulis IELTS",
         navSentence: "Kalimat",
@@ -809,11 +976,66 @@
         statModes: "Mode Latihan",
         statModesSub: "Paragraf, kalimat & esai",
         statCourses: "Kursus Terpandu",
-        statCoursesSub: "Partisip, menulis, cerita",
+        statCoursesSub: "4 keterampilan IELTS + 3 dasar",
         statLevels: "Tingkat Kemahiran",
         statLevelsSub: "CEFR A1 hingga IELTS Band 9",
-        statFeedback: "Analisis Linguistik",
-        statFeedbackSub: "NLTK, spaCy & kaidah detail",
+        statDaily: "Kosakata & Streak",
+        statDailySub: "Soal baru & XP setiap 00:00 UTC",
+
+        suiteEyebrow: "Rangkaian Pembelajaran Lengkap",
+        suiteTitle: "Semua Kebutuhan Menguasai Bahasa Inggris & IELTS",
+        suiteSubtitle: "Dari tes diagnostik cepat hingga penilaian esai berbasis AI, kursus keterampilan terarah, dan latihan kosakata harian. Jelajahi semua produk dalam satu tempat.",
+        suiteCard1Badge: "Tes Interaktif",
+        suiteCard1Title: "Tes Diagnostik & Latihan",
+        suiteCard1Desc: "Evaluasi mode kalimat, paragraf, dan diagnostik umum. Metode topik tersembunyi menampilkan kaidah dan pembahasan detail setelah menjawab.",
+        suiteCard1F1: "Latihan kalimat (10 soal kilat)",
+        suiteCard1F2: "Penyusunan paragraf rumpang dengan umpan balik langsung",
+        suiteCard1F3: "Semua tingkat: Pemula (A1) hingga Band 8–9",
+        suiteCard1Cta: "Coba Tes Paragraf →",
+        suiteCard1Sub: "Lihat Semua Mode",
+
+        suiteCard2Badge: "Penilaian AI",
+        suiteCard2Title: "Latihan & Skor Band IELTS Writing",
+        suiteCard2Desc: "Tulis esai Task 1 dan Task 2 dengan penghitung kata otomatis, lalu peroleh estimasi skor band berdasarkan 4 kriteria resmi.",
+        suiteCard2F1: "Dianalisis melalui mesin linguistik NLTK & spaCy",
+        suiteCard2F2: "Metrik Task Response, Cohesion, Lexical & Grammar",
+        suiteCard2F3: "Saran perbaikan dan peningkatan variasi kalimat",
+        suiteCard2Cta: "Mulai Tugas Menulis →",
+        suiteCard2Sub: "Soal Band 8–9",
+
+        suiteCard3Badge: "4 Kursus Lengkap",
+        suiteCard3Title: "Penguasaan 4 Keterampilan IELTS",
+        suiteCard3Desc: "Panduan bertahap untuk Speaking, Reading, Writing, dan Listening. Pelajari strategi utama, hindari jebakan, dan raih target Band 8.",
+        suiteCard3F1: "Jalur lengkap: Menyimak, Membaca, Berbicara, Menulis",
+        suiteCard3F2: "Latihan autentik, transkrip audio & contoh jawaban",
+        suiteCard3F3: "Tingkat bertahap: Pemula → Target Band 8",
+        suiteCard3Cta: "Jelajahi Kursus IELTS →",
+        suiteCard3Sub: "Katalog Kursus",
+
+        suiteCard4Badge: "Fondasi Kefasihan",
+        suiteCard4Title: "Fondasi Bahasa Inggris Sehari-hari",
+        suiteCard4Desc: "Perdalam bahasa Inggris praktis Anda lewat kursus Partisip, Penulisan Akademis Jelas, dan Seni Bercerita.",
+        suiteCard4F1: "Partisip Bahasa Inggris (present, past, dangling clauses)",
+        suiteCard4F2: "Menulis Lebih Baik (kohesi, struktur paragraf, revisi)",
+        suiteCard4F3: "Bercerita Lebih Menarik (karakter, adegan, tempo alur)",
+        suiteCard4Cta: "Lihat Kursus Fondasi →",
+        suiteCard4Sub: "Pelajari Partisip",
+
+        suiteCard5Badge: "Kebiasaan & Streak",
+        suiteCard5Title: "Tantangan Kosakata Harian",
+        suiteCard5Desc: "Pelajari kata pilihan setiap hari, uji pemahaman lewat 1 soal singkat, dapatkan 15 XP, dan pertahankan streak Anda.",
+        suiteCard5F1: "Dipilih dari Oxford 5000 & leksikon akademis",
+        suiteCard5F2: "Reset harian pukul 00:00 UTC dengan umpan balik langsung",
+        suiteCard5F3: "Bangun kebiasaan bahasa Inggris dalam kurang dari 60 detik",
+        suiteCard5Cta: "Coba Kata Hari Ini →",
+
+        suiteCard6Badge: "Hadiah & Lencana",
+        suiteCard6Title: "Pelacakan Progres Gamifikasi",
+        suiteCard6Desc: "Raih XP di setiap pelajaran dan kuis harian. Buka lencana pencapaian, pantau streak mingguan, dan tingkatkan level Anda.",
+        suiteCard6F1: "+40 XP per pelajaran baru, +100 XP per kursus selesai",
+        suiteCard6F2: "Pelacak streak visual 7 hari dan progres level",
+        suiteCard6F3: "Lencana prestasi untuk setiap pencapaian utama",
+        suiteCard6Cta: "Lihat Progres Saya →",
 
         courseHighlightsParticiples: "Bentuk present & past · Klausa partisip · Modifikasi menggantung",
         courseHighlightsWriting: "Kalimat topik · Kohesi & transisi · Variasi kalimat",
