@@ -841,3 +841,19 @@ def poppy_manifest(request: HttpRequest) -> HttpResponse:
     )
     resp["Access-Control-Allow-Origin"] = "*"
     return resp
+
+
+def privacy_policy(request: HttpRequest) -> HttpResponse:
+    return render(
+        request,
+        "practice/privacy.html",
+        {"canonical_url": f"{CANONICAL_HOST}{reverse('practice:privacy-policy')}"},
+    )
+
+
+def terms_of_service(request: HttpRequest) -> HttpResponse:
+    return render(
+        request,
+        "practice/terms.html",
+        {"canonical_url": f"{CANONICAL_HOST}{reverse('practice:terms-of-service')}"},
+    )

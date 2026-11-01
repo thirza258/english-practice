@@ -1,0 +1,64 @@
+{% extends "practice/base.html" %}
+
+{% block title %}Terms of Service — English Practice Diagnostic{% endblock %}
+{% block meta_description %}Terms of Service for English Practice. Read the terms, guidelines, and conditions for using our self-hosted diagnostic platform.{% endblock %}
+
+{% block content %}
+<div class="page-shell course-page" style="max-width: 860px; margin: 0 auto; padding: 32px 16px;">
+  {% include "practice/course_header.html" %}
+  <main id="main-content">
+    <div class="course-intro" style="margin-bottom: 32px;">
+      <p class="academic-eyebrow">Legal Terms</p>
+      <h1 class="book-title">Terms of Service</h1>
+      <p class="book-subtitle">Last updated: November 1, 2026. Terms governing the use of the English Practice diagnostic platform.</p>
+    </div>
+
+    <article class="book-card" style="padding: 32px; line-height: 1.7; font-size: 1rem; color: var(--ink-body, #222);">
+      <section style="margin-bottom: 28px;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">1. Acceptance of Terms</h2>
+        <p>
+          By accessing or using English Practice ("the Service"), you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this platform.
+        </p>
+      </section>
+
+      <section style="margin-bottom: 28px;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">2. Self-Hosted Educational Service</h2>
+        <p>
+          This service is operated as an independently self-hosted platform dedicated to English linguistic diagnostics, IELTS preparation, and grammar exercises. Educational progress indicators and band score estimates are provided for self-study purposes and do not represent official certification by the British Council, IDP, or Cambridge Assessment.
+        </p>
+      </section>
+
+      <section style="margin-bottom: 28px;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">3. Acceptable Use</h2>
+        <p>You agree not to:</p>
+        <ul style="margin: 12px 0 12px 24px; list-style-type: disc;">
+          <li>Use automated scripts or scrapers to overwhelm or disrupt the self-hosted servers or APIs.</li>
+          <li>Submit unlawful, harassing, defamatory, or abusive content to the writing assessment or diagnostic tools.</li>
+          <li>Attempt to reverse-engineer, exploit vulnerabilities, or bypass rate limits on our API endpoints.</li>
+        </ul>
+      </section>
+
+      <section style="margin-bottom: 28px;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">4. Third-Party AI Services (OpenRouter)</h2>
+        <p>
+          Automated evaluation features may process input text through OpenRouter. By using AI-assisted diagnostic features, you acknowledge that submissions are subject to <a href="https://openrouter.ai/terms" target="_blank" rel="noopener noreferrer" style="color: var(--academic-blue, #2a52be); font-weight: 600;">OpenRouter Terms of Service</a> and their <a href="https://openrouter.ai/privacy" target="_blank" rel="noopener noreferrer" style="color: var(--academic-blue, #2a52be); font-weight: 600;">Privacy Policy</a>.
+        </p>
+      </section>
+
+      <section style="margin-bottom: 28px;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">5. Disclaimer of Warranties</h2>
+        <p>
+          The materials on English Practice are provided on an 'as is' basis. The operators make no warranties, expressed or implied, and hereby disclaim all warranties including fitness for a particular examination score.
+        </p>
+      </section>
+
+      <section>
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">6. Modifications to Terms</h2>
+        <p>
+          We reserve the right to revise these Terms of Service at any time. By continuing to use the Service following changes, you accept the revised terms.
+        </p>
+      </section>
+    </article>
+  </main>
+</div>
+{% endblock %}

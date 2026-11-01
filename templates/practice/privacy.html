@@ -1,0 +1,63 @@
+{% extends "practice/base.html" %}
+
+{% block title %}Privacy Policy — English Practice Diagnostic{% endblock %}
+{% block meta_description %}Privacy Policy for English Practice. Learn how our self-hosted diagnostic platform and OpenRouter AI integrations protect your personal data.{% endblock %}
+
+{% block content %}
+<div class="page-shell course-page" style="max-width: 860px; margin: 0 auto; padding: 32px 16px;">
+  {% include "practice/course_header.html" %}
+  <main id="main-content">
+    <div class="course-intro" style="margin-bottom: 32px;">
+      <p class="academic-eyebrow">Trust &amp; Transparency</p>
+      <h1 class="book-title">Privacy Policy</h1>
+      <p class="book-subtitle">Last updated: November 1, 2026. Learn how your data is handled on our self-hosted learning platform.</p>
+    </div>
+
+    <article class="book-card" style="padding: 32px; line-height: 1.7; font-size: 1rem; color: var(--ink-body, #222);">
+      <section style="margin-bottom: 28px;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">1. Self-Hosted Infrastructure Guarantee</h2>
+        <p>
+          English Practice is a <strong>fully self-hosted</strong> educational platform. All course materials, diagnostic test histories, XP gamification progress, and temporary session tokens reside directly on our private self-hosted servers. Your data does not leave our secured perimeter for analytics, tracking brokers, or third-party behavioral profiling.
+        </p>
+      </section>
+
+      <section style="margin-bottom: 28px;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">2. AI Features &amp; Third-Party Processing (OpenRouter)</h2>
+        <p>
+          Certain interactive features—such as our automated IELTS Writing task evaluation, linguistic grammar diagnostic feedback, and sentence variety assessments—utilize artificial intelligence powered by <strong>OpenRouter</strong>.
+        </p>
+        <p style="margin-top: 10px;">
+          When you submit essays or diagnostic prompts for AI assessment, the text is transmitted securely to OpenRouter API endpoints to generate evaluations. No personal identifiers (such as passwords or account emails) are attached to these requests. Processing by OpenRouter is governed by their policies:
+        </p>
+        <ul style="margin: 12px 0 12px 24px; list-style-type: disc;">
+          <li><a href="https://openrouter.ai/privacy" target="_blank" rel="noopener noreferrer" style="color: var(--academic-blue, #2a52be); font-weight: 600;">OpenRouter Privacy Policy</a></li>
+          <li><a href="https://openrouter.ai/terms" target="_blank" rel="noopener noreferrer" style="color: var(--academic-blue, #2a52be); font-weight: 600;">OpenRouter Terms of Service</a></li>
+        </ul>
+      </section>
+
+      <section style="margin-bottom: 28px;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">3. Information Collected</h2>
+        <ul style="margin: 12px 0 12px 24px; list-style-type: disc;">
+          <li><strong>Session Data:</strong> Minimal session cookies to track test completion, streaks, and current lesson positions.</li>
+          <li><strong>Diagnostic Answers:</strong> Multiple choice selections and grammar test submissions stored to compute score reports.</li>
+          <li><strong>Device &amp; Access Logs:</strong> Standard HTTP request logs (IP address, user agent) kept temporarily for security and rate-limiting.</li>
+        </ul>
+      </section>
+
+      <section style="margin-bottom: 28px;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">4. Data Retention and Erasure</h2>
+        <p>
+          Because the application is self-hosted and privacy-first, session cookies expire automatically. You can clear your learning history and local cookies at any time directly through your web browser settings.
+        </p>
+      </section>
+
+      <section>
+        <h2 style="font-size: 1.35rem; margin-bottom: 12px; color: var(--ink-heading, #111);">5. Contact</h2>
+        <p>
+          For privacy inquiries or technical questions regarding this self-hosted deployment, please contact the server administrator at <a href="{% url 'practice:landing' %}" style="color: var(--academic-blue, #2a52be);">English Practice Diagnostic</a>.
+        </p>
+      </section>
+    </article>
+  </main>
+</div>
+{% endblock %}
